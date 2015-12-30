@@ -1,0 +1,21 @@
+Caching:
+
+  Caching should be done through simple string key/string contents LRU caching, with individual caches (for size control) for the various types of
+  string content.  Caching of binary content (especially images) needs to be thought out more carefully, but is probably best handled the same way.
+
+
+Request signatures:
+
+  [www.]<domain>    - request for blog home page
+  static.<domain>/? - request for static data, including pages, images, scripts, etc.
+
+
+Dependencies:
+
+  Web server: Spark/Jetty (embedded)
+  Login: simple login, home-brew
+
+
+HTTP vs HTTPS:
+
+  The main server will be entirely on HTTPS.  I will also have an (extremely) simple HTTP server that does nothing but redirect to HTTPS.
