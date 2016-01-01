@@ -1,10 +1,11 @@
 package com.slightlyloony.mail;
 
-import com.slightlyloony.logging.Log;
-import com.slightlyloony.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.mail.*;
 import javax.mail.internet.ContentType;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,12 +14,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static com.slightlyloony.logging.LU.msg;
+
 /**
  * @author Tom Dilatush  tom@dilatush.com
  */
 public class MailFetcher {
 
-    private static final Logger LOG = Log.get( MailFetcher.class );
+    private static final Logger LOG = LogManager.getLogger();
 
     private static final int BUFFER_SIZE = 16 * 1024;
 
@@ -45,8 +48,7 @@ public class MailFetcher {
             props.put("mail.pop3.host", "imap.gmail.com");
             props.put("mail.store.protocol", "imaps");
 
-            Authenticator auth = null;
-            Session emailSession = Session.getDefaultInstance( props, auth );
+            Session emailSession = Session.getDefaultInstance( props );
 
             // create the POP3 store object and connect with the pop server
             Store store = emailSession.getStore("imaps");
@@ -54,13 +56,12 @@ public class MailFetcher {
             store.connect("imap.gmail.com", credential.user, credential.password);
 
             // create the folder object and open it
-            Folder[] folders = store.getDefaultFolder().list( "*" );
             Folder emailFolder = store.getFolder( "INBOX" );
             emailFolder.open( Folder.READ_WRITE );
 
             // retrieve the messages from the folder in an array and print it
             Message[] messages = emailFolder.getMessages();
-            System.out.println("messages.length---" + messages.length);
+            LOG.info( msg( "Fetched {0} email message headers", messages.length) );
 
             for( Message message : messages ) {
 
@@ -74,16 +75,22 @@ public class MailFetcher {
                         MailMessage msg = new MailMessage();
                         if( (mm.getFrom() == null) || (mm.getFrom().length == 0) )
                             continue;
-                        msg.from = mm.getFrom()[0].toString();
+                        InternetAddress addr = (InternetAddress)(mm.getFrom()[0]);
+                        msg.from = addr.getAddress();
                         msg.message = mm;
                         msg.parts = parts;
                         msg.subject = mm.getSubject();
 
                         result.add( msg );
+
+                        LOG.info( msg( "Read email message with {0} parts, subject: {1}", parts.size(), msg.subject) );
+
+                        // mark the message for deletion...
+                        mm.setFlag(Flags.Flag.DELETED, true);
                     }
 
                     catch( MessagingException e ) {
-                        LOG.fine( "Problem while reading mail message: {1}", e.getMessage() );
+                        LOG.warn( msg( "Problem while reading mail message" ), e );
                     }
                 }
             }
@@ -95,11 +102,11 @@ public class MailFetcher {
         }
 
         catch (NoSuchProviderException e) {
-            LOG.warning( "Mail provider cannot be instantiated: {1}", e.getMessage() );
+            LOG.error( msg( "Mail provider could not be instantiated" ), e );
         }
 
         catch( MessagingException e ) {
-            e.printStackTrace();
+            LOG.error( msg( "Problem while fetching mail" ), e );
         }
 
         // return our result, even if it contains nothing at all...
@@ -178,7 +185,7 @@ public class MailFetcher {
         }
 
         catch( Exception e ) {
-            LOG.warning( "Could not read message part: {!}", e.getMessage() );
+            LOG.error( msg( "Problem while fetching mail part" ), e );
         }
     }
 }

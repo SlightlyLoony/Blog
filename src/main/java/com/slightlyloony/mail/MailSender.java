@@ -1,8 +1,9 @@
 package com.slightlyloony.mail;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
+import com.slightlyloony.logging.LU;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
@@ -15,6 +16,9 @@ import java.util.Properties;
  */
 public class MailSender {
 
+    private static final Logger LOG = LogManager.getLogger();
+
+
     private final MailCredential credential;
 
 
@@ -23,21 +27,21 @@ public class MailSender {
     }
 
 
-    public boolean send( final Mail _mail ) {
+    public boolean send( final MailMessage _mail ) {
+
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.socketFactory.port", "465");
-        props.put("mail.smtp.socketFactory.class",
-                "javax.net.ssl.SSLSocketFactory");
+        props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.port", "465");
 
-        Session session = Session.getDefaultInstance( props,
+        Session session = Session.getInstance(props,
                 new javax.mail.Authenticator() {
                     protected PasswordAuthentication getPasswordAuthentication() {
                         return new PasswordAuthentication( credential.user, credential.password );
                     }
-                } );
+                });
 
         try {
 
@@ -47,44 +51,36 @@ public class MailSender {
             message.setFrom( new InternetAddress( credential.user ) );
 
             // Set To: header field of the header.
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse( _mail.recipients ));
+            message.setRecipients( Message.RecipientType.TO, InternetAddress.parse( _mail.recipients ));
 
             // Set Subject: header field
             message.setSubject( _mail.subject );
 
-            // Create the message part
-            BodyPart messageBodyPart = new MimeBodyPart();
-
-            // Now set the actual message
-            messageBodyPart.setText( _mail.body );
-
-            // Create a multipart message
+            // iterate over all the message parts, adding them to the content...
             Multipart multipart = new MimeMultipart();
-
-            // Set text message part
-            multipart.addBodyPart(messageBodyPart);
-
-
-            if( _mail.attachmentFile != null ) {
-
-                // Part two is attachment
-                messageBodyPart = new MimeBodyPart();
-                DataSource source = new FileDataSource( _mail.attachmentFile );
-                messageBodyPart.setDataHandler( new DataHandler( source ) );
-                messageBodyPart.setFileName( _mail.attachmentName );
-                multipart.addBodyPart( messageBodyPart );
+            for( MailPart part : _mail.parts ) {
+                MimeBodyPart mbp = new MimeBodyPart();
+                if( "text/plain".equals( part.type ) )
+                    mbp.setText( part.text );
+                else {
+                    mbp.setContent( part.content, part.type );
+                    mbp.setFileName( part.name );
+                }
+                multipart.addBodyPart( mbp );
             }
-
-            // Send the complete message parts
             message.setContent(multipart);
 
+            LOG.info( LU.msg( "Sending mail to {0}, subject: {1}", _mail.recipients, _mail.subject) );
             Transport.send( message );
+            LOG.info( LU.msg( "Sent mail to {0}, subject: {1}", _mail.recipients, _mail.subject) );
 
-            System.out.println("Done");
+            return true;
 
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
         }
-        return true;
+
+        catch( MessagingException e ) {
+            LOG.error( "Problem sending email", e );
+            return false;
+        }
     }
 }

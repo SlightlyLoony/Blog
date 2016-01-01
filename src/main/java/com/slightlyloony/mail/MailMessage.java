@@ -9,6 +9,7 @@ import java.util.List;
 public class MailMessage {
 
     public String from;
+    public String recipients;
     public String subject;
     public List<MailPart> parts;
     public MimeMessage message;

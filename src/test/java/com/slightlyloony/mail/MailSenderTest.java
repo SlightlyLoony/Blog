@@ -1,10 +1,9 @@
 package com.slightlyloony.mail;
 
-import com.google.gson.Gson;
+import com.slightlyloony.monitor.Init;
 import org.junit.Test;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.util.ArrayList;
 
 /**
  * @author Tom Dilatush  tom@dilatush.com
@@ -12,25 +11,24 @@ import java.io.FileReader;
 public class MailSenderTest {
 
     @Test
-    public void simpleTest() throws FileNotFoundException {
+    public void test() {
 
-        Mail mail = new Mail();
-        mail.recipients = "tom@dilatush.com";
-        mail.subject = "Mail sender test";
-        mail.body = "What could this be?";
+        Init.init();
 
-        MailCredential cred = new Gson().fromJson( new FileReader( "PrivateStuff/mailcredential.json" ), MailCredential.class );
+        // make our mail message...
+        MailMessage msg = new MailMessage();
+        msg.from = Init.getConfig().getMonitorEmailUser();
+        msg.subject = "Subject";
+        msg.recipients = Init.getConfig().getMailPortalAuthorizedUser();
+        MailPart mp = new MailPart();
+        mp.type = "text/plain";
+        mp.text = "body";
+        msg.parts = new ArrayList<>();
+        msg.parts.add( mp );
 
-        MailSender sender = new MailSender( cred );
-        sender.send( mail );
+        // then send it...
+        MailSender ms = new MailSender( Init.getConfig().getMailCredential() );
+        ms.send( msg );
 
-        mail = new Mail();
-        mail.recipients = "tom@dilatush.com";
-        mail.subject = "Mail sender test number two";
-        mail.body = "Salmon recipe";
-        mail.attachmentFile = "/Users/tom/Desktop/Baked Salmon With Herbed Mayonnaise Recipe - Food.com.pdf";
-        mail.attachmentName = "Salmon Recipe.pdf";
-        sender.send( mail );
     }
-
 }

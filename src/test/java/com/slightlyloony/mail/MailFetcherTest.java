@@ -13,6 +13,7 @@ public class MailFetcherTest {
 
     @Test
     public void testFetch() throws Exception {
+        System.getProperties().setProperty( "log4j.configurationFile", "log.xml" );
 
         MailCredential cred = new Gson().fromJson( new FileReader( "PrivateStuff/mailcredential.json" ), MailCredential.class );
 
