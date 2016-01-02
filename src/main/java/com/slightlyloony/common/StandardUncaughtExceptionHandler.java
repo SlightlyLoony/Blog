@@ -1,4 +1,4 @@
-package com.slightlyloony.monitor;
+package com.slightlyloony.common;
 
 import com.slightlyloony.logging.LU;
 import org.apache.logging.log4j.LogManager;
@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * @author Tom Dilatush  tom@dilatush.com
  */
-public class MonitorUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
+public class StandardUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
 
 
     private static Logger LOG = LogManager.getLogger();

@@ -33,7 +33,7 @@ public class MailPortal implements Runnable {
     public static void start() {
 
         if( portal == null ) {
-            int seconds = Init.getConfig().getMailPortalFetchIntervalSeconds();
+            int seconds = MonitorInit.getConfig().getMailPortalFetchIntervalSeconds();
             portal = ExecutionService.INSTANCE.scheduleAtFixedRate( new MailPortal(), 0, seconds, TimeUnit.SECONDS );
         }
     }
@@ -53,14 +53,14 @@ public class MailPortal implements Runnable {
         LOG.info( "Mail portal started" );
 
         // fetch any messages we might have...
-        MailFetcher fetcher = new MailFetcher( Init.getConfig().getMailCredential() );
+        MailFetcher fetcher = new MailFetcher( MonitorInit.getConfig().getMailCredential() );
         List<MailMessage> msgs = fetcher.fetch();
 
         // process any messages we received...
         for( MailMessage msg : msgs ) {
 
             // if it's not from our authorized portal user, then just ignore the email...
-            if( !msg.from.equals( Init.getConfig().getMailPortalAuthorizedUser() )) {
+            if( !msg.from.equals( MonitorInit.getConfig().getMailPortalAuthorizedUser() )) {
                 LOG.info( msg( "Ignoring message from {0} with subject \"{1}\"", msg.from, msg.subject ) );
                 continue;
             }
@@ -68,9 +68,10 @@ public class MailPortal implements Runnable {
             // decide what to do based on the subject...
             switch( msg.subject.toUpperCase() ) {
 
-                case "HELP":  handleHELP( msg );    break;
-                case "PING":  handlePING( msg );    break;
-                default:      handleDefault( msg ); break;
+                case "HELP":     handleHELP( msg );     break;
+                case "PING":     handlePING( msg );     break;
+                case "SHUTDOWN": handleSHUTDOWN( msg ); break;
+                default:         handleDefault( msg );  break;
             }
         }
 
@@ -79,9 +80,10 @@ public class MailPortal implements Runnable {
 
 
     private void handleHELP( final MailMessage _msg ) {
-        String msg = "Blog Monitor Mail Portal Help\n" +
+        String msg = "Blog MonitorServer Mail Portal Help\n" +
                      "  HELP to get this message\n" +
                      "  PING to get a pong response\n" +
+                     "  SHUTDOWN to shutdown HTTP, HTTPS, and MONITOR servers" +
                      "Anything else will be ignored, but logged";
         sendMessage( "Help, as requested...", msg );
     }
@@ -97,13 +99,19 @@ public class MailPortal implements Runnable {
     }
 
 
+    private void handleSHUTDOWN( final MailMessage _msg ) {
+        LOG.info( "Sending shutdown command" );
+        MonitorServer.shutdown();
+    }
+
+
     private void sendMessage( final String _subject, final String _body ) {
 
         // make our mail message...
         MailMessage msg = new MailMessage();
-        msg.from = Init.getConfig().getMonitorEmailUser();
+        msg.from = MonitorInit.getConfig().getMonitorEmailUser();
         msg.subject = _subject;
-        msg.recipients = Init.getConfig().getMailPortalAuthorizedUser();
+        msg.recipients = MonitorInit.getConfig().getMailPortalAuthorizedUser();
         MailPart mp = new MailPart();
         mp.type = "text/plain";
         mp.text = _body;
@@ -111,7 +119,7 @@ public class MailPortal implements Runnable {
         msg.parts.add( mp );
 
         // then send it...
-        MailSender ms = new MailSender( Init.getConfig().getMailCredential() );
+        MailSender ms = new MailSender( MonitorInit.getConfig().getMailCredential() );
         ms.send( msg );
     }
 }

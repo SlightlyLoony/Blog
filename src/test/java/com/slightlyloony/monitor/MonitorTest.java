@@ -9,6 +9,6 @@ public class MonitorTest {
 
     @Test
     public void testMain() throws Exception {
-        Monitor.main( null );
+        MonitorServer.main( null );
     }
 }

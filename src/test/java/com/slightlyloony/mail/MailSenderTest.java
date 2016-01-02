@@ -1,6 +1,6 @@
 package com.slightlyloony.mail;
 
-import com.slightlyloony.monitor.Init;
+import com.slightlyloony.monitor.MonitorInit;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -13,13 +13,13 @@ public class MailSenderTest {
     @Test
     public void test() {
 
-        Init.init();
+        MonitorInit.init();
 
         // make our mail message...
         MailMessage msg = new MailMessage();
-        msg.from = Init.getConfig().getMonitorEmailUser();
+        msg.from = MonitorInit.getConfig().getMonitorEmailUser();
         msg.subject = "Subject";
-        msg.recipients = Init.getConfig().getMailPortalAuthorizedUser();
+        msg.recipients = MonitorInit.getConfig().getMailPortalAuthorizedUser();
         MailPart mp = new MailPart();
         mp.type = "text/plain";
         mp.text = "body";
@@ -27,7 +27,7 @@ public class MailSenderTest {
         msg.parts.add( mp );
 
         // then send it...
-        MailSender ms = new MailSender( Init.getConfig().getMailCredential() );
+        MailSender ms = new MailSender( MonitorInit.getConfig().getMailCredential() );
         ms.send( msg );
 
     }

@@ -1,6 +1,6 @@
 package com.slightlyloony.common;
 
-import com.slightlyloony.monitor.Init;
+import com.slightlyloony.monitor.MonitorInit;
 
 import java.security.PrivilegedAction;
 import java.util.Collection;
@@ -12,6 +12,7 @@ import java.util.concurrent.*;
  *
  * @author Tom Dilatush  tom@dilatush.com
  */
+// TODO: doesn't shut down correctly; thread still running after main exits
 public class ExecutionService {
 
 
@@ -24,7 +25,7 @@ public class ExecutionService {
 
 
     private ExecutionService() {
-        executorService = new ScheduledThreadPoolExecutor( Init.getConfig().getExecutorThreads(), new ThreadFactory() {
+        executorService = new ScheduledThreadPoolExecutor( MonitorInit.getConfig().getExecutorThreads(), new ThreadFactory() {
             @Override
             public Thread newThread( final Runnable r ) {
                 Thread t = new Thread( r, "ExSvc-" + nextThread );

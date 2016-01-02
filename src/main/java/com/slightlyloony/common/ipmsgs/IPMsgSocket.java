@@ -6,9 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketAddress;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.Set;
 
@@ -18,46 +16,72 @@ import java.util.Set;
  *
  * @author Tom Dilatush  tom@dilatush.com
  */
-public class IPListener {
+//TODO: doesn't shut down correctly; thread still running after main exits
+public class IPMsgSocket {
 
     private static final Logger LOG = LogManager.getLogger();
 
-    private static IPListener INSTANCE;
+    public static IPMsgSocket INSTANCE;
 
 
     private final SocketAddress listenerAddr;
     private final Set<SocketAddress> validSenderAddrs;
     private final Set<Class<? extends IPMsg>> validMsgs;
     private final Listener listener;
+    private DatagramSocket socket;
 
 
-    private IPListener( final SocketAddress _listenerAddr, final Set<SocketAddress> _validSenderAddrs, final Set<Class<? extends IPMsg>> _validMsgs ) {
+    private IPMsgSocket( final SocketAddress _listenerAddr, final Set<SocketAddress> _validSenderAddrs,
+                         final Set<Class<? extends IPMsg>> _validMsgs ) {
         listenerAddr = _listenerAddr;
         validSenderAddrs = _validSenderAddrs;
         validMsgs = _validMsgs;
         listener = new Listener();
+        try {
+            socket = new DatagramSocket( listenerAddr );
+        }
+        catch( SocketException e ) {
+            LOG.error( "Problem creating IPMsg DatagramSocket", e );
+        }
     }
 
 
-    public static void start( final SocketAddress _listenerAddr, final Set<SocketAddress> _validSenderAddrs, final Set<Class<? extends IPMsg>> _validMsgs ) {
+    public void send( final IPMsg _msg, final SocketAddress _addr ) throws IOException {
+
+        ByteBuffer bb = _msg.toMessageBuffer();
+        byte[] b = new byte[bb.limit()];
+        bb.get( b );
+        DatagramPacket dp = new DatagramPacket( b, b.length, _addr );
+        socket.send( dp );
+    }
+
+
+    public static void start( final SocketAddress _listenerAddr, final Set<SocketAddress> _validSenderAddrs,
+                              final Set<Class<? extends IPMsg>> _validMsgs ) {
 
         if( INSTANCE != null )
             return;
 
         if( (_listenerAddr == null) || (_validSenderAddrs == null) || (_validMsgs == null) ) {
-            LOG.error( "Invalid arguments to IPListener.start()" );
-            throw new IllegalArgumentException( "Invalid arguments to IPListener.start()" );
+            LOG.error( "Invalid arguments to IPMsgSocket.start()" );
+            throw new IllegalArgumentException( "Invalid arguments to IPMsgSocket.start()" );
         }
 
-        INSTANCE = new IPListener( _listenerAddr, _validSenderAddrs, _validMsgs );
+        INSTANCE = new IPMsgSocket( _listenerAddr, _validSenderAddrs, _validMsgs );
         INSTANCE.listener.start();
+    }
+
+
+    public void shutdown() {
+        listener.interrupt();
+        socket.close();
     }
 
 
     private class Listener extends Thread {
 
         private Listener() {
-            setName( "IPListener" );
+            setName( "IPMsgSocket" );
             setDaemon( true );
         }
 
@@ -70,12 +94,9 @@ public class IPListener {
             // we basically do this forever, once we've started...
             while( !interrupted() ) {
 
-                DatagramSocket socket = null;
-
                 try {
 
                     // some setup...
-                    socket = new DatagramSocket( listenerAddr );
                     ByteBuffer bb = ByteBuffer.allocate( 600 );
 
                     // we basically do this forever, once we've started...
@@ -118,7 +139,8 @@ public class IPListener {
                         }
 
                         // if we get here, then we received a valid message from a valid sender - process it!
-                        LOG.info( LU.msg( "Processing valid message \"{0}\" received from {1}", msg.getClass().getSimpleName(), packet.getSocketAddress().toString() ) );
+                        LOG.info( LU.msg( "Processing valid message \"{0}\" received from {1}",
+                                msg.getClass().getSimpleName(), packet.getSocketAddress().toString() ) );
                         ExecutionService.INSTANCE.submit( msg );
                     }
                 }

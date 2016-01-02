@@ -1,3 +1,5 @@
-/PrivateStuff
-/logs
 /.idea
+/http_server_working
+/https_server_working
+/monitor_server_working
+/out

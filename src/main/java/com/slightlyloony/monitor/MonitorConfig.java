@@ -10,17 +10,15 @@ import java.net.SocketAddress;
  */
 public class MonitorConfig {
 
-    private int    monitorIPport;
-    private String monitorIPaddr;
-    private int    httpsIPport;
-    private String httpsIPaddr;
-    private int    httpIPport;
-    private String httpIPaddr;
+    private Server monitor;
+    private Server http;
+    private Server https;
     private int    mailPortalFetchIntervalSeconds;
     private int    executorThreads;
     private String mailPortalAuthorizedUser;
     private String monitorEmailUser;
     private String monitorEmailPassword;
+    private String javaPath;
 
 
     public int getMailPortalFetchIntervalSeconds() {
@@ -48,52 +46,60 @@ public class MonitorConfig {
     }
 
 
-    public int getMonitorIPport() {
-        return monitorIPport;
+    public Server getMonitor() {
+        return monitor;
     }
 
 
-    public String getMonitorIPaddr() {
-        return monitorIPaddr;
+    public Server getHttp() {
+        return http;
     }
 
 
-    public int getHttpsIPport() {
-        return httpsIPport;
+    public Server getHttps() {
+        return https;
     }
 
 
-    public String getHttpsIPaddr() {
-        return httpsIPaddr;
-    }
-
-
-    public int getHttpIPport() {
-        return httpIPport;
-    }
-
-
-    public String getHttpIPaddr() {
-        return httpIPaddr;
-    }
-
-
-    public SocketAddress getMonitorIPSocketAddress() {
-        return new InetSocketAddress( monitorIPaddr, monitorIPport );
-    }
-
-
-    public SocketAddress getHttpsIPSocketAddress() {
-        return new InetSocketAddress( httpsIPaddr, httpsIPport );
-    }
-
-
-    public SocketAddress getHttpIPSocketAddress() {
-        return new InetSocketAddress( httpIPaddr, httpIPport );
+    public String getJavaPath() {
+        return javaPath;
     }
 
 
     public MailCredential getMailCredential() {
         return new MailCredential( monitorEmailUser, monitorEmailPassword );
+    }
+
+    public static class Server {
+
+        private String ip;
+        private int port;
+        private String dir;
+        private String jar;
+
+
+        public String getIp() {
+            return ip;
+        }
+
+
+        public int getPort() {
+            return port;
+        }
+
+
+        public String getWorkingDir() {
+            return dir;
+        }
+
+
+        public String getJarFile() {
+            return jar;
+        }
+
+
+        public SocketAddress getSocketAddress() {
+            return new InetSocketAddress( ip, port );
+        }
     }
 }

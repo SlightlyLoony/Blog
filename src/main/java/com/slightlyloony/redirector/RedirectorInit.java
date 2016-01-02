@@ -1,9 +1,11 @@
-package com.slightlyloony.monitor;
+package com.slightlyloony.redirector;
 
 import com.google.gson.Gson;
-import com.slightlyloony.common.ipmsgs.IPListener;
+import com.slightlyloony.common.StandardUncaughtExceptionHandler;
 import com.slightlyloony.common.ipmsgs.IPMsg;
-import com.slightlyloony.common.ipmsgs.HTTPAliveMsg;
+import com.slightlyloony.common.ipmsgs.IPMsgSocket;
+import com.slightlyloony.common.ipmsgs.StartHTTPMsg;
+import com.slightlyloony.common.ipmsgs.StopHTTPMsg;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,12 +20,12 @@ import java.util.Set;
  *
  * @author Tom Dilatush  tom@dilatush.com
  */
-public class Init {
+public class RedirectorInit {
 
 
     private static final Logger LOG = LogManager.getLogger();
 
-    private static MonitorConfig CONFIG;
+    private static RedirectorConfig CONFIG;
 
 
     public static void init() {
@@ -35,26 +37,23 @@ public class Init {
          */
 
         // set a default uncaught exception handler...
-        Thread.setDefaultUncaughtExceptionHandler( new MonitorUncaughtExceptionHandler() );
+        Thread.setDefaultUncaughtExceptionHandler( new StandardUncaughtExceptionHandler() );
 
-        // read the monitor's configuration...
+        // read the redirector's configuration...
         try {
-            CONFIG = new Gson().fromJson( new FileReader( "PrivateStuff/monitor.json" ), MonitorConfig.class );
+            CONFIG = new Gson().fromJson( new FileReader( "redirector.json" ), RedirectorConfig.class );
         }
         catch( FileNotFoundException e ) {
             LOG.fatal( "Problem reading monitor configuration", e );
             throw new IllegalStateException( "Could not read monitor configuration", e );
         }
 
-        // start the mail portal...
-        MailPortal.start();
-
         // start the inter-process message listener...
-        IPListener.start( CONFIG.getMonitorIPSocketAddress(), getValidSenders(), getValidMsgs() );
+        IPMsgSocket.start( CONFIG.getHttp().getSocketAddress(), getValidSenders(), getValidMsgs() );
     }
 
 
-    public static MonitorConfig getConfig() {
+    public static RedirectorConfig getConfig() {
         return CONFIG;
     }
 
@@ -62,20 +61,20 @@ public class Init {
     /*
      * Prevent instantiation.
      */
-    private Init(){}
+    private RedirectorInit(){}
 
 
     private static Set<SocketAddress> getValidSenders() {
         Set<SocketAddress> result = new HashSet<>();
-        result.add( CONFIG.getHttpIPSocketAddress() );
-        result.add( CONFIG.getHttpsIPSocketAddress() );
+        result.add( CONFIG.getMonitor().getSocketAddress() );
         return result;
     }
 
 
     private static Set<Class<? extends IPMsg>> getValidMsgs() {
         Set<Class<? extends IPMsg>> result = new HashSet<>();
-        result.add( HTTPAliveMsg.class );
+        result.add( StartHTTPMsg.class );
+        result.add( StopHTTPMsg.class );
         return result;
     }
 }

@@ -1,9 +1,31 @@
+Architecture:
+
+  There will be three server processes, as follows:
+  1.  Monitor server that manages and monitors the other two servers.  This includes running the processes, monitoring their performance, restarting
+      them, upgrading/downgrading them, etc.
+  2.  HTTPS server that is the main blog server.
+  3.  HTTP server that simply redirects to the HTTPS server.
+
+
+Interprocess messaging:
+
+  The three server processes communicate through a simple network protocol.  The protocol is based on UDP, with packets that contain a single byte
+  type code (first byte) followed by a UTF-8 JSON representation of the message (including, redundantly, the type code).  This simple protocol is
+  fast and well-suited to the simple types of messages needed (start, stop, ping, keep-alives, etc.).
+
+
+JSON support:
+
+  Google GSON.
+
+
 Multiple domain support:
 
   I will have support for at least three domains right from the beginning: slightlyloony.com, justnorthofparadise.com, and dilatush.com.  This
   implies support for virtual hosting, based on the "Host" HTTP header.  The mapping between "Host" values and content roots should be configurable,
   and should allow for multiple "Host" values to map to a single content root.  In addition, the security for each virtual host needs to be separate
   (so, for example, separate lists of authors for each content root).
+
 
 Caching:
 
@@ -28,3 +50,16 @@ Dependencies:
 HTTP vs HTTPS:
 
   The main server will be entirely on HTTPS.  I will also have an (extremely) simple HTTP server that does nothing but redirect to HTTPS.
+
+
+States of monitored servers (each indentation indicates nested state):
+
+  Overall
+  -dead (at startup, from alive on "died" event)
+    -dead (on "startup" event)
+    -starting (on "starting" event)
+    -killed (on "killed"
+  -alive (from dead on "started" event)
+    -running (at entry)
+    -up (on "verified" event)
+    -stopping (on "kill" or "failed" events)

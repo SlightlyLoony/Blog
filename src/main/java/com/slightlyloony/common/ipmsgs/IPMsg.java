@@ -2,6 +2,8 @@ package com.slightlyloony.common.ipmsgs;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.slightlyloony.monitor.MonitorServer;
+import com.slightlyloony.monitor.state.MonitoredServerStateMachine;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -58,6 +60,16 @@ public abstract class IPMsg implements Runnable {
 
     @Override
     abstract public void run();
+
+
+    protected MonitoredServerStateMachine httpSM() {
+        return MonitorServer.getHttpStateMachine();
+    }
+
+
+    protected MonitoredServerStateMachine httpsSM() {
+        return MonitorServer.getHttpsStateMachine();
+    }
 
 
     public static IPMsg create( final ByteBuffer _buffer ) {
