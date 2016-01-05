@@ -52,14 +52,9 @@ HTTP vs HTTPS:
   The main server will be entirely on HTTPS.  I will also have an (extremely) simple HTTP server that does nothing but redirect to HTTPS.
 
 
-States of monitored servers (each indentation indicates nested state):
+Hotlink prevention:
 
-  Overall
-  -dead (at startup, from alive on "died" event)
-    -dead (on "startup" event)
-    -starting (on "starting" event)
-    -killed (on "killed"
-  -alive (from dead on "started" event)
-    -running (at entry)
-    -up (on "verified" event)
-    -stopping (on "kill" or "failed" events)
+  The usual scheme for this is to use HTTP_REFERER, but that's essentially broken by firewalls and many browsers, which simply delete that header.
+  An alternative scheme I cooked up, which I found a few references to on the web (so I'm not the first!), is to require that the request for a
+  content object be made in the context of a session.  Essentially that means a session cookie.  It appears that Spark/Jetty already supports an
+  ephemeral session cookie, which is perfect for the purpose.

@@ -23,11 +23,18 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
-        <module name="Blog" />
+        <module name="Common" />
+        <module name="Https" />
+        <module name="Monitor" />
+        <module name="Redirector" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="Blog" target="1.8" />
+      <module name="Common" target="1.8" />
+      <module name="Https" target="1.8" />
+      <module name="Monitor" target="1.8" />
+      <module name="Redirector" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
