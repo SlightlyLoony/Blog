@@ -25,14 +25,10 @@ public abstract class StateMachine {
     public StateMachine( final String _name ) {
         name = _name;
         allowedStates = initAllowedStates();
-        transitionTo( initState() );
     }
 
 
     abstract protected Set<Class<? extends State>> initAllowedStates();
-
-
-    abstract protected State initState();
 
 
     public synchronized void on( final Event _event, final Object... _data ) {

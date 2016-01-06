@@ -27,6 +27,18 @@ public class MonitoredServerStateMachine extends StateMachine {
     }
 
 
+    @Override
+    public synchronized void on( final Event _event, Object... _data ) {
+
+        // handle the INITIALIZE event specially if we have no current state...
+        if( (state == null) && (_event == Event.INITIALIZE) )
+            to( new DeadState( this ) );
+
+        // now delegate (including INITIALIZE) to states...
+        super.on( _event, _data );
+    }
+
+
     public MonitoredProcess getProcess() {
         return process;
     }
@@ -34,12 +46,12 @@ public class MonitoredServerStateMachine extends StateMachine {
 
     @Override
     protected Set<Class<? extends State>> initAllowedStates() {
-        return ImmutableSet.of( DeadState.class, AliveState.class, ErrorState.class );
+        return ImmutableSet.of( DeadState.class, AliveState.class, ErrorState.class, RestartingState.class );
     }
 
 
     @Override
-    protected State initState() {
-        return new DeadState( this );
+    public String toString() {
+        return (participant == null) ? super.toString() : participant.toString();
     }
 }

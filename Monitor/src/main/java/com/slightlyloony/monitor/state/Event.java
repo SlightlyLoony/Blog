@@ -10,6 +10,10 @@ public enum Event {
     IS_ALIVE_CHECK,
     WEB_ALIVE,
     IS_WEB_ALIVE_CHECK,
+    WEB_TEST_SUCCESS,
+    WEB_TEST_FAILURE,
+    RESTART,
+    PROCESS_DEAD,
     SHUTDOWN;
 
 }

@@ -70,6 +70,7 @@ public class MonitorConfig {
         private int port;
         private String dir;
         private String jar;
+        private String test;
 
 
         public String getIp() {
@@ -94,6 +95,11 @@ public class MonitorConfig {
 
         public SocketAddress getSocketAddress() {
             return new InetSocketAddress( ip, port );
+        }
+
+
+        public String getTest() {
+            return test;
         }
     }
 }

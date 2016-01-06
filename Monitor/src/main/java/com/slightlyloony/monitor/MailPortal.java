@@ -6,6 +6,7 @@ import com.slightlyloony.common.mail.MailFetcher;
 import com.slightlyloony.common.mail.MailMessage;
 import com.slightlyloony.common.mail.MailPart;
 import com.slightlyloony.common.mail.MailSender;
+import com.slightlyloony.monitor.state.Event;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -65,11 +66,12 @@ public class MailPortal implements Runnable {
             }
 
             // decide what to do based on the subject...
-            switch( msg.subject.toUpperCase() ) {
+            switch( words( msg )[0] ) {
 
                 case "HELP":     handleHELP( msg );     break;
                 case "PING":     handlePING( msg );     break;
                 case "SHUTDOWN": handleSHUTDOWN( msg ); break;
+                case "RESTART" : handleRESTART( msg );  break;
                 default:         handleDefault( msg );  break;
             }
         }
@@ -78,9 +80,15 @@ public class MailPortal implements Runnable {
     }
 
 
+    private String[] words( final MailMessage _msg ) {
+        return _msg.subject.toUpperCase().split( " +" );
+    }
+
+
     private void handleHELP( final MailMessage _msg ) {
         String msg = "Blog MonitorServer Mail Portal Help\n" +
                      "  HELP to get this message\n" +
+                     "  RESTART HTTP|HTTPS to restart a particular server\n" +
                      "  PING to get a pong response\n" +
                      "  SHUTDOWN to shutdown HTTP, HTTPS, and MONITOR servers" +
                      "Anything else will be ignored, but logged";
@@ -90,6 +98,21 @@ public class MailPortal implements Runnable {
 
     private void handlePING( final MailMessage _msg ) {
         sendMessage( "Pong...", "You asked for this, you know..." );
+    }
+
+
+    private void handleRESTART( final MailMessage _msg ) {
+        String[] words = words( _msg );
+        if( words.length < 2 )
+            return;
+        if( "HTTP".equals( words[1] ) )
+            MonitorServer.getHttpStateMachine().on( Event.RESTART );
+        else if( "HTTPS".equals( words[1] ) )
+            MonitorServer.getHttpsStateMachine().on( Event.RESTART );
+        else
+            return;
+        sendMessage( "Restarting " + words[1], "As commanded via mail portal" );
+        LOG.info( LU.msg( "Restarting {0} as commanded via mail portal", words[1] ) );
     }
 
 
@@ -104,7 +127,7 @@ public class MailPortal implements Runnable {
     }
 
 
-    private void sendMessage( final String _subject, final String _body ) {
+    public static void sendMessage( final String _subject, final String _body ) {
 
         // make our mail message...
         MailMessage msg = new MailMessage();

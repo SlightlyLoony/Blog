@@ -8,17 +8,13 @@ import static com.slightlyloony.common.logging.LU.msg;
 /**
  * @author Tom Dilatush  tom@dilatush.com
  */
-public class ErrorState extends MonitoredProcessState {
+public class RestartingState extends MonitoredProcessState {
 
     private static Logger LOG = LogManager.getLogger();
 
 
-    protected ErrorState( final MonitoredServerStateMachine _parent ) {
+    protected RestartingState( final MonitoredServerStateMachine _parent ) {
         super( _parent, null );
-
-        // tell our process to shutdown, and log what happened...
-        LOG.error( msg( "Fatal error in {0}; shutting process down permanently", parent.participant ) );
-        parent.process.stopProcess();
     }
 
 
@@ -32,7 +28,14 @@ public class ErrorState extends MonitoredProcessState {
      */
     @Override
     protected boolean handleEvent( final Event _event, final Object... _data ) {
-        return false;
+
+        switch( _event ) {
+
+            case INITIALIZE:         handleInitialize();      break;
+            case PROCESS_DEAD:       handleProcessDead();     break;
+            default:                 return false;
+        }
+        return true;
     }
 
 
@@ -41,6 +44,25 @@ public class ErrorState extends MonitoredProcessState {
         // tell our process to shutdown (and wait for that to complete)...
         LOG.info( msg( "Stopping process in {0}", parent.toString() ) );
         parent.process.stopProcess();
+
+        // wait in another thread for the process to die...
+        Thread waiter = new Thread( () -> {
+            try {
+                LOG.info( msg( "Waiting for {0} process to die", parent.participant ) );
+                parent.process.waitForDead();
+                parent.on( Event.PROCESS_DEAD );
+            }
+            catch( InterruptedException e ) {
+                LOG.error( "Problem stopping process", e );
+            }
+        });
+        waiter.setName( parent.participant + "-wait-die" );
+        waiter.setDaemon( true );
+        waiter.start();
+    }
+
+
+    private void handleProcessDead() {
 
         // now let's go back to dead state and reinitialize...
         LOG.info( msg( "Starting process in {0}", parent.toString() ) );

@@ -3,6 +3,7 @@ package com.slightlyloony.monitor.state;
 import com.slightlyloony.common.ipmsgs.IPMsg;
 import com.slightlyloony.common.ipmsgs.IPMsgSocket;
 import com.slightlyloony.common.ipmsgs.IPMsgType;
+import com.slightlyloony.monitor.MailPortal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,12 +28,7 @@ public class DeadState extends MonitoredProcessState {
 
 
     protected DeadState( final MonitoredServerStateMachine _parent ) {
-        super( _parent, getChildStateMachine() );
-    }
-
-
-    private static StateMachine getChildStateMachine() {
-        return null;
+        super( _parent, null );
     }
 
 
@@ -54,9 +50,7 @@ public class DeadState extends MonitoredProcessState {
             case ALIVE:              handleAlive();           break;
             case WEB_ALIVE:          handleWebAlive();        break;
             case IS_WEB_ALIVE_CHECK: handleIsWebAliveCheck(); break;
-
-            default: return false;
-
+            default:                 return false;
         }
         return true;
     }
@@ -71,14 +65,14 @@ public class DeadState extends MonitoredProcessState {
             gotWebAliveMessage = false;
 
             // get our process started...
-            LOG.info( msg( "Starting process in {0}", parent.toString() ) );
+            LOG.info( msg( "Starting process in {0}", parent.participant ) );
             getProcess().runProcess();
 
             // check back in a few seconds to make sure it actually DID start...
             isAliveCheckFuture = delayed( 10, TimeUnit.SECONDS, Event.IS_ALIVE_CHECK );
         }
         catch( IOException e ) {
-            LOG.error( msg( "Error when attempting to run process in {0}", parent.toString() ), e );
+            LOG.error( msg( "Error when attempting to run process in {0}", parent.participant ), e );
             parent.transitionTo( new ErrorState( parent ) );
         }
     }
@@ -89,7 +83,7 @@ public class DeadState extends MonitoredProcessState {
         if( getProcess().isAlive() ) {
             LOG.info( msg( "Process in {0} is alive", parent.toString() ) );
             if( gotAliveMessage ) {
-                LOG.info( msg( "IsAlive message received for {0} server", parent.toString() ) );
+                LOG.info( msg( "IsAlive message received for {0} server", parent.participant ) );
 
                 // send message to start web server...
                 try {
@@ -103,12 +97,12 @@ public class DeadState extends MonitoredProcessState {
                 isWebAliveCheckFuture = delayed( 10, TimeUnit.SECONDS, Event.IS_WEB_ALIVE_CHECK );
             }
             else {
-                LOG.error( msg( "Process in {0} did not send alive message after starting", parent.toString() ) );
+                LOG.error( msg( "Process in {0} did not send alive message after starting", parent.participant ) );
                 parent.transitionTo( new ErrorState( parent ) );
             }
         }
         else {
-            LOG.error( msg( "Process in {0} did not come alive after starting", parent.toString() ) );
+            LOG.error( msg( "Process in {0} did not come alive after starting", parent.participant ) );
             parent.transitionTo( new ErrorState( parent ) );
         }
     }
@@ -139,11 +133,12 @@ public class DeadState extends MonitoredProcessState {
     private void handleIsWebAliveCheck() {
 
         if( gotWebAliveMessage ) {
-            LOG.info( msg( "Web server in {0} is running", parent.toString() ) );
+            LOG.info( msg( "Web server in {0} is running", parent.participant ) );
             parent.transitionTo( new AliveState( parent ) );
+            MailPortal.sendMessage( parent.participant + " started", "Thought you might like to know..." );
         }
         else {
-            LOG.error( msg( "Web server in {0} did not come alive after starting", parent.toString() ) );
+            LOG.error( msg( "Web server in {0} did not come alive after starting", parent.participant ) );
             parent.transitionTo( new ErrorState( parent ) );
         }
 

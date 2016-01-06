@@ -42,6 +42,7 @@ public class MonitorServer {
         // set up our monitored processes...
         MonitoredProcess http = new MonitoredProcess( IPMsgParticipant.HTTP, MonitorInit.getConfig().getHttp() );
         HTTP = new MonitoredServerStateMachine( IPMsgParticipant.HTTP, http );
+
 //        MonitoredProcess https = new MonitoredProcess( "https", MonitorInit.getConfig().getHttps() );
 //        HTTPS = new MonitoredServerStateMachine( "https", https );
 

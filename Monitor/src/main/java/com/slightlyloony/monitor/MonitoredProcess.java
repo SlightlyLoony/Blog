@@ -40,6 +40,11 @@ public class MonitoredProcess {
     }
 
 
+    public void waitForDead() throws InterruptedException {
+        process.waitFor();
+    }
+
+
     public void runProcess() throws IOException {
 
         // refuse to run if we're already running...
