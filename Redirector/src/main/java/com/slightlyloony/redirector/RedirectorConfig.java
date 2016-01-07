@@ -1,7 +1,6 @@
 package com.slightlyloony.redirector;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 
 /**
  * @author Tom Dilatush  tom@dilatush.com
@@ -12,9 +11,7 @@ public class RedirectorConfig {
     private Server http;
     private Server https;
     private int port;
-    private int maxThreads;
-    private int minThreads;
-    private int threadTimeoutMillis;
+    private int httpsport;
 
 
     public Server getMonitor() {
@@ -37,18 +34,8 @@ public class RedirectorConfig {
     }
 
 
-    public int getMaxThreads() {
-        return maxThreads;
-    }
-
-
-    public int getMinThreads() {
-        return minThreads;
-    }
-
-
-    public int getThreadTimeoutMillis() {
-        return threadTimeoutMillis;
+    public int getHttpsPort() {
+        return httpsport;
     }
 
 
@@ -80,7 +67,7 @@ public class RedirectorConfig {
         }
 
 
-        public SocketAddress getSocketAddress() {
+        public InetSocketAddress getSocketAddress() {
             return new InetSocketAddress( ip, port );
         }
     }

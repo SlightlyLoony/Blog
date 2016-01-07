@@ -2,31 +2,27 @@ package com.slightlyloony.redirector;
 
 import com.slightlyloony.common.ExecutionService;
 import com.slightlyloony.common.ipmsgs.*;
+import com.slightlyloony.common.logging.Jetty2Log4j2Bridge;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import spark.Request;
-import spark.Response;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.log.Log;
 
 import java.io.IOException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
-import static spark.Spark.*;
 
 /**
  * @author Tom Dilatush  tom@dilatush.com
  */
 public class RedirectorServer {
 
-    private static final int HTTP_RESP_PERMANANTLY_MOVED = 301;
-
     private static Logger LOG;
 
     private static ScheduledFuture aliveMessageFuture;
-
     private static long sequence = 0;
-
     private static boolean shutdown = false;
+    private static Server server;
 
 
     public static void main( final String _args[] ) throws InterruptedException {
@@ -66,15 +62,23 @@ public class RedirectorServer {
         LOG.info( "Starting HTTP server" );
 
         RedirectorConfig rc = RedirectorInit.getConfig();
-        port( rc.getPort() );
-        threadPool( rc.getMaxThreads(), rc.getMinThreads(), rc.getThreadTimeoutMillis() );
 
-        // just one route; we're redirecting everything...
-        get( "/*", RedirectorServer::redirect );
+        Log.setLog( new Jetty2Log4j2Bridge( RedirectorServer.class.getName() ));
+        server = new Server( rc.getPort() );
+        server.setHandler( new RedirectHandler() );
+        try {
+            server.start();
+        }
+        catch( Exception e ) {
+            LOG.error( "Jetty HTTP server could not start", e );
+        }
+        server.dumpStdErr();
+
+
 
         // send a web alive message when we are fully started up...
         Runnable cmd = () -> {
-            awaitInitialization();
+//            awaitInitialization();
             try {
                 IPMsgSocket.INSTANCE.send( new IPMsg( IPMsgType.WebAlive, null ), IPMsgParticipant.MONITOR );
             }
@@ -86,23 +90,15 @@ public class RedirectorServer {
     }
 
 
-    private static Object redirect( final Request request, final Response response ) {
-        String host = request.host();
-        host = host.substring( 0, host.lastIndexOf( ":" ) );
-        String path = request.pathInfo();
-        String stuff = request.queryString();
-        String url = "https://" + host + ":4443" + path;
-        if( (stuff != null) && (stuff.length() > 0))
-            url += "?" + stuff;
-        LOG.info( "URL: " + url );
-        response.redirect( url, HTTP_RESP_PERMANANTLY_MOVED );
-        return "";
-    }
-
-
     public static void stop() {
+        aliveMessageFuture.cancel( true );
         LOG.info( "Stopping HTTP server" );
-        spark.Spark.stop();
+        try {
+            server.stop();
+        }
+        catch( Exception e ) {
+            LOG.error( "Jetty HTTP server could not stop", e );
+        }
     }
 
 

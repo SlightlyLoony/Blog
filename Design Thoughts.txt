@@ -41,7 +41,7 @@ Request signatures:
 
 Dependencies:
 
-  Web server: Spark/Jetty (embedded)
+  Web server: Jetty (embedded).  Initially chose Spark, but it was too limited in configuration.
   Login: simple login, home-brew
   Logging: log4j 2
   email: javamail (javax.mail)

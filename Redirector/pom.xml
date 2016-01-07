@@ -11,5 +11,12 @@
 
     <artifactId>redirector</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.slightlyloony</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 
 </project>
