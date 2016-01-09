@@ -1,0 +1,111 @@
+2016/01/07 23:20:29.926 INFO  c.s.m.MailPortal          ExSvc-1              Mail portal started
+2016/01/07 23:20:29.985 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Starting IP listener on /127.0.0.1:54321
+2016/01/07 23:20:29.997 INFO  c.s.m.s.StateMachine      main                 Initial transition to HTTP:DeadState
+2016/01/07 23:20:29.998 INFO  c.s.m.s.DeadState         main                 Starting process in HTTP
+2016/01/07 23:20:30.007 INFO  c.s.m.s.StateMachine      main                 Initial transition to HTTPS:DeadState
+2016/01/07 23:20:30.008 INFO  c.s.m.s.DeadState         main                 Starting process in HTTPS
+2016/01/07 23:20:30.819 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54322
+2016/01/07 23:20:30.820 INFO  c.s.m.s.DeadState         ExSvc-2              Process in HTTPS is alive
+2016/01/07 23:20:30.820 INFO  c.s.m.s.DeadState         ExSvc-2              IsAlive message received for HTTPS server
+2016/01/07 23:20:30.916 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54323
+2016/01/07 23:20:30.917 INFO  c.s.m.s.DeadState         ExSvc-3              Process in HTTP is alive
+2016/01/07 23:20:30.917 INFO  c.s.m.s.DeadState         ExSvc-3              IsAlive message received for HTTP server
+2016/01/07 23:20:30.931 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "WebAlive" received from /127.0.0.1:54322
+2016/01/07 23:20:30.931 INFO  c.s.m.s.DeadState         ExSvc-2              Web server in HTTPS is running
+2016/01/07 23:20:30.933 INFO  c.s.m.s.StateMachine      ExSvc-2              Transitioning from HTTPS:DeadState to HTTPS:AliveState
+2016/01/07 23:20:30.973 INFO  c.s.c.m.MailSender        ExSvc-2              Sending mail to tom@dilatush.com, subject: HTTPS started
+2016/01/07 23:20:31.038 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "WebAlive" received from /127.0.0.1:54323
+2016/01/07 23:20:31.039 INFO  c.s.m.s.DeadState         ExSvc-3              Web server in HTTP is running
+2016/01/07 23:20:31.039 INFO  c.s.m.s.StateMachine      ExSvc-3              Transitioning from HTTP:DeadState to HTTP:AliveState
+2016/01/07 23:20:31.041 INFO  c.s.c.m.MailSender        ExSvc-3              Sending mail to tom@dilatush.com, subject: HTTP started
+2016/01/07 23:20:31.411 INFO  c.s.c.m.MailFetcher       ExSvc-1              Fetched 0 email message headers
+2016/01/07 23:20:31.520 INFO  c.s.m.MailPortal          ExSvc-1              Mail portal finished
+2016/01/07 23:20:32.246 INFO  c.s.c.m.MailSender        ExSvc-2              Sent mail to tom@dilatush.com, subject: HTTPS started
+2016/01/07 23:20:32.493 INFO  c.s.c.m.MailSender        ExSvc-3              Sent mail to tom@dilatush.com, subject: HTTP started
+2016/01/07 23:20:36.005 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
+2016/01/07 23:20:36.006 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
+2016/01/07 23:20:36.125 INFO  c.s.m.s.AliveState        HTTP-tester          Test succeeded for HTTP
+2016/01/07 23:20:41.015 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
+2016/01/07 23:20:41.015 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
+2016/01/07 23:20:45.806 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54322
+2016/01/07 23:20:45.905 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54323
+2016/01/07 23:20:46.022 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
+2016/01/07 23:20:46.022 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
+2016/01/07 23:20:46.022 WARN  c.s.m.s.AliveState        HTTPS-tester         Test for HTTPS failed for three or more consecutive attempts; restarting server
+2016/01/07 23:20:46.023 INFO  c.s.m.s.AliveState        HTTPS-tester         Restart requested for HTTPS
+2016/01/07 23:20:46.023 INFO  c.s.m.s.StateMachine      HTTPS-tester         Transitioning from HTTPS:AliveState to HTTPS:RestartingState
+2016/01/07 23:20:46.030 INFO  c.s.m.s.RestartingState   HTTPS-tester         Stopping process in HTTPS
+2016/01/07 23:20:46.038 INFO  c.s.m.MonitoredProcess    HTTPS-tester         Process "HTTPS" terminated
+2016/01/07 23:20:46.040 INFO  c.s.m.s.RestartingState   HTTPS-wait-die       Waiting for HTTPS process to die
+2016/01/07 23:20:46.040 INFO  c.s.m.s.RestartingState   HTTPS-wait-die       Starting process in HTTPS
+2016/01/07 23:20:46.040 INFO  c.s.m.s.StateMachine      HTTPS-wait-die       Transitioning from HTTPS:RestartingState to HTTPS:DeadState
+2016/01/07 23:20:46.040 INFO  c.s.m.s.DeadState         HTTPS-wait-die       Starting process in HTTPS
+2016/01/07 23:20:46.575 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54322
+2016/01/07 23:20:46.575 INFO  c.s.m.s.DeadState         ExSvc-2              Process in HTTPS is alive
+2016/01/07 23:20:46.576 INFO  c.s.m.s.DeadState         ExSvc-2              IsAlive message received for HTTPS server
+2016/01/07 23:20:46.659 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "WebAlive" received from /127.0.0.1:54322
+2016/01/07 23:20:46.660 INFO  c.s.m.s.DeadState         ExSvc-5              Web server in HTTPS is running
+2016/01/07 23:20:46.660 INFO  c.s.m.s.StateMachine      ExSvc-5              Transitioning from HTTPS:DeadState to HTTPS:AliveState
+2016/01/07 23:20:46.661 INFO  c.s.c.m.MailSender        ExSvc-5              Sending mail to tom@dilatush.com, subject: HTTPS started
+2016/01/07 23:20:47.833 INFO  c.s.c.m.MailSender        ExSvc-5              Sent mail to tom@dilatush.com, subject: HTTPS started
+2016/01/07 23:20:51.103 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
+2016/01/07 23:20:51.103 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
+2016/01/07 23:20:51.133 INFO  c.s.m.s.AliveState        HTTP-tester          Test succeeded for HTTP
+2016/01/07 23:20:51.668 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
+2016/01/07 23:20:51.668 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
+2016/01/07 23:20:56.111 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
+2016/01/07 23:20:56.111 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
+2016/01/07 23:20:56.111 WARN  c.s.m.s.AliveState        HTTPS-tester         Test for HTTPS failed for three or more consecutive attempts; restarting server
+2016/01/07 23:20:56.111 INFO  c.s.m.s.AliveState        HTTPS-tester         Restart requested for HTTPS
+2016/01/07 23:20:56.111 INFO  c.s.m.s.StateMachine      HTTPS-tester         Transitioning from HTTPS:AliveState to HTTPS:RestartingState
+2016/01/07 23:20:56.112 INFO  c.s.m.s.RestartingState   HTTPS-tester         Stopping process in HTTPS
+2016/01/07 23:20:56.118 INFO  c.s.m.MonitoredProcess    HTTPS-tester         Process "HTTPS" terminated
+2016/01/07 23:20:56.119 INFO  c.s.m.s.RestartingState   HTTPS-wait-die       Waiting for HTTPS process to die
+2016/01/07 23:20:56.119 INFO  c.s.m.s.RestartingState   HTTPS-wait-die       Starting process in HTTPS
+2016/01/07 23:20:56.119 INFO  c.s.m.s.StateMachine      HTTPS-wait-die       Transitioning from HTTPS:RestartingState to HTTPS:DeadState
+2016/01/07 23:20:56.119 INFO  c.s.m.s.DeadState         HTTPS-wait-die       Starting process in HTTPS
+2016/01/07 23:20:56.745 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54322
+2016/01/07 23:20:56.746 INFO  c.s.m.s.DeadState         ExSvc-2              Process in HTTPS is alive
+2016/01/07 23:20:56.746 INFO  c.s.m.s.DeadState         ExSvc-2              IsAlive message received for HTTPS server
+2016/01/07 23:20:56.839 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "WebAlive" received from /127.0.0.1:54322
+2016/01/07 23:20:56.839 INFO  c.s.m.s.DeadState         ExSvc-1              Web server in HTTPS is running
+2016/01/07 23:20:56.839 INFO  c.s.m.s.StateMachine      ExSvc-1              Transitioning from HTTPS:DeadState to HTTPS:AliveState
+2016/01/07 23:20:56.841 INFO  c.s.c.m.MailSender        ExSvc-1              Sending mail to tom@dilatush.com, subject: HTTPS started
+2016/01/07 23:20:58.020 INFO  c.s.c.m.MailSender        ExSvc-1              Sent mail to tom@dilatush.com, subject: HTTPS started
+2016/01/07 23:21:00.906 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54323
+2016/01/07 23:21:01.179 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
+2016/01/07 23:21:01.180 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
+2016/01/07 23:21:01.849 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
+2016/01/07 23:21:01.849 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
+2016/01/07 23:21:06.136 INFO  c.s.m.s.AliveState        HTTP-tester          Test succeeded for HTTP
+2016/01/07 23:21:06.186 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
+2016/01/07 23:21:06.186 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
+2016/01/07 23:21:06.186 WARN  c.s.m.s.AliveState        HTTPS-tester         Test for HTTPS failed for three or more consecutive attempts; restarting server
+2016/01/07 23:21:06.186 INFO  c.s.m.s.AliveState        HTTPS-tester         Restart requested for HTTPS
+2016/01/07 23:21:06.186 INFO  c.s.m.s.StateMachine      HTTPS-tester         Transitioning from HTTPS:AliveState to HTTPS:RestartingState
+2016/01/07 23:21:06.186 INFO  c.s.m.s.RestartingState   HTTPS-tester         Stopping process in HTTPS
+2016/01/07 23:21:06.193 INFO  c.s.m.MonitoredProcess    HTTPS-tester         Process "HTTPS" terminated
+2016/01/07 23:21:06.194 INFO  c.s.m.s.RestartingState   HTTPS-wait-die       Waiting for HTTPS process to die
+2016/01/07 23:21:06.194 INFO  c.s.m.s.RestartingState   HTTPS-wait-die       Starting process in HTTPS
+2016/01/07 23:21:06.194 INFO  c.s.m.s.StateMachine      HTTPS-wait-die       Transitioning from HTTPS:RestartingState to HTTPS:DeadState
+2016/01/07 23:21:06.194 INFO  c.s.m.s.DeadState         HTTPS-wait-die       Starting process in HTTPS
+2016/01/07 23:21:06.831 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54322
+2016/01/07 23:21:06.832 INFO  c.s.m.s.DeadState         ExSvc-1              Process in HTTPS is alive
+2016/01/07 23:21:06.832 INFO  c.s.m.s.DeadState         ExSvc-1              IsAlive message received for HTTPS server
+2016/01/07 23:21:06.915 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "WebAlive" received from /127.0.0.1:54322
+2016/01/07 23:21:06.915 INFO  c.s.m.s.DeadState         ExSvc-5              Web server in HTTPS is running
+2016/01/07 23:21:06.915 INFO  c.s.m.s.StateMachine      ExSvc-5              Transitioning from HTTPS:DeadState to HTTPS:AliveState
+2016/01/07 23:21:06.917 INFO  c.s.c.m.MailSender        ExSvc-5              Sending mail to tom@dilatush.com, subject: HTTPS started
+2016/01/07 23:21:08.007 INFO  c.s.c.m.MailSender        ExSvc-5              Sent mail to tom@dilatush.com, subject: HTTPS started
+2016/01/07 23:21:11.253 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
+2016/01/07 23:21:11.253 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
+2016/01/07 23:21:11.419 INFO  c.s.m.MonitorServer       main                 Shutting down servers
+2016/01/07 23:21:11.448 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ShuttingDown" received from /127.0.0.1:54322
+2016/01/07 23:21:11.449 INFO  c.s.m.MonitorInit         ExSvc-3              Monitored server HTTPS is shutting down
+2016/01/07 23:21:11.523 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ShuttingDown" received from /127.0.0.1:54323
+2016/01/07 23:21:11.524 INFO  c.s.m.MonitorInit         ExSvc-2              Monitored server HTTP is shutting down
+2016/01/07 23:21:11.922 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Connection refused
+2016/01/07 23:21:11.922 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
+2016/01/07 23:21:12.429 INFO  c.s.m.MonitoredProcess    main                 Process "HTTP" terminated
+2016/01/07 23:21:12.436 INFO  c.s.m.MonitoredProcess    main                 Process "HTTPS" terminated
+2016/01/07 23:21:12.438 INFO  c.s.m.MonitorServer       main                 Main thread exiting

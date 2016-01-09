@@ -43,12 +43,12 @@ public class MonitorServer {
         MonitoredProcess http = new MonitoredProcess( IPMsgParticipant.HTTP, MonitorInit.getConfig().getHttp() );
         HTTP = new MonitoredServerStateMachine( IPMsgParticipant.HTTP, http );
 
-//        MonitoredProcess https = new MonitoredProcess( "https", MonitorInit.getConfig().getHttps() );
-//        HTTPS = new MonitoredServerStateMachine( "https", https );
+        MonitoredProcess https = new MonitoredProcess( IPMsgParticipant.HTTPS, MonitorInit.getConfig().getHttps() );
+        HTTPS = new MonitoredServerStateMachine( IPMsgParticipant.HTTPS, https );
 
         // initialize them...
         HTTP.on( Event.INITIALIZE );
-//        HTTPS.on( Event.INITIALIZE );
+        HTTPS.on( Event.INITIALIZE );
 
         // watch for console shutdown commands (for debugging in IDE)...
         ShutterDowner sd;

@@ -11,7 +11,12 @@ public class RedirectorConfig {
     private Server http;
     private Server https;
     private int port;
-    private int httpsport;
+    private VirtualServer[] virtualServers;
+
+
+    public VirtualServer[] getVirtualServers() {
+        return virtualServers;
+    }
 
 
     public Server getMonitor() {
@@ -34,8 +39,26 @@ public class RedirectorConfig {
     }
 
 
-    public int getHttpsPort() {
-        return httpsport;
+    public static class VirtualServer {
+
+        private int port;
+        private String domain;
+        private String name;
+
+
+        public int getPort() {
+            return port;
+        }
+
+
+        public String getDomain() {
+            return domain;
+        }
+
+
+        public String getName() {
+            return name;
+        }
     }
 
 

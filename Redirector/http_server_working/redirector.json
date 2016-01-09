@@ -1,0 +1,41 @@
+{
+  "monitor" : {
+    "ip"   : "127.0.0.1",
+    "port" : 54321,
+    "dir"  : "/Users/tom/IdeaProjects/Blog/Monitor/monitor_server_working",
+    "jar"  : "/Users/tom/IdeaProjects/Blog/out/artifacts/Monitor_jar/Monitor.jar",
+    "test" : ""
+  },
+  "http" : {
+    "ip"   : "127.0.0.1",
+    "port" : 54323,
+    "dir"  : "/Users/tom/IdeaProjects/Blog/Redirector/http_server_working",
+    "jar"  : "/Users/tom/IdeaProjects/Blog/out/artifacts/Redirector_jar/Redirector.jar",
+    "test" : "http://127.0.0.1:4480/test"
+  },
+  "https" : {
+    "ip"   : "127.0.0.1",
+    "port" : 54322,
+    "dir"  : "/Users/tom/IdeaProjects/Blog/Https/https_server_working",
+    "jar"  : "/Users/tom/IdeaProjects/Blog/out/artifacts/Https_jar/Https.jar",
+    "test" : "https://127.0.0.1:4443/test"
+  },
+  "port"   : 4480,
+  "virtualServers" :[
+    {
+      "domain" : "slightlyloony.com",
+      "port"   : 4443,
+      "name"   : "SlightlyLoony Blog"
+    },
+    {
+      "domain" : "dilatush.com",
+      "port"   : 4444,
+      "name"   : "Dilatush Family"
+    },
+    {
+      "domain" : "justnorthofparadise.com",
+      "port"   : 4445,
+      "name"   : "Just North of Paradise Blog"
+    }
+  ]
+}

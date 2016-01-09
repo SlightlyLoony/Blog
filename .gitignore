@@ -1,5 +1,5 @@
 /.idea
-/http_server_working
-/https_server_working
-/monitor_server_working
+Redirector/http_server_working
+Https/https_server_working
+Monitor/monitor_server_working
 /out

@@ -21,10 +21,10 @@ JSON support:
 
 Multiple domain support:
 
-  I will have support for at least three domains right from the beginning: slightlyloony.com, justnorthofparadise.com, and dilatush.com.  This
-  implies support for virtual hosting, based on the "Host" HTTP header.  The mapping between "Host" values and content roots should be configurable,
-  and should allow for multiple "Host" values to map to a single content root.  In addition, the security for each virtual host needs to be separate
-  (so, for example, separate lists of authors for each content root).
+  I will have support for at least three domains right from the beginning: slightlyloony.com, justnorthofparadise.com, and dilatush.com.  SSL is
+  negotiated prior to headers being sent, so each separate domain must connect to a different port.  To facilitate this (and to eliminate the need
+  for users to enter port numbers), there is a single server on port 80 for HTTP that redirects each virtual host to a separate port on the HTTPS
+  server.
 
 
 Caching:
@@ -45,11 +45,6 @@ Dependencies:
   Login: simple login, home-brew
   Logging: log4j 2
   email: javamail (javax.mail)
-
-
-HTTP vs HTTPS:
-
-  The main server will be entirely on HTTPS.  I will also have an (extremely) simple HTTP server that does nothing but redirect to HTTPS.
 
 
 Hotlink prevention:

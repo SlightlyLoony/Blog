@@ -41,8 +41,8 @@ public class RedirectorInit {
             CONFIG = new Gson().fromJson( new FileReader( "redirector.json" ), RedirectorConfig.class );
         }
         catch( FileNotFoundException e ) {
-            LOG.fatal( "Problem reading monitor configuration", e );
-            throw new IllegalStateException( "Could not read monitor configuration", e );
+            LOG.fatal( "Problem reading redirector configuration", e );
+            throw new IllegalStateException( "Could not read redirector configuration", e );
         }
 
         // start the inter-process message listener...

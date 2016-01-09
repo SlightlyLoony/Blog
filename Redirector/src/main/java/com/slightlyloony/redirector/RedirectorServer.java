@@ -39,6 +39,10 @@ public class RedirectorServer {
         // tell the monitor we're alive, every fifteen seconds...
         setupAliveMessages();
 
+        // if we're in standalone test mode (presumably in an IDE for debugging), start up the web server...
+        if( (_args.length > 0) && ("test".equals( _args[0] ) ) )
+            start();
+
         while( !shutdown ) {
             Thread.sleep( 100 );
         }
