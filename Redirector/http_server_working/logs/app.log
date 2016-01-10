@@ -1,11 +1,12 @@
-2016/01/09 04:42:35.534 INFO  c.s.r.RedirectorServer    main                 Starting HTTP server
-2016/01/09 04:42:35.524 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Starting IP listener on /127.0.0.1:54323
-2016/01/09 04:42:35.575 INFO  c.s.r.RedirectorServer    main                 Logging initialized @995ms
-2016/01/09 04:42:35.623 INFO  o.e.j.s.Server            main                 jetty-9.3.6.v20151106
-2016/01/09 04:42:35.701 INFO  o.e.j.s.ServerConnector   main                 Started ServerConnector@7786dee8{HTTP/1.1,[http/1.1]}{0.0.0.0:4480}
-2016/01/09 04:42:35.702 INFO  o.e.j.s.Server            main                 Started @1124ms
-2016/01/09 04:42:38.672 INFO  c.s.r.RedirectHandler     qtp1569754439-29     Request from unknown domain: 0.1
-2016/01/09 04:42:46.580 INFO  c.s.r.RedirectHandler     qtp1569754439-31     Request from unknown domain: 0.1
-2016/01/09 04:42:49.943 INFO  c.s.r.RedirectHandler     qtp1569754439-21     Request from unknown domain: 0.1
-2016/01/09 04:42:49.985 INFO  c.s.r.RedirectHandler     qtp1569754439-26     Request from unknown domain: 0.1
-2016/01/09 04:44:37.642 INFO  c.s.r.RedirectHandler     qtp1569754439-29     Redirecting to URL: https://www.slightlyloony.com:4443/testerabc
+2016/01/10 11:35:16.431 INFO  c.s.c.i.IPMsgSocket            IPMsgSocket          Starting IP listener on /127.0.0.1:54323
+2016/01/10 11:35:16.458 INFO  c.s.c.i.IPMsgSocket            IPMsgSocket          Processing valid message "StartWeb" received from /127.0.0.1:54321
+2016/01/10 11:35:16.460 INFO  c.s.r.RedirectorServer         ExSvc-1              Starting HTTP server
+2016/01/10 11:35:16.476 INFO  c.s.r.RedirectorServer         ExSvc-1              Logging initialized @842ms
+2016/01/10 11:35:16.513 INFO  o.e.j.s.Server                 ExSvc-1              jetty-9.3.6.v20151106
+2016/01/10 11:35:16.565 INFO  o.e.j.s.ServerConnector        ExSvc-1              Started ServerConnector@656c3539{HTTP/1.1,[http/1.1]}{0.0.0.0:4480}
+2016/01/10 11:35:16.565 INFO  o.e.j.s.Server                 ExSvc-1              Started @933ms
+2016/01/10 11:35:21.809 INFO  c.s.r.RedirectHandler          qtp1533927127-23     Redirecting to URL: https://www.slightlyloony.com:4443/test
+2016/01/10 11:35:26.653 INFO  c.s.c.i.IPMsgSocket            IPMsgSocket          Processing valid message "Shutdown" received from /127.0.0.1:54321
+2016/01/10 11:35:26.654 INFO  c.s.r.RedirectorServer         ExSvc-2              Stopping HTTP server
+2016/01/10 11:35:26.662 INFO  o.e.j.s.ServerConnector        ExSvc-2              Stopped ServerConnector@656c3539{HTTP/1.1,[http/1.1]}{0.0.0.0:4480}
+2016/01/10 11:35:26.723 INFO  c.s.r.RedirectorServer         main                 Shutting down server

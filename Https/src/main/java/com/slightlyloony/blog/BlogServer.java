@@ -9,7 +9,10 @@ import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyStore;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -86,7 +89,17 @@ public class BlogServer {
                 HttpConfiguration https_config = new HttpConfiguration( http_config );
                 https_config.addCustomizer( new SecureRequestCustomizer() );
 
-                SslContextFactory sslContextFactory = new SslContextFactory( rc.getKeystore() );
+                SslContextFactory sslContextFactory = new SslContextFactory();
+
+                // loaded keystore instead of just supplying path; workaround for Java 1.8 bug:  JDK-7181721
+                // see http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7181721
+                // spent a day tracking this down!!!
+                KeyStore ks = KeyStore.getInstance( "JKS" );
+                InputStream readStream = new FileInputStream( rc.getKeystore() );
+                ks.load( readStream, rc.getKeystorePassword().toCharArray() );
+                readStream.close();
+                sslContextFactory.setKeyStore( ks );
+
                 sslContextFactory.setKeyStorePassword( rc.getKeystorePassword() );
                 sslContextFactory.setCertAlias( virtualServer.getAlias() );
 
@@ -105,11 +118,12 @@ public class BlogServer {
             server.setHandler( new TestHandler() );
 
             // Start the server
-            server.dumpStdErr();
             server.start();
+            server.dumpStdErr();
 
+            LOG.info( "HTTPS server starting" );
         }
-        catch( Exception e ) {
+        catch( Throwable e ) {
             LOG.error( "Jetty HTTPS server could not start", e );
         }
 
@@ -117,8 +131,14 @@ public class BlogServer {
 
         // send a web alive message when we are fully started up...
         Runnable cmd = () -> {
+
+            LOG.info( "Waiting for HTTPS server to start" );
+
             server.isRunning();
             try {
+
+                LOG.info( "Sending HTTPS WebAlive message" );
+
                 IPMsgSocket.INSTANCE.send( new IPMsg( IPMsgType.WebAlive, null ), IPMsgParticipant.MONITOR );
             }
             catch( Exception e ) {
@@ -154,7 +174,7 @@ public class BlogServer {
                 IPMsgSocket.INSTANCE.send( new IPMsg( IPMsgType.ProcessAlive, new IPSequenceData( sequence++ ) ),IPMsgParticipant.MONITOR );
             }
             catch( IOException e ) {
-                LOG.error( "Could not send HTTPAliveMsg to monitor", e );
+                LOG.error( "Could not send ProcessAlive to monitor", e );
             }
         };
         aliveMessageFuture = ExecutionService.INSTANCE.scheduleAtFixedRate( cmd, 0, 15, TimeUnit.SECONDS );

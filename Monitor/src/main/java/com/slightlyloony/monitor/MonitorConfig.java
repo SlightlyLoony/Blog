@@ -18,6 +18,18 @@ public class MonitorConfig {
     private String monitorEmailUser;
     private String monitorEmailPassword;
     private String javaPath;
+    private String keystore;
+    private String keystorePassword;
+
+
+    public String getKeystore() {
+        return keystore;
+    }
+
+
+    public String getKeystorePassword() {
+        return keystorePassword;
+    }
 
 
     public int getMailPortalFetchIntervalSeconds() {

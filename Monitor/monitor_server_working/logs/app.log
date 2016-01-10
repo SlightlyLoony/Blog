@@ -1,111 +1,152 @@
-2016/01/07 23:20:29.926 INFO  c.s.m.MailPortal          ExSvc-1              Mail portal started
-2016/01/07 23:20:29.985 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Starting IP listener on /127.0.0.1:54321
-2016/01/07 23:20:29.997 INFO  c.s.m.s.StateMachine      main                 Initial transition to HTTP:DeadState
-2016/01/07 23:20:29.998 INFO  c.s.m.s.DeadState         main                 Starting process in HTTP
-2016/01/07 23:20:30.007 INFO  c.s.m.s.StateMachine      main                 Initial transition to HTTPS:DeadState
-2016/01/07 23:20:30.008 INFO  c.s.m.s.DeadState         main                 Starting process in HTTPS
-2016/01/07 23:20:30.819 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54322
-2016/01/07 23:20:30.820 INFO  c.s.m.s.DeadState         ExSvc-2              Process in HTTPS is alive
-2016/01/07 23:20:30.820 INFO  c.s.m.s.DeadState         ExSvc-2              IsAlive message received for HTTPS server
-2016/01/07 23:20:30.916 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54323
-2016/01/07 23:20:30.917 INFO  c.s.m.s.DeadState         ExSvc-3              Process in HTTP is alive
-2016/01/07 23:20:30.917 INFO  c.s.m.s.DeadState         ExSvc-3              IsAlive message received for HTTP server
-2016/01/07 23:20:30.931 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "WebAlive" received from /127.0.0.1:54322
-2016/01/07 23:20:30.931 INFO  c.s.m.s.DeadState         ExSvc-2              Web server in HTTPS is running
-2016/01/07 23:20:30.933 INFO  c.s.m.s.StateMachine      ExSvc-2              Transitioning from HTTPS:DeadState to HTTPS:AliveState
-2016/01/07 23:20:30.973 INFO  c.s.c.m.MailSender        ExSvc-2              Sending mail to tom@dilatush.com, subject: HTTPS started
-2016/01/07 23:20:31.038 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "WebAlive" received from /127.0.0.1:54323
-2016/01/07 23:20:31.039 INFO  c.s.m.s.DeadState         ExSvc-3              Web server in HTTP is running
-2016/01/07 23:20:31.039 INFO  c.s.m.s.StateMachine      ExSvc-3              Transitioning from HTTP:DeadState to HTTP:AliveState
-2016/01/07 23:20:31.041 INFO  c.s.c.m.MailSender        ExSvc-3              Sending mail to tom@dilatush.com, subject: HTTP started
-2016/01/07 23:20:31.411 INFO  c.s.c.m.MailFetcher       ExSvc-1              Fetched 0 email message headers
-2016/01/07 23:20:31.520 INFO  c.s.m.MailPortal          ExSvc-1              Mail portal finished
-2016/01/07 23:20:32.246 INFO  c.s.c.m.MailSender        ExSvc-2              Sent mail to tom@dilatush.com, subject: HTTPS started
-2016/01/07 23:20:32.493 INFO  c.s.c.m.MailSender        ExSvc-3              Sent mail to tom@dilatush.com, subject: HTTP started
-2016/01/07 23:20:36.005 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
-2016/01/07 23:20:36.006 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
-2016/01/07 23:20:36.125 INFO  c.s.m.s.AliveState        HTTP-tester          Test succeeded for HTTP
-2016/01/07 23:20:41.015 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
-2016/01/07 23:20:41.015 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
-2016/01/07 23:20:45.806 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54322
-2016/01/07 23:20:45.905 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54323
-2016/01/07 23:20:46.022 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
-2016/01/07 23:20:46.022 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
-2016/01/07 23:20:46.022 WARN  c.s.m.s.AliveState        HTTPS-tester         Test for HTTPS failed for three or more consecutive attempts; restarting server
-2016/01/07 23:20:46.023 INFO  c.s.m.s.AliveState        HTTPS-tester         Restart requested for HTTPS
-2016/01/07 23:20:46.023 INFO  c.s.m.s.StateMachine      HTTPS-tester         Transitioning from HTTPS:AliveState to HTTPS:RestartingState
-2016/01/07 23:20:46.030 INFO  c.s.m.s.RestartingState   HTTPS-tester         Stopping process in HTTPS
-2016/01/07 23:20:46.038 INFO  c.s.m.MonitoredProcess    HTTPS-tester         Process "HTTPS" terminated
-2016/01/07 23:20:46.040 INFO  c.s.m.s.RestartingState   HTTPS-wait-die       Waiting for HTTPS process to die
-2016/01/07 23:20:46.040 INFO  c.s.m.s.RestartingState   HTTPS-wait-die       Starting process in HTTPS
-2016/01/07 23:20:46.040 INFO  c.s.m.s.StateMachine      HTTPS-wait-die       Transitioning from HTTPS:RestartingState to HTTPS:DeadState
-2016/01/07 23:20:46.040 INFO  c.s.m.s.DeadState         HTTPS-wait-die       Starting process in HTTPS
-2016/01/07 23:20:46.575 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54322
-2016/01/07 23:20:46.575 INFO  c.s.m.s.DeadState         ExSvc-2              Process in HTTPS is alive
-2016/01/07 23:20:46.576 INFO  c.s.m.s.DeadState         ExSvc-2              IsAlive message received for HTTPS server
-2016/01/07 23:20:46.659 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "WebAlive" received from /127.0.0.1:54322
-2016/01/07 23:20:46.660 INFO  c.s.m.s.DeadState         ExSvc-5              Web server in HTTPS is running
-2016/01/07 23:20:46.660 INFO  c.s.m.s.StateMachine      ExSvc-5              Transitioning from HTTPS:DeadState to HTTPS:AliveState
-2016/01/07 23:20:46.661 INFO  c.s.c.m.MailSender        ExSvc-5              Sending mail to tom@dilatush.com, subject: HTTPS started
-2016/01/07 23:20:47.833 INFO  c.s.c.m.MailSender        ExSvc-5              Sent mail to tom@dilatush.com, subject: HTTPS started
-2016/01/07 23:20:51.103 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
-2016/01/07 23:20:51.103 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
-2016/01/07 23:20:51.133 INFO  c.s.m.s.AliveState        HTTP-tester          Test succeeded for HTTP
-2016/01/07 23:20:51.668 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
-2016/01/07 23:20:51.668 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
-2016/01/07 23:20:56.111 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
-2016/01/07 23:20:56.111 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
-2016/01/07 23:20:56.111 WARN  c.s.m.s.AliveState        HTTPS-tester         Test for HTTPS failed for three or more consecutive attempts; restarting server
-2016/01/07 23:20:56.111 INFO  c.s.m.s.AliveState        HTTPS-tester         Restart requested for HTTPS
-2016/01/07 23:20:56.111 INFO  c.s.m.s.StateMachine      HTTPS-tester         Transitioning from HTTPS:AliveState to HTTPS:RestartingState
-2016/01/07 23:20:56.112 INFO  c.s.m.s.RestartingState   HTTPS-tester         Stopping process in HTTPS
-2016/01/07 23:20:56.118 INFO  c.s.m.MonitoredProcess    HTTPS-tester         Process "HTTPS" terminated
-2016/01/07 23:20:56.119 INFO  c.s.m.s.RestartingState   HTTPS-wait-die       Waiting for HTTPS process to die
-2016/01/07 23:20:56.119 INFO  c.s.m.s.RestartingState   HTTPS-wait-die       Starting process in HTTPS
-2016/01/07 23:20:56.119 INFO  c.s.m.s.StateMachine      HTTPS-wait-die       Transitioning from HTTPS:RestartingState to HTTPS:DeadState
-2016/01/07 23:20:56.119 INFO  c.s.m.s.DeadState         HTTPS-wait-die       Starting process in HTTPS
-2016/01/07 23:20:56.745 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54322
-2016/01/07 23:20:56.746 INFO  c.s.m.s.DeadState         ExSvc-2              Process in HTTPS is alive
-2016/01/07 23:20:56.746 INFO  c.s.m.s.DeadState         ExSvc-2              IsAlive message received for HTTPS server
-2016/01/07 23:20:56.839 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "WebAlive" received from /127.0.0.1:54322
-2016/01/07 23:20:56.839 INFO  c.s.m.s.DeadState         ExSvc-1              Web server in HTTPS is running
-2016/01/07 23:20:56.839 INFO  c.s.m.s.StateMachine      ExSvc-1              Transitioning from HTTPS:DeadState to HTTPS:AliveState
-2016/01/07 23:20:56.841 INFO  c.s.c.m.MailSender        ExSvc-1              Sending mail to tom@dilatush.com, subject: HTTPS started
-2016/01/07 23:20:58.020 INFO  c.s.c.m.MailSender        ExSvc-1              Sent mail to tom@dilatush.com, subject: HTTPS started
-2016/01/07 23:21:00.906 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54323
-2016/01/07 23:21:01.179 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
-2016/01/07 23:21:01.180 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
-2016/01/07 23:21:01.849 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
-2016/01/07 23:21:01.849 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
-2016/01/07 23:21:06.136 INFO  c.s.m.s.AliveState        HTTP-tester          Test succeeded for HTTP
-2016/01/07 23:21:06.186 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
-2016/01/07 23:21:06.186 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
-2016/01/07 23:21:06.186 WARN  c.s.m.s.AliveState        HTTPS-tester         Test for HTTPS failed for three or more consecutive attempts; restarting server
-2016/01/07 23:21:06.186 INFO  c.s.m.s.AliveState        HTTPS-tester         Restart requested for HTTPS
-2016/01/07 23:21:06.186 INFO  c.s.m.s.StateMachine      HTTPS-tester         Transitioning from HTTPS:AliveState to HTTPS:RestartingState
-2016/01/07 23:21:06.186 INFO  c.s.m.s.RestartingState   HTTPS-tester         Stopping process in HTTPS
-2016/01/07 23:21:06.193 INFO  c.s.m.MonitoredProcess    HTTPS-tester         Process "HTTPS" terminated
-2016/01/07 23:21:06.194 INFO  c.s.m.s.RestartingState   HTTPS-wait-die       Waiting for HTTPS process to die
-2016/01/07 23:21:06.194 INFO  c.s.m.s.RestartingState   HTTPS-wait-die       Starting process in HTTPS
-2016/01/07 23:21:06.194 INFO  c.s.m.s.StateMachine      HTTPS-wait-die       Transitioning from HTTPS:RestartingState to HTTPS:DeadState
-2016/01/07 23:21:06.194 INFO  c.s.m.s.DeadState         HTTPS-wait-die       Starting process in HTTPS
-2016/01/07 23:21:06.831 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54322
-2016/01/07 23:21:06.832 INFO  c.s.m.s.DeadState         ExSvc-1              Process in HTTPS is alive
-2016/01/07 23:21:06.832 INFO  c.s.m.s.DeadState         ExSvc-1              IsAlive message received for HTTPS server
-2016/01/07 23:21:06.915 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "WebAlive" received from /127.0.0.1:54322
-2016/01/07 23:21:06.915 INFO  c.s.m.s.DeadState         ExSvc-5              Web server in HTTPS is running
-2016/01/07 23:21:06.915 INFO  c.s.m.s.StateMachine      ExSvc-5              Transitioning from HTTPS:DeadState to HTTPS:AliveState
-2016/01/07 23:21:06.917 INFO  c.s.c.m.MailSender        ExSvc-5              Sending mail to tom@dilatush.com, subject: HTTPS started
-2016/01/07 23:21:08.007 INFO  c.s.c.m.MailSender        ExSvc-5              Sent mail to tom@dilatush.com, subject: HTTPS started
-2016/01/07 23:21:11.253 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Unrecognized SSL message, plaintext connection?
-2016/01/07 23:21:11.253 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
-2016/01/07 23:21:11.419 INFO  c.s.m.MonitorServer       main                 Shutting down servers
-2016/01/07 23:21:11.448 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ShuttingDown" received from /127.0.0.1:54322
-2016/01/07 23:21:11.449 INFO  c.s.m.MonitorInit         ExSvc-3              Monitored server HTTPS is shutting down
-2016/01/07 23:21:11.523 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ShuttingDown" received from /127.0.0.1:54323
-2016/01/07 23:21:11.524 INFO  c.s.m.MonitorInit         ExSvc-2              Monitored server HTTP is shutting down
-2016/01/07 23:21:11.922 ERROR c.s.m.TestURL             HTTPS-tester         Problem retrieving test URL https://127.0.0.1:4443/test: Connection refused
-2016/01/07 23:21:11.922 INFO  c.s.m.s.AliveState        HTTPS-tester         Test failed for HTTPS
-2016/01/07 23:21:12.429 INFO  c.s.m.MonitoredProcess    main                 Process "HTTP" terminated
-2016/01/07 23:21:12.436 INFO  c.s.m.MonitoredProcess    main                 Process "HTTPS" terminated
-2016/01/07 23:21:12.438 INFO  c.s.m.MonitorServer       main                 Main thread exiting
+2016/01/10 11:35:15.550 INFO  c.s.m.MailPortal          ExSvc-1              Mail portal started
+2016/01/10 11:35:15.606 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Starting IP listener on /127.0.0.1:54321
+2016/01/10 11:35:15.614 INFO  c.s.m.s.StateMachine      main                 Initial transition to HTTP:DeadState
+2016/01/10 11:35:15.615 INFO  c.s.m.s.DeadState         main                 Starting process in HTTP
+2016/01/10 11:35:15.624 INFO  c.s.m.s.StateMachine      main                 Initial transition to HTTPS:DeadState
+2016/01/10 11:35:15.624 INFO  c.s.m.s.DeadState         main                 Starting process in HTTPS
+2016/01/10 11:35:16.446 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54322
+2016/01/10 11:35:16.447 INFO  c.s.m.s.DeadState         ExSvc-2              Process in HTTPS is alive
+2016/01/10 11:35:16.448 INFO  c.s.m.s.DeadState         ExSvc-2              IsAlive message received for HTTPS server
+2016/01/10 11:35:16.448 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ProcessAlive" received from /127.0.0.1:54323
+2016/01/10 11:35:16.449 INFO  c.s.m.s.DeadState         ExSvc-3              Process in HTTP is alive
+2016/01/10 11:35:16.449 INFO  c.s.m.s.DeadState         ExSvc-3              IsAlive message received for HTTP server
+2016/01/10 11:35:16.567 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT: org.eclipse.jetty.server.Server@2ae521f3 - STARTED
+2016/01/10 11:35:16.569 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  += qtp1533927127{STARTED,8<=8<=200,i=3,q=0} - STARTED
+2016/01/10 11:35:16.570 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +- 24 qtp1533927127-24 TIMED_WAITING @ sun.misc.Unsafe.park(Native Method) IDLE
+2016/01/10 11:35:16.570 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +- 22 qtp1533927127-22-acceptor-0@172c0023-ServerConnector@656c3539{HTTP/1.1,[http/1.1]}{0.0.0.0:4480} RUNNABLE @ java.lang.ClassLoader$NativeLibrary.find(Native Method) prio=3
+2016/01/10 11:35:16.570 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +- 25 qtp1533927127-25 TIMED_WAITING @ sun.misc.Unsafe.park(Native Method) IDLE
+2016/01/10 11:35:16.570 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +- 20 qtp1533927127-20 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.570 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +- 21 qtp1533927127-21 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.570 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +- 19 qtp1533927127-19 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.570 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +- 18 qtp1533927127-18 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.570 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +- 23 qtp1533927127-23 TIMED_WAITING @ sun.misc.Unsafe.park(Native Method) IDLE
+2016/01/10 11:35:16.571 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  += ServerConnector@656c3539{HTTP/1.1,[http/1.1]}{0.0.0.0:4480} - STARTED
+2016/01/10 11:35:16.571 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +~ org.eclipse.jetty.server.Server@2ae521f3 - STARTED
+2016/01/10 11:35:16.571 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +~ qtp1533927127{STARTED,8<=8<=200,i=3,q=0} - STARTED
+2016/01/10 11:35:16.571 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   += org.eclipse.jetty.util.thread.ScheduledExecutorScheduler@4ad45355 - STARTED
+2016/01/10 11:35:16.571 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +- org.eclipse.jetty.io.ArrayByteBufferPool@2e241c6b
+2016/01/10 11:35:16.571 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   += HttpConnectionFactory@6a3f9279[HTTP/1.1] - STARTED
+2016/01/10 11:35:16.571 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   |   +- HttpConfiguration@3c1043bb{32768/8192,8192/8192,https://:0,[]}
+2016/01/10 11:35:16.573 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   += org.eclipse.jetty.server.ServerConnector$ServerConnectorManager@60ba7f35 - STARTED
+2016/01/10 11:35:16.579 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@532924be id=0 keys=0 selected=0 id=0
+2016/01/10 11:35:16.582 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   |   |   +- sun.nio.ch.KQueueSelectorImpl@1f47cf77 keys=0
+2016/01/10 11:35:16.582 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@2228319e id=1 keys=0 selected=0 id=1
+2016/01/10 11:35:16.583 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   |   |   +- sun.nio.ch.KQueueSelectorImpl@1a2f3cc5 keys=0
+2016/01/10 11:35:16.583 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@383eedb1 id=2 keys=0 selected=0 id=2
+2016/01/10 11:35:16.583 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   |   |   +- sun.nio.ch.KQueueSelectorImpl@5aca1af keys=0
+2016/01/10 11:35:16.583 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@151b10fd id=3 keys=0 selected=0 id=3
+2016/01/10 11:35:16.583 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   |       +- sun.nio.ch.KQueueSelectorImpl@4a145e1 keys=0
+2016/01/10 11:35:16.584 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +- sun.nio.ch.ServerSocketChannelImpl[/0:0:0:0:0:0:0:0:4480]
+2016/01/10 11:35:16.584 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |   +- qtp1533927127-22-acceptor-0@172c0023-ServerConnector@656c3539{HTTP/1.1,[http/1.1]}{0.0.0.0:4480}
+2016/01/10 11:35:16.584 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  += com.slightlyloony.redirector.RedirectHandler@17db0632 - STARTED
+2016/01/10 11:35:16.584 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  |
+2016/01/10 11:35:16.584 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:  +> sun.misc.Launcher$AppClassLoader@42a57993
+2016/01/10 11:35:16.585 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:      +- file:/Users/tom/IdeaProjects/Blog/out/artifacts/Redirector_jar/Redirector.jar
+2016/01/10 11:35:16.585 DEBUG c.s.m.MonitoredProcess    HTTP-sor             HTTP STDOUT:      +- sun.misc.Launcher$ExtClassLoader@3941a79c
+2016/01/10 11:35:16.585 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "WebAlive" received from /127.0.0.1:54323
+2016/01/10 11:35:16.586 INFO  c.s.m.s.DeadState         ExSvc-4              Web server in HTTP is running
+2016/01/10 11:35:16.589 INFO  c.s.m.s.StateMachine      ExSvc-4              Transitioning from HTTP:DeadState to HTTP:AliveState
+2016/01/10 11:35:16.646 INFO  c.s.c.m.MailSender        ExSvc-4              Sending mail to tom@dilatush.com, subject: HTTP started
+2016/01/10 11:35:16.892 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT: org.eclipse.jetty.server.Server@771a9965 - STARTED
+2016/01/10 11:35:16.894 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  += qtp666648769{STARTED,8<=16<=200,i=1,q=0} - STARTED
+2016/01/10 11:35:16.895 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 20 qtp666648769-20 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.895 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 24 qtp666648769-24 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.895 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 21 qtp666648769-21 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.895 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 30 qtp666648769-30 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.895 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 25 qtp666648769-25 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.895 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 18 qtp666648769-18 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.895 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 26 qtp666648769-26 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.895 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 34 qtp666648769-34 TIMED_WAITING @ sun.misc.Unsafe.park(Native Method) IDLE
+2016/01/10 11:35:16.895 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 32 qtp666648769-32 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.895 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 23 qtp666648769-23 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.895 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 27 qtp666648769-27-acceptor-0@2fa19aa6-ServerConnector@21e139ee{SSL,[ssl, http/1.1]}{0.0.0.0:4444} RUNNABLE @ sun.nio.ch.ServerSocketChannelImpl.accept0(Native Method) prio=3
+2016/01/10 11:35:16.895 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 31 qtp666648769-31 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.896 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 29 qtp666648769-29 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.896 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 33 qtp666648769-33-acceptor-0@71e03682-ServerConnector@234b7920{SSL,[ssl, http/1.1]}{0.0.0.0:4445} RUNNABLE @ sun.nio.ch.ServerSocketChannelImpl.accept0(Native Method) prio=3
+2016/01/10 11:35:16.896 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 22 qtp666648769-22-acceptor-0@7636c667-ServerConnector@78f136d1{SSL,[ssl, http/1.1]}{0.0.0.0:4443} RUNNABLE @ sun.nio.ch.ServerSocketChannelImpl.accept0(Native Method) prio=3
+2016/01/10 11:35:16.896 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- 19 qtp666648769-19 RUNNABLE @ sun.nio.ch.KQueueArrayWrapper.kevent0(Native Method)
+2016/01/10 11:35:16.896 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  += ServerConnector@78f136d1{SSL,[ssl, http/1.1]}{0.0.0.0:4443} - STARTED
+2016/01/10 11:35:16.896 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +~ org.eclipse.jetty.server.Server@771a9965 - STARTED
+2016/01/10 11:35:16.896 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +~ qtp666648769{STARTED,8<=16<=200,i=1,q=0} - STARTED
+2016/01/10 11:35:16.896 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   += org.eclipse.jetty.util.thread.ScheduledExecutorScheduler@7727f225 - STARTED
+2016/01/10 11:35:16.896 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- org.eclipse.jetty.io.ArrayByteBufferPool@fe07cdf
+2016/01/10 11:35:16.896 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   += SslConnectionFactory@4030260{SSL->http/1.1} - STARTED
+2016/01/10 11:35:16.897 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   += SslContextFactory@3102eac9(null,null) - STARTED
+2016/01/10 11:35:16.897 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   += HttpConnectionFactory@2966fd3a[HTTP/1.1] - STARTED
+2016/01/10 11:35:16.897 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- HttpConfiguration@635b16d7{32768/8192,8192/8192,https://:4443,[SecureRequestCustomizer@125dd858]}
+2016/01/10 11:35:16.898 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   += org.eclipse.jetty.server.ServerConnector$ServerConnectorManager@31afbac7 - STARTED
+2016/01/10 11:35:16.901 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@7a90fdea id=0 keys=0 selected=0 id=0
+2016/01/10 11:35:16.903 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   |   +- sun.nio.ch.KQueueSelectorImpl@e09904a keys=0
+2016/01/10 11:35:16.903 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@3f5cd714 id=1 keys=0 selected=0 id=1
+2016/01/10 11:35:16.903 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   |   +- sun.nio.ch.KQueueSelectorImpl@14f40416 keys=0
+2016/01/10 11:35:16.903 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@42de12b8 id=2 keys=0 selected=0 id=2
+2016/01/10 11:35:16.903 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   |   +- sun.nio.ch.KQueueSelectorImpl@7cf96236 keys=0
+2016/01/10 11:35:16.903 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@5c2a11ff id=3 keys=0 selected=0 id=3
+2016/01/10 11:35:16.904 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |       +- sun.nio.ch.KQueueSelectorImpl@1167ba31 keys=0
+2016/01/10 11:35:16.904 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- sun.nio.ch.ServerSocketChannelImpl[/0:0:0:0:0:0:0:0:4443]
+2016/01/10 11:35:16.904 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- qtp666648769-22-acceptor-0@7636c667-ServerConnector@78f136d1{SSL,[ssl, http/1.1]}{0.0.0.0:4443}
+2016/01/10 11:35:16.904 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  += ServerConnector@21e139ee{SSL,[ssl, http/1.1]}{0.0.0.0:4444} - STARTED
+2016/01/10 11:35:16.904 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +~ org.eclipse.jetty.server.Server@771a9965 - STARTED
+2016/01/10 11:35:16.904 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +~ qtp666648769{STARTED,8<=16<=200,i=1,q=0} - STARTED
+2016/01/10 11:35:16.905 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   += org.eclipse.jetty.util.thread.ScheduledExecutorScheduler@e95ef9a - STARTED
+2016/01/10 11:35:16.905 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- org.eclipse.jetty.io.ArrayByteBufferPool@732bad95
+2016/01/10 11:35:16.905 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   += SslConnectionFactory@10844c5f{SSL->http/1.1} - STARTED
+2016/01/10 11:35:16.905 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   += SslContextFactory@30029b69(null,null) - STARTED
+2016/01/10 11:35:16.906 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   += HttpConnectionFactory@81a6d4a[HTTP/1.1] - STARTED
+2016/01/10 11:35:16.906 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- HttpConfiguration@2a962093{32768/8192,8192/8192,https://:4444,[SecureRequestCustomizer@186facab]}
+2016/01/10 11:35:16.906 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   += org.eclipse.jetty.server.ServerConnector$ServerConnectorManager@14c6e3b0 - STARTED
+2016/01/10 11:35:16.906 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@3a2fa3b8 id=0 keys=0 selected=0 id=0
+2016/01/10 11:35:16.907 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   |   +- sun.nio.ch.KQueueSelectorImpl@4c4cc7de keys=0
+2016/01/10 11:35:16.907 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@21a69ed6 id=1 keys=0 selected=0 id=1
+2016/01/10 11:35:16.907 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   |   +- sun.nio.ch.KQueueSelectorImpl@292011cb keys=0
+2016/01/10 11:35:16.907 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@44c974bd id=2 keys=0 selected=0 id=2
+2016/01/10 11:35:16.907 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   |   +- sun.nio.ch.KQueueSelectorImpl@58f7936b keys=0
+2016/01/10 11:35:16.908 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@6731d4f7 id=3 keys=0 selected=0 id=3
+2016/01/10 11:35:16.908 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |       +- sun.nio.ch.KQueueSelectorImpl@201801b keys=0
+2016/01/10 11:35:16.908 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- sun.nio.ch.ServerSocketChannelImpl[/0:0:0:0:0:0:0:0:4444]
+2016/01/10 11:35:16.908 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- qtp666648769-27-acceptor-0@2fa19aa6-ServerConnector@21e139ee{SSL,[ssl, http/1.1]}{0.0.0.0:4444}
+2016/01/10 11:35:16.908 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  += ServerConnector@234b7920{SSL,[ssl, http/1.1]}{0.0.0.0:4445} - STARTED
+2016/01/10 11:35:16.908 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +~ org.eclipse.jetty.server.Server@771a9965 - STARTED
+2016/01/10 11:35:16.909 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +~ qtp666648769{STARTED,8<=16<=200,i=1,q=0} - STARTED
+2016/01/10 11:35:16.909 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   += org.eclipse.jetty.util.thread.ScheduledExecutorScheduler@55233fc5 - STARTED
+2016/01/10 11:35:16.909 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- org.eclipse.jetty.io.ArrayByteBufferPool@20c499ca
+2016/01/10 11:35:16.909 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   += SslConnectionFactory@746be3c4{SSL->http/1.1} - STARTED
+2016/01/10 11:35:16.909 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   += SslContextFactory@2e0ef553(null,null) - STARTED
+2016/01/10 11:35:16.909 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   += HttpConnectionFactory@463fafa2[HTTP/1.1] - STARTED
+2016/01/10 11:35:16.910 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- HttpConfiguration@3501e32a{32768/8192,8192/8192,https://:4445,[SecureRequestCustomizer@3ae205ab]}
+2016/01/10 11:35:16.910 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   += org.eclipse.jetty.server.ServerConnector$ServerConnectorManager@531df86c - STARTED
+2016/01/10 11:35:16.910 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@5713310c id=0 keys=0 selected=0 id=0
+2016/01/10 11:35:16.910 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   |   +- sun.nio.ch.KQueueSelectorImpl@5feb08bf keys=0
+2016/01/10 11:35:16.910 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@6db19077 id=1 keys=0 selected=0 id=1
+2016/01/10 11:35:16.911 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   |   +- sun.nio.ch.KQueueSelectorImpl@7674f583 keys=0
+2016/01/10 11:35:16.911 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@47541f37 id=2 keys=0 selected=0 id=2
+2016/01/10 11:35:16.911 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   |   +- sun.nio.ch.KQueueSelectorImpl@588993a5 keys=0
+2016/01/10 11:35:16.911 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |   +- org.eclipse.jetty.io.ManagedSelector@7b364129 id=3 keys=0 selected=0 id=3
+2016/01/10 11:35:16.912 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   |       +- sun.nio.ch.KQueueSelectorImpl@5065e29f keys=0
+2016/01/10 11:35:16.912 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- sun.nio.ch.ServerSocketChannelImpl[/0:0:0:0:0:0:0:0:4445]
+2016/01/10 11:35:16.912 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |   +- qtp666648769-33-acceptor-0@71e03682-ServerConnector@234b7920{SSL,[ssl, http/1.1]}{0.0.0.0:4445}
+2016/01/10 11:35:16.912 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  += com.slightlyloony.blog.TestHandler@35638412 - STARTED
+2016/01/10 11:35:16.912 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  |
+2016/01/10 11:35:16.912 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:  +> sun.misc.Launcher$AppClassLoader@42a57993
+2016/01/10 11:35:16.912 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:      +- file:/Users/tom/IdeaProjects/Blog/out/artifacts/Https_jar/Https.jar
+2016/01/10 11:35:16.913 DEBUG c.s.m.MonitoredProcess    HTTPS-sor            HTTPS STDOUT:      +- sun.misc.Launcher$ExtClassLoader@4fca772d
+2016/01/10 11:35:16.914 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "WebAlive" received from /127.0.0.1:54322
+2016/01/10 11:35:16.915 INFO  c.s.m.s.DeadState         ExSvc-3              Web server in HTTPS is running
+2016/01/10 11:35:16.915 INFO  c.s.m.s.StateMachine      ExSvc-3              Transitioning from HTTPS:DeadState to HTTPS:AliveState
+2016/01/10 11:35:16.916 INFO  c.s.c.m.MailSender        ExSvc-3              Sending mail to tom@dilatush.com, subject: HTTPS started
+2016/01/10 11:35:17.158 INFO  c.s.c.m.MailFetcher       ExSvc-1              Fetched 0 email message headers
+2016/01/10 11:35:17.273 INFO  c.s.m.MailPortal          ExSvc-1              Mail portal finished
+2016/01/10 11:35:18.366 INFO  c.s.c.m.MailSender        ExSvc-4              Sent mail to tom@dilatush.com, subject: HTTP started
+2016/01/10 11:35:18.735 INFO  c.s.c.m.MailSender        ExSvc-3              Sent mail to tom@dilatush.com, subject: HTTPS started
+2016/01/10 11:35:21.821 DEBUG c.s.m.TestURL             HTTP-tester          Successfully retrieved test URL http://www.slightlyloony.com:4480/test
+2016/01/10 11:35:21.829 INFO  c.s.m.s.AliveState        HTTP-tester          Test succeeded for HTTP
+2016/01/10 11:35:22.042 DEBUG c.s.m.TestURL             HTTPS-tester         Successfully retrieved test URL https://www.slightlyloony.com:4443/test
+2016/01/10 11:35:22.042 INFO  c.s.m.s.AliveState        HTTPS-tester         Test succeeded for HTTPS
+2016/01/10 11:35:26.653 INFO  c.s.m.MonitorServer       main                 Shutting down servers
+2016/01/10 11:35:26.724 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ShuttingDown" received from /127.0.0.1:54322
+2016/01/10 11:35:26.724 INFO  c.s.m.MonitorInit         ExSvc-4              Monitored server HTTPS is shutting down
+2016/01/10 11:35:26.724 INFO  c.s.c.i.IPMsgSocket       IPMsgSocket          Processing valid message "ShuttingDown" received from /127.0.0.1:54323
+2016/01/10 11:35:26.724 INFO  c.s.m.MonitorInit         ExSvc-1              Monitored server HTTP is shutting down
+2016/01/10 11:35:27.664 INFO  c.s.m.MonitoredProcess    main                 Process "HTTP" terminated
+2016/01/10 11:35:27.672 INFO  c.s.m.MonitoredProcess    main                 Process "HTTPS" terminated
+2016/01/10 11:35:27.674 INFO  c.s.m.MonitorServer       main                 Main thread exiting

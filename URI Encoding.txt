@@ -1,0 +1,34 @@
+URI Encoding
+
+To a casual observer, the blog's URIs are entirely in a flat, web-friendly base64 encoding.  However, there actually IS some hierarchy to the
+encoding scheme - mainly to eliminate the need for some persistent storage access during request decoding.  The scheme is defined in the table
+below.  Special terms in the URI column:
+
+  [ID] a web-friendly base64 identifier that is unique in that URI's namespace
+
+  URI       Meaning
+  --------- -------------------------------------------------------------------------------------------------------------------------------------
+  /         The blog's home page.  This is static HTML, regenerated after each post.  JavaScript in the page can update it on the fly.
+  /p[ID]    A post page in generated HTML.
+  /P[ID]    The JSON metadata that the post (with the same ID) is generated from.
+  /i[ID]    An image in binary form, in the largest dimensions available.
+  /I[ID]    The JSON metadata for an image (with the same ID).
+  /g[ID]    A standalone static HTML page.
+  /G[ID]    The JSON metadata for a static HTML page (with the same ID).
+  /f[ID]    A binary file.
+  /F[ID]    The JSON metadata for a binary file (with the same ID).
+
+In addition, all of the preceding URI formats may optionally be preceded by a special namespace character, with meanings as follows (note that
+levels of authority are cumulative - authors are also comment reviewers and users, etc.):
+
+  1 - URIs that may be accessed only by blog managers (user maintenance, for example)
+  2 - URIs that may be accessed only by blog authors (post editor, for example)
+  3 - URIs that may be accessed only by blog comment reviewers
+  4 - URIs that may be accessed only by signed-in blog users (comment authoring, for example)
+
+
+Some examples:
+
+  /p34kI    an HTML post with the ID 34kI
+  /2iEKLS   an image accessible only to blog authors (or managers), with the ID EKLS
+  /G834La   the JSON metadata for a static HTML page with the ID 834La

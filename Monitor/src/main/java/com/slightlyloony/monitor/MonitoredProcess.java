@@ -55,7 +55,6 @@ public class MonitoredProcess {
         List<String> cl = new ArrayList<>();
         cl.add( MonitorInit.getConfig().getJavaPath() );
         cl.add( "-Duser.dir=\"" + serverConfig.getWorkingDir() + "\"" );
-        cl.add( "-Dfile.encoding=UTF-8" );
         cl.add( "-jar" );
         cl.add( serverConfig.getJarFile() );
 

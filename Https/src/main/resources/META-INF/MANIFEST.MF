@@ -1,12 +1,12 @@
 Manifest-Version: 1.0
-Class-Path: gson-2.5.jar aws-java-sdk-s3-1.10.43.jar jetty-server-9.3.
- 6.v20151106.jar javax.mail-api-1.5.5.jar httpcore-4.3.3.jar log4j-api
- -2.5.jar activation-1.1.jar log4j-core-2.5.jar jetty-util-9.3.6.v2015
- 1106.jar commons-logging-1.1.3.jar jackson-databind-2.5.3.jar commons
- -codec-1.6.jar javax.servlet-api-3.1.0.jar jackson-core-2.5.3.jar jet
- ty-io-9.3.6.v20151106.jar javax.mail-1.5.5.jar guava-19.0.jar java-uu
- id-generator-3.1.4.jar jackson-annotations-2.5.0.jar aws-java-sdk-kms
- -1.10.43.jar jetty-http-9.3.6.v20151106.jar joda-time-2.8.1.jar httpc
- lient-4.3.6.jar aws-java-sdk-core-1.10.43.jar
+Class-Path: jackson-core-2.5.3.jar java-uuid-generator-3.1.4.jar aws-j
+ ava-sdk-core-1.10.43.jar javax.mail-1.5.5.jar aws-java-sdk-s3-1.10.43
+ .jar activation-1.1.jar httpclient-4.3.6.jar gson-2.5.jar httpcore-4.
+ 3.3.jar joda-time-2.8.1.jar jetty-http-9.3.6.v20151106.jar guava-19.0
+ .jar commons-logging-1.1.3.jar aws-java-sdk-kms-1.10.43.jar javax.mai
+ l-api-1.5.5.jar javax.servlet-api-3.1.0.jar jackson-databind-2.5.3.ja
+ r jetty-server-9.3.6.v20151106.jar jackson-annotations-2.5.0.jar jett
+ y-io-9.3.6.v20151106.jar log4j-api-2.5.jar commons-codec-1.6.jar log4
+ j-core-2.5.jar jetty-util-9.3.6.v20151106.jar
 Main-Class: com.slightlyloony.blog.BlogServer
 
