@@ -1,34 +1,76 @@
-URI Encoding
+URI Encoding and File System Layout
 
-To a casual observer, the blog's URIs are entirely in a flat, web-friendly base64 encoding.  However, there actually IS some hierarchy to the
-encoding scheme - mainly to eliminate the need for some persistent storage access during request decoding.  The scheme is defined in the table
-below.  Special terms in the URI column:
+To a casual observer, the blog's URIs are entirely in a flat, web-friendly base64url encoding, and that is very nearly true.  The blog URIs that refer
+to an object stored on the file system all are of the following pattern:
 
-  [ID] a web-friendly base64 identifier that is unique in that URI's namespace
+  /[ID][ACCESS]
 
-  URI       Meaning
-  --------- -------------------------------------------------------------------------------------------------------------------------------------
-  /         The blog's home page.  This is static HTML, regenerated after each post.  JavaScript in the page can update it on the fly.
-  /p[ID]    A post page in generated HTML.
-  /P[ID]    The JSON metadata that the post (with the same ID) is generated from.
-  /i[ID]    An image in binary form, in the largest dimensions available.
-  /I[ID]    The JSON metadata for an image (with the same ID).
-  /g[ID]    A standalone static HTML page.
-  /G[ID]    The JSON metadata for a static HTML page (with the same ID).
-  /f[ID]    A binary file.
-  /F[ID]    The JSON metadata for a binary file (with the same ID).
+  where:
 
-In addition, all of the preceding URI formats may optionally be preceded by a special namespace character, with meanings as follows (note that
-levels of authority are cumulative - authors are also comment reviewers and users, etc.):
+    ID       is a 60 bit number encoded (using web-friendly base 64 encoding per RFC 4648) as ten text characters
 
-  1 - URIs that may be accessed only by blog managers (user maintenance, for example)
-  2 - URIs that may be accessed only by blog authors (post editor, for example)
-  3 - URIs that may be accessed only by blog comment reviewers
-  4 - URIs that may be accessed only by signed-in blog users (comment authoring, for example)
+    ACCESS   is a single character access control code whose meaning is defined in the enum BlogObjectAccessRequirements
 
 
-Some examples:
+A special class of URIs are those that are defined outside the blog.  These include (but are not necessarily limited to) robots.txt, favicon.ico,
+sitemap.xml, dublin.rdf, and apple-touch-icons.  These URIs are all mapped to internal URIs that match the specification above.
 
-  /p34kI    an HTML post with the ID 34kI
-  /2iEKLS   an image accessible only to blog authors (or managers), with the ID EKLS
-  /G834La   the JSON metadata for a static HTML page with the ID 834La
+
+Note that any URI may include a query string; these are not defined here.  For example, an image URI might include a query string that specifies
+the desired box size.  If the URI "/AAAABA_4Y" referred to an image object, then the URI "/AAAABA_4Y?mw=250,mh=100" might request the same image, but
+in a size that would fit into a 250 pixel wide by 100 pixel high box.
+
+
+The file system hierarchy is as follows:
+
+  <root>                      The root for all blog content
+    objects                   The root for all content object storage
+      AA..__                  Top level directories for the two most significant (left-most) characters of the IDs
+        AA..__                Second level directories for the next two most significant characters of the IDs
+          AA..__              Third level directories for the next two most significant characters of the IDs
+            AA..__            Fourth level directories for the next two most significant characters of the IDs
+              <object files>  The actual object files
+    blog1                     The root for all blog-specific configuration storage for blog1
+      <fixed name objects>    The configuration objects that are fixed name (mainly JSON files)
+    blog2                     The root for all blog-specific configuration storage for blog2
+      <fixed name objects>    The configuration objects that are fixed name (mainly JSON files)
+    global                    The root for all global content storage
+      <fixed name objects>    The configuration objects that are fixed name (mainly JSON files)
+
+
+A few examples may help make this more understandable:
+
+  URI           File system path
+  ------------  --------------------------------------------
+  /AAAABBCCabY  <root>/objects/AA/AA/BB/CC/AAAABBCCabY.meta
+  /AAABCDEF-3Z  <root>/objects/AA/AB/CD/EF/AAABCDEF-3Z.png
+
+
+File names are either 10 or 11 characters long.  The 10 character file names are comprised of the object's ID only, and all such objects are
+accessible only internally to the blog server.  The 11 character file names are comprised of the object's ID plus the single character access control
+code, and these are only metadata (.meta) files defining objects that are accessible externally.
+
+A file extension (the file type) is appended to each file name as follows, making the complete file name [ID][ACCESS].[TYPE], or [ID].[TYPE] where
+TYPE is one of the following (and of course additional types will likely be added).  These are defined in the enum BlogObjectType:
+
+      meta   UTF-8 JSON request metadata
+      jpg    binary JPEG image
+      png    binary PNG image
+      gif    binary GIF image
+      ico    binary ICO image
+      html   UTF-8 encoded HTML
+      css    UTF-8 encoded CSS
+      json   UTF-8 encoded JSON
+      js     UTF-8 encoded JavaScript
+      txt    UTF-8 encoded plain text
+      doc    binary Microsoft Word document
+      pdf    binary Adobe PDF document
+      xls    binary Microsoft Excel spreadsheet
+      zip    binary compressed file in ZIP format
+      svg    UTF-8 encoded XML SVG image
+      xml    UTF-8 encoded XML
+      mp3    MPEG encoded audio
+      aac    MP4 encoded audio
+      kmz    Google Earth location files
+      kml    UTF-8 encoded XML Google Earth location files
+      xhmtl  UTF-8 encoded XHTML

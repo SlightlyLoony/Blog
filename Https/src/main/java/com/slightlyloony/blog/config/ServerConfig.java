@@ -1,11 +1,12 @@
-package com.slightlyloony.blog;
+package com.slightlyloony.blog.config;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
 
 /**
  * @author Tom Dilatush  tom@dilatush.com
  */
-public class BlogConfig {
+public class ServerConfig {
 
     private Server monitor;
     private Server http;
@@ -13,10 +14,29 @@ public class BlogConfig {
     private VirtualServer[] virtualServers;
     private String keystore;
     private String keystorePassword;  // this implementation assumes the same password is used for both the keystore and the certificate...
+    private String contentRoot;
+    private Map<String,Cache> caches;
+    private int maxCacheEntrySize;
+    private String[] blogs;
+
+
+    public int getMaxCacheEntrySize() {
+        return maxCacheEntrySize;
+    }
+
+
+    public Map<String, Cache> getCaches() {
+        return caches;
+    }
 
 
     public Server getMonitor() {
         return monitor;
+    }
+
+
+    public String getContentRoot() {
+        return contentRoot;
     }
 
 
@@ -45,11 +65,18 @@ public class BlogConfig {
     }
 
 
+    public String[] getBlogs() {
+        return blogs;
+    }
+
+
     public static class VirtualServer {
 
         private int port;
         private String domain;
         private String alias;
+        private String cookie;  // name of session cookie...
+        private int idle;   // session idle time in seconds (for session timeout)...
 
 
         public int getPort() {
@@ -64,6 +91,16 @@ public class BlogConfig {
 
         public String getAlias() {
             return alias;
+        }
+
+
+        public String getCookie() {
+            return cookie;
+        }
+
+
+        public int getIdle() {
+            return idle;
         }
     }
 
@@ -98,6 +135,22 @@ public class BlogConfig {
 
         public InetSocketAddress getSocketAddress() {
             return new InetSocketAddress( ip, port );
+        }
+    }
+
+
+    public static class Cache {
+        private long maxCacheSize;
+        private long avgEntrySize;
+
+
+        public long getMaxCacheSize() {
+            return maxCacheSize;
+        }
+
+
+        public long getAvgEntrySize() {
+            return avgEntrySize;
         }
     }
 }

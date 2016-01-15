@@ -1,10 +1,27 @@
-Architecture:
+System Architecture:
 
   There will be three server processes, as follows:
   1.  Monitor server that manages and monitors the other two servers.  This includes running the processes, monitoring their performance, restarting
       them, upgrading/downgrading them, etc.
   2.  HTTPS server that is the main blog server.
   3.  HTTP server that simply redirects to the HTTPS server.
+
+
+Blog Architecture:
+
+  I've chosen an architecture that should be flexible, fast, and yet still quite straightforward to implement and use.  It's also different than
+  anything else I've seen.  Usually web/servlet servers are divided into two distinct parts: one that serves up static content (generally from files
+  on the file system, and usually only responding to GET requests) and another that handles requests (of any type) programatically.  The blog server
+  will not do this.  Instead, a request of any type is resolved in a multi-step process.  The first step is always the same: using the URI, retrieve a
+  small block (readily cacheable) of metadata that defines how the request should be handled.  This metadata includes factories for all request types
+  that can be handled at that URI, along with other information (some of which may depend on the type of resource).  A simple case would the
+  equivalent of static content serving on a traditional web server.  For this case, a factory is provided only for the GET method, and that factory
+  simply reads data off the file system.  For images, something a little cooler is provided.  The metadata for the image can include pointers to
+  metadata for any number of scaled versions of the same image (and possibly other file types, as well).  The request can include a query string with
+  a requested size.  The blog server may then choose amongst existing images for the best fit, can optionally scale down a larger image to respond,
+  and can even persist a scaled version if that makes sense.  Finally, requests can be resolved programatically simply by providing a factory that
+  does so.  This means there is no particular limit to the factory types, and no particular rules about how they're implemented.  They simply have
+  to adhere to the factory interface.
 
 
 Interprocess messaging:
@@ -53,3 +70,10 @@ Hotlink prevention:
   An alternative scheme I cooked up, which I found a few references to on the web (so I'm not the first!), is to require that the request for a
   content object be made in the context of a session.  Essentially that means a session cookie.  It appears that Spark/Jetty already supports an
   ephemeral session cookie, which is perfect for the purpose.
+
+
+Hosting
+
+  The blog will be hosted on an Amazon EC2 instance, most likely the smallest M3 series.  It will not use S3 storage, for several reasons including
+  performance and cost.  That means there's a backup requirement, which I propose to "solve" with a periodic zipped snapshot that I download.  Other
+  possible approaches include copying based on change timestamps, or rsync between the blog host and a client.
