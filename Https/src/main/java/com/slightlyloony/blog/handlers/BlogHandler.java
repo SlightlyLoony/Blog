@@ -5,6 +5,7 @@ import com.slightlyloony.blog.objects.BlogObject;
 import com.slightlyloony.blog.objects.BlogObjectMetadata;
 import com.slightlyloony.blog.objects.BlogObjectType;
 import com.slightlyloony.blog.responders.Responder;
+import com.slightlyloony.blog.util.Timer;
 import com.slightlyloony.common.logging.LU;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,7 +16,6 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 /**
@@ -34,12 +34,12 @@ public class BlogHandler extends AbstractHandler implements Handler {
                         final Request _request, final HttpServletRequest _httpServletRequest, final HttpServletResponse _httpServletResponse )
             throws IOException, ServletException {
 
-        long requestStarted = System.currentTimeMillis();
+        Timer t = new Timer();
 
         LOG.info( LU.msg( "{0} {2}{1} from {3}", _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost() ) );
 
         BlogResponse response = new BlogResponse( _httpServletResponse );
-        BlogRequest request = new BlogRequest( _request, _httpServletRequest, _httpServletResponse );
+        BlogRequest request = new BlogRequest( _request, _httpServletRequest, response );
         if( !request.initialize() ) {
 
             // TODO: handle invalid requests...
@@ -56,12 +56,12 @@ public class BlogHandler extends AbstractHandler implements Handler {
         // TODO: determine whether request is authorized...
 
         // TODO: make sure the session cookies are behaving correctly!
-        HttpSession session = _request.getSession( true );
-
 
         responder.respond( request, response, metadata, true );
 
-        LOG.info( LU.msg( "{0} {2}{1} from {3} completed in {4} ms",
-                _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), System.currentTimeMillis() - requestStarted ) );
+        t.mark();
+
+        LOG.info( LU.msg( "{0} {2}{1} from {3} completed in {4}",
+                _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
     }
 }

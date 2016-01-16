@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.slightlyloony.blog.config.BlogConfig;
 import com.slightlyloony.blog.config.ServerConfig;
+import com.slightlyloony.blog.security.BlogSessionManager;
 import com.slightlyloony.common.StandardUncaughtExceptionHandler;
 import com.slightlyloony.common.ipmsgs.IPMsgAction;
 import com.slightlyloony.common.ipmsgs.IPMsgParticipant;
@@ -68,6 +69,9 @@ public class ServerInit {
                 throw new IllegalStateException( "Could not read blog configuration", e );
             }
         }
+
+        // start the session manager...
+        BlogSessionManager.INSTANCE.init();
 
         // start the inter-process message listener...
         IPMsgSocket.start( CONFIG.getHttps().getSocketAddress(), getValidSenders(), getValidMsgs() );

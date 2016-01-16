@@ -10,12 +10,6 @@ import com.slightlyloony.common.logging.Jetty2Log4j2Bridge;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.gzip.GzipHandler;
-import org.eclipse.jetty.server.session.HashSessionIdManager;
-import org.eclipse.jetty.server.session.HashSessionManager;
-import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
@@ -93,7 +87,7 @@ public class BlogServer {
         try {
             server = new Server();
             server.setConnectors( getConnectors() );
-            server.setHandler( getHandlerStack() );
+            server.setHandler( new BlogHandler() );
 
 
             // Start the server
@@ -169,72 +163,6 @@ public class BlogServer {
             connectors[i++] = httpsConnector;
         }
         return connectors;
-    }
-
-
-    /*
-     *  Set up the "standard" handlers we're using: context, session, gzip.  This is a tad more complicated than one might think, as we
-     *  need separate contexts and sessions for each blog.  We accomplish this in the weird Jetty way, by having a stack of handlers
-     *  that looks something like this (for three blogs):
-     *
-     *                   Context Collection
-     *                           |
-     *               +-----------+-----------+
-     *               |           |           |
-     *             Ctxt1       Ctxt2       Ctxt3
-     *               |           |           |
-     *             Sess1       Sess2       Sess3
-     *               |           |           |
-     *               +-----------+-----------+
-     *                           |
-     *                          gzip
-     *                           |
-     *                          blog
-     *
-     *  The mess below accomplishes ths (we hope)!
-     */
-    private static Handler getHandlerStack() {
-
-        final ServerConfig rc = ServerInit.getConfig();
-
-        // set up our session ID manager...
-        HashSessionIdManager idManager = new HashSessionIdManager();
-        server.setSessionIdManager( idManager );
-
-        // we build this mess "bottoms-up"...
-
-        // first the gzip handler wraps our blog's handler...
-        // TODO: should we add or remove any mime types from being compressed?
-        GzipHandler gzipHandler = new GzipHandler();
-        gzipHandler.setHandler( new BlogHandler() );
-
-        // now our context handlers, which we don't use for anything other than session management...
-        // note that we have one of these PER BLOG...
-        ServerConfig.VirtualServer[] virtualServers = rc.getVirtualServers();
-        Handler[] contextHandlers = new Handler[virtualServers.length];
-        for( int j = 0; j < virtualServers.length; j++ ) {
-
-            ServerConfig.VirtualServer virtualServer = virtualServers[j];
-
-            // make a session manager for this virtual server...
-            HashSessionManager manager = new HashSessionManager();
-            SessionHandler session = new SessionHandler( manager );
-            manager.setMaxInactiveInterval( virtualServer.getIdle() );
-            manager.getSessionCookieConfig().setName( virtualServer.getCookie() );
-            session.setHandler( gzipHandler );
-
-            // make the context handler for this virtual server
-            ContextHandler contextHandler = new ContextHandler( "/" );
-            contextHandler.setContextPath( "/" );
-            contextHandler.setVirtualHosts( new String[] { "*." + virtualServer.getDomain() } );
-            contextHandler.setHandler( session );
-            contextHandlers[j] = contextHandler;
-        }
-
-        ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers( contextHandlers );
-
-        return contexts;
     }
 
 

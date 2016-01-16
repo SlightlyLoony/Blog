@@ -2,13 +2,20 @@ package com.slightlyloony.blog.handlers;
 
 import com.slightlyloony.blog.ServerInit;
 import com.slightlyloony.blog.config.BlogConfig;
+import com.slightlyloony.blog.handlers.cookies.RequestCookie;
+import com.slightlyloony.blog.handlers.cookies.RequestCookies;
+import com.slightlyloony.blog.handlers.cookies.ResponseCookie;
 import com.slightlyloony.blog.objects.BlogID;
 import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
+import com.slightlyloony.blog.security.BlogSession;
+import com.slightlyloony.blog.security.BlogSessionManager;
 import com.slightlyloony.blog.security.BlogUserRights;
 import org.eclipse.jetty.server.Request;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,7 +26,7 @@ public class BlogRequest {
 
     private final Request request;
     private final HttpServletRequest httpServletRequest;
-    private final HttpServletResponse httpServletResponse;
+    private final BlogResponse response;
     private final Pattern HOST_PATTERN = Pattern.compile( ".*?(\\w*\\.\\w*)(:\\d{1,5})?" );
 
     private RequestMethod requestMethod;
@@ -29,12 +36,14 @@ public class BlogRequest {
     private BlogID id;
     private BlogObjectAccessRequirements accessRequirements;
     private BlogUserRights rights;
+    private BlogSession session;
+    private RequestCookies cookies;
 
-    public BlogRequest( final Request _request, final HttpServletRequest _httpServletRequest, final HttpServletResponse _httpServletResponse ) {
+    public BlogRequest( final Request _request, final HttpServletRequest _httpServletRequest, final BlogResponse _response ) {
 
         request = _request;
         httpServletRequest = _httpServletRequest;
-        httpServletResponse = _httpServletResponse;
+        response = _response;
     }
 
 
@@ -49,17 +58,34 @@ public class BlogRequest {
         if( !initializeRequestMethod() )  return false;
         if( !initializeBlogName() )       return false;
         if( !initializePathParts() )      return false;
-        if( !initializeSession() )        return false;
         if( !initializeBlogUserRights() ) return false;
+
+        cookies = new RequestCookies( this );
+        initializeSession();
 
         return true;
     }
 
 
-    private boolean initializeSession() {
-        return true;
-//        // if we're already in a session, just leave with success...
-//        if( request.getSession() != null )
+    private void initializeSession() {
+
+        // if we've already got a session, claim it...
+        RequestCookie sessionCookie = cookies.get( Constants.SESSION_COOKIE_NAME );
+        if( sessionCookie != null )
+            session = BlogSessionManager.INSTANCE.claimSession( sessionCookie.getValue() );
+
+        // if we don't have a session, and it's a public URI, then we should have one...
+        if( (session == null) && (accessRequirements == BlogObjectAccessRequirements.PUBLIC) ) {
+
+            // create a new session...
+            session = BlogSessionManager.INSTANCE.create();
+
+            // if we succeeded, then set a name and set a session cookie...
+            if( session != null ) {
+                session.setName( httpServletRequest.getRemoteAddr() );  // default the name to the client's IP address...
+                response.addCookie( new ResponseCookie( Constants.SESSION_COOKIE_NAME, session.getToken(), blog, "/" ) );
+            }
+        }
     }
 
 
@@ -112,6 +138,16 @@ public class BlogRequest {
             return false;
         }
         return true;
+    }
+
+
+    public List<String> getHeaders( final String _headerName ) {
+
+        Enumeration<String> enumeration = httpServletRequest.getHeaders( _headerName );
+        List<String> result = new ArrayList<>();
+        while( enumeration.hasMoreElements() )
+            result.add( enumeration.nextElement() );
+        return result;
     }
 
 

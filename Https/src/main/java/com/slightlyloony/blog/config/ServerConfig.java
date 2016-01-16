@@ -17,6 +17,7 @@ public class ServerConfig {
     private String contentRoot;
     private Map<String,Cache> caches;
     private int maxCacheEntrySize;
+    private int sessionIdleTimeout;  // session idle timeout in milliseconds...
     private String[] blogs;
 
 
@@ -65,6 +66,11 @@ public class ServerConfig {
     }
 
 
+    public int getSessionIdleTimeout() {
+        return sessionIdleTimeout;
+    }
+
+
     public String[] getBlogs() {
         return blogs;
     }
@@ -75,8 +81,6 @@ public class ServerConfig {
         private int port;
         private String domain;
         private String alias;
-        private String cookie;  // name of session cookie...
-        private int idle;   // session idle time in seconds (for session timeout)...
 
 
         public int getPort() {
@@ -91,16 +95,6 @@ public class ServerConfig {
 
         public String getAlias() {
             return alias;
-        }
-
-
-        public String getCookie() {
-            return cookie;
-        }
-
-
-        public int getIdle() {
-            return idle;
         }
     }
 
