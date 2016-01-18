@@ -18,9 +18,10 @@ public class BlogObjectResponder implements Responder {
 
         if( isAuthorized ) {
 
-            BlogObject obj = BlogServer.STORAGE.read( _metadata.getContent(), _metadata.getType(), null );
+            BlogObject obj = BlogServer.STORAGE.read( _metadata.getContent(), _metadata.getType(), null, _metadata.mayCompress() );
             _response.setMimeType( _metadata.getType() );
-            _response.write( obj.getContentAsStream() );
+
+            obj.getContent().write( _request, _response, _metadata.mayCompress() );
             _request.handled();
         }
 

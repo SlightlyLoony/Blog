@@ -1,8 +1,6 @@
 package com.slightlyloony.blog.storage;
 
-import com.slightlyloony.blog.objects.BlogID;
-import com.slightlyloony.blog.objects.BlogObjectType;
-import com.slightlyloony.blog.objects.BlogObject;
+import com.slightlyloony.blog.objects.*;
 import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -75,18 +73,19 @@ public class Storage {
         if( (!file.exists()) || (!file.isFile()) || (!file.canRead()) ) {
             String msg = MessageFormat.format( "Blog object file (\"{0}\") problem: doesn't exist, isn't a file, or can't read", file.getAbsolutePath() );
             LOG.warn( msg );
-            return BlogObject.createInvalid( _id, _type, msg );
+            return new BlogObject( _id, _type );
         }
 
         // create our blog object and return it...
         try {
             StorageInputStream sis = new StorageInputStream( new FileInputStream( file ), (int) file.length() );
-            return new BlogObject( _id, _type, sis );
+            StreamObjectContent soc = new StreamObjectContent( sis, ContentCompressionState.UNCOMPRESSED, (int) file.length() );
+            return new BlogObject( _id, _type, soc );
         }
         catch( FileNotFoundException e ) {
             String msg = MessageFormat.format( "Blog object file (\"{1}\") problem: {0}", e.getMessage(), file.getAbsolutePath() );
             LOG.error( msg, e );
-            return BlogObject.createInvalid( _id, _type, msg );
+            return new BlogObject( _id, _type );
         }
     }
 

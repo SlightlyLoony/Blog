@@ -46,16 +46,15 @@ public class BlogHandler extends AbstractHandler implements Handler {
         }
 
         // try to read the metadata for this request...
-        BlogObject obj = BlogServer.STORAGE.read( request.getId(), BlogObjectType.METADATA, request.getAccessRequirements() );
+        BlogObject obj = BlogServer.STORAGE.read( request.getId(), BlogObjectType.METADATA, request.getAccessRequirements(), true );
         if( !obj.isValid() ) {
             // TODO: handle invalid object retrieved...
         }
-        BlogObjectMetadata metadata = BlogObjectMetadata.create( obj.getContentAsUTF8String() );
+        BlogObjectMetadata metadata = BlogObjectMetadata.create( obj.getContent().asBytes().getUTF8String() );
         Responder responder = metadata.getResponder( request.getRequestMethod() );
 
+        // TODO: handle browserCacheable in metadata...
         // TODO: determine whether request is authorized...
-
-        // TODO: make sure the session cookies are behaving correctly!
 
         responder.respond( request, response, metadata, true );
 

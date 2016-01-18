@@ -1,5 +1,6 @@
 package com.slightlyloony.blog.objects;
 
+import com.google.common.base.Objects;
 import com.slightlyloony.blog.util.ID;
 
 /**
@@ -20,6 +21,21 @@ public class BlogID {
 
     public static BlogID create( final String _id ) {
         return ( (_id != null) && (_id.length() == 10) && ID.isValid( _id )) ? new BlogID( _id ) : null;
+    }
+
+
+    @Override
+    public boolean equals( final Object o ) {
+        if( this == o ) return true;
+        if( o == null || getClass() != o.getClass() ) return false;
+        BlogID blogID = (BlogID) o;
+        return Objects.equal( id, blogID.id );
+    }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode( id );
     }
 
 

@@ -157,7 +157,7 @@ public class BlogSessionManager {
         tokenFillIntervals++;
         if( tokenFillIntervals < SESSION_SCAVENGE_INTERVAL ) {
             if( added > 0 )
-                LOG.info( msg( "Topped up session token queue in {0}", t.toString() ) );
+                LOG.info( msg( "Added {1} new session tokens in {0}", t.toString(), added ) );
             return;
         }
 
@@ -167,13 +167,21 @@ public class BlogSessionManager {
         long inactivateThreshold = System.currentTimeMillis() - (1000 * idleTimeout);
         long removalThreshold = System.currentTimeMillis() - (REMOVAL_MULTIPLE * 1000 * idleTimeout);
         Iterator<BlogSession> it = sessions.values().iterator();
+        int scavenged = 0;
         while( it.hasNext() ) {
-            if( BlogSession.BlogSessionState.DEAD == it.next().manageLifecycle( inactivateThreshold, removalThreshold ) )
+
+            if( BlogSession.BlogSessionState.DEAD == it.next().manageLifecycle( inactivateThreshold, removalThreshold ) ) {
                 it.remove();
+                scavenged++;
+            }
         }
 
         t.mark();
-        LOG.info( msg( "Topped up session token queue in {0}, scavenged sessions in {1}", t.toString( 1 ), t.toString( 1, 2 )) );
+        if( added > 0 )
+            LOG.info( msg( "Added {2} new session tokens in {0}, scavenged {3} dead sessions in {1}",
+                    t.toString( 1 ), t.toString( 1, 2 ), added, scavenged ) );
+        else
+            LOG.info( msg( "Scavenged {1} dead sessions in {0}", t.toString( 1, 2 ), scavenged ) );
     }
 
 

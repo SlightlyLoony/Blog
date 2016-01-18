@@ -1,20 +1,21 @@
 package com.slightlyloony.blog.handlers;
 
-import com.google.common.io.ByteStreams;
 import com.slightlyloony.blog.handlers.cookies.ResponseCookie;
 import com.slightlyloony.blog.handlers.cookies.ResponseCookies;
 import com.slightlyloony.blog.objects.BlogObjectType;
-import com.slightlyloony.blog.storage.StorageInputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
  * @author Tom Dilatush  tom@dilatush.com
  */
 public class BlogResponse {
+
+    private static final Logger LOG = LogManager.getLogger();
 
     private final HttpServletResponse response;
     private final ResponseCookies cookies;
@@ -34,6 +35,11 @@ public class BlogResponse {
     }
 
 
+    public void setContentLength( final int _length ) {
+        response.setContentLength( _length );
+    }
+
+
     public void setMimeType( final BlogObjectType _mimeType ) {
 
         if( _mimeType == null)
@@ -43,19 +49,12 @@ public class BlogResponse {
     }
 
 
-    public void write( final StorageInputStream _inputStream ) {
+    public void setContentEncoding( final String _contentEncoding ) {
+        response.setHeader( "Content-Encoding", _contentEncoding );
+    }
 
-        response.setContentLength( _inputStream.length() );
 
-        try( InputStream is = _inputStream;
-             OutputStream os = response.getOutputStream(); ) {
-
-            ByteStreams.copy( is, os );
-            os.flush();
-        }
-        catch( IOException e ) {
-            // TODO: handle this mo' bettah...
-            e.printStackTrace();
-        }
+    public OutputStream getOutputStream() throws IOException {
+        return response.getOutputStream();
     }
 }

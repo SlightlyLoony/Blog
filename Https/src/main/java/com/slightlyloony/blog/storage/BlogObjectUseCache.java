@@ -1,4 +1,4 @@
-package com.slightlyloony.blog.objects;
+package com.slightlyloony.blog.storage;
 
 /**
  * @author Tom Dilatush  tom@dilatush.com

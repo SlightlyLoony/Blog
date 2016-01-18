@@ -10,6 +10,7 @@ import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
 import com.slightlyloony.blog.security.BlogSession;
 import com.slightlyloony.blog.security.BlogSessionManager;
 import com.slightlyloony.blog.security.BlogUserRights;
+import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Request;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +39,8 @@ public class BlogRequest {
     private BlogUserRights rights;
     private BlogSession session;
     private RequestCookies cookies;
+    private AcceptRequestHeader accepts;
+    private AcceptEncodingRequestHeader acceptEncodings;
 
     public BlogRequest( final Request _request, final HttpServletRequest _httpServletRequest, final BlogResponse _response ) {
 
@@ -61,6 +64,9 @@ public class BlogRequest {
         if( !initializeBlogUserRights() ) return false;
 
         cookies = new RequestCookies( this );
+        accepts = new AcceptRequestHeader( request.getHeader( "Accept" ) );
+        acceptEncodings = new AcceptEncodingRequestHeader( request.getHeader( "Accept-Encoding" ) );
+
         initializeSession();
 
         return true;
@@ -138,6 +144,21 @@ public class BlogRequest {
             return false;
         }
         return true;
+    }
+
+
+    public boolean acceptsGZIP() {
+        return acceptEncodings.accept( "gzip" ) != null;
+    }
+
+
+    public boolean isAtLeastHTTP_1_1() {
+        return (request.getHttpVersion() == HttpVersion.HTTP_1_1) || (request.getHttpVersion() == HttpVersion.HTTP_2);
+    }
+
+
+    public boolean isAtLeastHTTP_2_01() {
+        return request.getHttpVersion() == HttpVersion.HTTP_2;
     }
 
 

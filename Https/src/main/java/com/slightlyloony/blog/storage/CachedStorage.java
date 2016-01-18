@@ -2,11 +2,10 @@ package com.slightlyloony.blog.storage;
 
 import com.slightlyloony.blog.ServerInit;
 import com.slightlyloony.blog.config.ServerConfig;
-import com.slightlyloony.blog.objects.BlogID;
-import com.slightlyloony.blog.objects.BlogObject;
-import com.slightlyloony.blog.objects.BlogObjectType;
-import com.slightlyloony.blog.objects.BlogObjectUseCache;
+import com.slightlyloony.blog.objects.*;
 import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 
@@ -26,6 +25,8 @@ import java.util.Map;
  * @author Tom Dilatush  tom@dilatush.com
  */
 public class CachedStorage {
+
+    private static final Logger LOG = LogManager.getLogger();
 
     private final Storage storage;
     private final int maxEntrySize;
@@ -62,7 +63,8 @@ public class CachedStorage {
      * @param _accessRequirements the optional access requirements (for external requests only)
      * @return the blog object read
      */
-    public BlogObject read( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements ) {
+    public BlogObject read( final BlogID _id, final BlogObjectType _type,
+                            final BlogObjectAccessRequirements _accessRequirements, final boolean _mayCompress ) {
 
         // if we have a cache for this category of object, see if the object is cached...
         int cacheNum = _type.getCache().getOrdinal();
@@ -78,14 +80,24 @@ public class CachedStorage {
             // it wasn't cached, so first we'll have to read it from storage...
             BlogObject readObj = storage.read( _id, _type, _accessRequirements );
 
-            // if what we read was valid and less than the maximum size, we'll add it to the cache...
-            if( readObj.isValid() && (readObj.size() < maxEntrySize) ) {
+            // if we got a valid object...
+            if( readObj.isValid() ) {
 
-                // resolve it to bytes if it's not already...
-                readObj.getContentAsBytes();
+                // if the content size is less than our threshold, we'll try caching it...
+                BlogObjectContent content = readObj.getContent();
+                if( content.contentLength() < maxEntrySize ) {
 
-                // cache it...
-                cache.add( readObj );
+                    // make the blog object cacheable (resolve to bytes and try compressing)...
+                    readObj.makeReadyForCache( _mayCompress );
+
+                    // tell the cache to take it...
+                    cache.add( readObj );
+                }
+            }
+            else {
+                String msg = "Problem reading blog object " + _id + "." + _type;
+                LOG.error( msg );
+                throw new IllegalStateException( msg );
             }
 
             // leave with our shiny new object...

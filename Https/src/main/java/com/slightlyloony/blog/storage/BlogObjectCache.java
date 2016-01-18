@@ -1,9 +1,6 @@
 package com.slightlyloony.blog.storage;
 
-import com.slightlyloony.blog.objects.BlogID;
-import com.slightlyloony.blog.objects.BlogObject;
-import com.slightlyloony.blog.objects.BlogObjectType;
-import com.slightlyloony.blog.objects.BlogObjectUseCache;
+import com.slightlyloony.blog.objects.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -69,27 +66,28 @@ public class BlogObjectCache {
 
         // refuse to add any object that hasn't been resolved to bytes...
         // we don't want to wait for the read from inside a synchronized method...
-        if( !_obj.hasBytes() ) {
+        BlogObjectContent content = _obj.getContent();
+        if( !(content instanceof BytesObjectContent) ) {
             LOG.warn( "Attempted to add object {0}.{1} that wasn't resolved to bytes", _obj.getBlogID(), _obj.getType().getCache() );
             return;
         }
 
         // if we don't have room in the cache, make some by removing the least recently used items until we have enough space...
-        if( maxSize < _obj.size() + currentSize ) {
+        if( maxSize < content.memorySize() + currentSize ) {
 
             // iterate over our least recently used entries, removing them, until we have enough space for the new entry...
             Iterator<Map.Entry<BlogID,BlogObject>> it = cache.entrySet().iterator();
-            while( it.hasNext() && (maxSize < _obj.size() + currentSize) ) {
+            while( it.hasNext() && (maxSize < content.memorySize() + currentSize) ) {
 
                 BlogObject loser = it.next().getValue();
-                currentSize -= loser.size();
+                currentSize -= loser.getContent().memorySize();
                 it.remove();
             }
         }
 
         // ok, now we can finally add it...
         cache.put( _obj.getBlogID(), _obj );
-        currentSize += _obj.size();
+        currentSize += content.memorySize();
     }
 
 
@@ -103,6 +101,6 @@ public class BlogObjectCache {
         }
 
         BlogObject obj = cache.remove( _id );
-        currentSize -= obj.size();
+        currentSize -= obj.getContent().memorySize();
     }
 }

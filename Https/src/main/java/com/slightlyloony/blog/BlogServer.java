@@ -86,9 +86,11 @@ public class BlogServer {
 
         try {
             server = new Server();
+            server.setDumpAfterStart( false );
+            server.setDumpBeforeStop( false );
+            server.setStopAtShutdown( true );
             server.setConnectors( getConnectors() );
             server.setHandler( new BlogHandler() );
-
 
             // Start the server
             server.start();

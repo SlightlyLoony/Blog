@@ -19,6 +19,7 @@ public class BlogObjectMetadata {
 
     private boolean browserCacheable;
     private boolean serverCacheable;
+    private boolean mayCompress;
     private Map<RequestMethod,ResponderType> methods;
     private BlogID content;
     private BlogObjectType type;
@@ -27,6 +28,7 @@ public class BlogObjectMetadata {
     public BlogObjectMetadata() {
         browserCacheable = true;
         serverCacheable = true;
+        mayCompress = true;
         methods = null;
         content = null;
         type = null;
@@ -63,6 +65,11 @@ public class BlogObjectMetadata {
 
     public boolean isServerCacheable() {
         return serverCacheable;
+    }
+
+
+    public boolean mayCompress() {
+        return mayCompress;
     }
 
 

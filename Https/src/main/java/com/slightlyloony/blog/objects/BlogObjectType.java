@@ -1,10 +1,11 @@
 package com.slightlyloony.blog.objects;
 
 import com.google.common.collect.Maps;
+import com.slightlyloony.blog.storage.BlogObjectUseCache;
 
 import java.util.Map;
 
-import static com.slightlyloony.blog.objects.BlogObjectUseCache.*;
+import static com.slightlyloony.blog.storage.BlogObjectUseCache.*;
 
 /**
  * Defines all the possible types of blog objects, along with their file extensions and mime types.
