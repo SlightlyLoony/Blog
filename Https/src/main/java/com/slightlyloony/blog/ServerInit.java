@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.slightlyloony.blog.config.BlogConfig;
 import com.slightlyloony.blog.config.ServerConfig;
+import com.slightlyloony.blog.objects.BlogIDs;
 import com.slightlyloony.blog.security.BlogSessionManager;
 import com.slightlyloony.common.StandardUncaughtExceptionHandler;
 import com.slightlyloony.common.ipmsgs.IPMsgAction;
@@ -69,6 +70,13 @@ public class ServerInit {
                 throw new IllegalStateException( "Could not read blog configuration", e );
             }
         }
+
+        // initialize our blog object IDs after an integrity check...
+        if( !BlogIDs.INSTANCE.integrityCheck() ) {
+            LOG.fatal( "Blog object IDs failed integrity check, shutting down system" );
+            System.exit( 1 );
+        }
+        BlogIDs.INSTANCE.init();
 
         // start the session manager...
         BlogSessionManager.INSTANCE.init();

@@ -95,7 +95,7 @@ public class BytesObjectContent extends BlogObjectContent {
     public StreamObjectContent asStream() {
 
         StorageInputStream sis = new StorageInputStream( new ByteArrayInputStream( content ), contentLength );
-        return new StreamObjectContent( sis, compressionState, contentLength );
+        return new StreamObjectContent( sis, compressionState );
     }
 
 

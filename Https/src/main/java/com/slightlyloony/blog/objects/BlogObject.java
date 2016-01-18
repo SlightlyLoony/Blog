@@ -1,5 +1,6 @@
 package com.slightlyloony.blog.objects;
 
+import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,11 +18,13 @@ public class BlogObject {
 
     private final BlogID blogID;
     private final BlogObjectType type;
+    private final BlogObjectAccessRequirements accessRequirements;
 
     private BlogObjectContent content;  // if this field is null, then the instance is invalid...
 
 
-    public BlogObject( final BlogID _id, final BlogObjectType _type, final BlogObjectContent _content ) {
+    public BlogObject( final BlogID _id, final BlogObjectType _type,
+                       final BlogObjectAccessRequirements __accessRequirements, final BlogObjectContent _content ) {
 
         if( (_type == null) || (_id == null) )
             throw new IllegalArgumentException( "Missing required argument _type or _id" );
@@ -29,11 +32,12 @@ public class BlogObject {
         type = _type;
         content = _content;
         blogID = _id;
+        accessRequirements = __accessRequirements;
     }
 
 
-    public BlogObject( final BlogID _id, final BlogObjectType _type ) {
-        this( _id, _type, null );
+    public BlogObject( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements __accessRequirements ) {
+        this( _id, _type, __accessRequirements, null );
     }
 
 
@@ -81,5 +85,10 @@ public class BlogObject {
 
     public synchronized BlogObjectContent getContent() {
         return content;
+    }
+
+
+    public BlogObjectAccessRequirements getAccessRequirements() {
+        return accessRequirements;
     }
 }

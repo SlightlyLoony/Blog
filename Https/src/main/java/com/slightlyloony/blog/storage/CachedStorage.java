@@ -63,8 +63,8 @@ public class CachedStorage {
      * @param _accessRequirements the optional access requirements (for external requests only)
      * @return the blog object read
      */
-    public BlogObject read( final BlogID _id, final BlogObjectType _type,
-                            final BlogObjectAccessRequirements _accessRequirements, final boolean _mayCompress ) {
+    public BlogObject read( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements,
+                            final ContentCompressionState _compressionState ) {
 
         // if we have a cache for this category of object, see if the object is cached...
         int cacheNum = _type.getCache().getOrdinal();
@@ -78,7 +78,7 @@ public class CachedStorage {
                 return cachedObj;
 
             // it wasn't cached, so first we'll have to read it from storage...
-            BlogObject readObj = storage.read( _id, _type, _accessRequirements );
+            BlogObject readObj = storage.read( _id, _type, _accessRequirements, _compressionState );
 
             // if we got a valid object...
             if( readObj.isValid() ) {
@@ -88,7 +88,7 @@ public class CachedStorage {
                 if( content.contentLength() < maxEntrySize ) {
 
                     // make the blog object cacheable (resolve to bytes and try compressing)...
-                    readObj.makeReadyForCache( _mayCompress );
+                    readObj.makeReadyForCache( _compressionState.mayCompress() );
 
                     // tell the cache to take it...
                     cache.add( readObj );
@@ -105,7 +105,7 @@ public class CachedStorage {
         }
 
         // if we have no cache for this category, then we'll just have to read it from storage...
-        return storage.read( _id, _type, _accessRequirements );
+        return storage.read( _id, _type, _accessRequirements, _compressionState );
     }
 
 

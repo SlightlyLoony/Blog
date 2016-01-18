@@ -24,15 +24,11 @@ public class StreamObjectContent extends BlogObjectContent {
     private final StorageInputStream content;
 
 
-    public StreamObjectContent( final StorageInputStream _content, final ContentCompressionState _compressionState, final int _contentLength ) {
-        super( _compressionState, _contentLength );
+    public StreamObjectContent( final StorageInputStream _content, final ContentCompressionState _compressionState ) {
+        super( _compressionState, (_content == null) ? 0 : _content.length() );
 
         if( _content == null )
             throw new IllegalArgumentException( "Missing content" );
-
-        if( _content.length() != _contentLength )
-            throw new IllegalArgumentException( "Actual content length is different than the specified length: "
-                    + _content.length() + " vs. " + _contentLength );
 
         content = _content;
     }

@@ -42,6 +42,8 @@ public class BlogRequest {
     private AcceptRequestHeader accepts;
     private AcceptEncodingRequestHeader acceptEncodings;
 
+    // TODO: switch from valid/error message model to exceptions?
+
     public BlogRequest( final Request _request, final HttpServletRequest _httpServletRequest, final BlogResponse _response ) {
 
         request = _request;

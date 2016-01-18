@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static com.slightlyloony.blog.objects.ContentCompressionState.DO_NOT_COMPRESS;
+
 /**
  * The one and only handler for the blog.  We are deliberately trading the complexity of the normal Jetty "handler chains" for the relative
  * simplicity (to us, anyway!) of straightforward procedural code.
@@ -42,11 +44,19 @@ public class BlogHandler extends AbstractHandler implements Handler {
         BlogRequest request = new BlogRequest( _request, _httpServletRequest, response );
         if( !request.initialize() ) {
 
-            // TODO: handle invalid requests...
+            // TODO: handle invalid requests mo' bettah...
+            response.setResponseCode( HttpServletResponse.SC_NOT_FOUND );
+            request.handled();
+
+            t.mark();
+
+            LOG.info( LU.msg( "{0} {2}{1} from {3} completed (NOT FOUND) in {4}",
+                    _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
+            return;
         }
 
         // try to read the metadata for this request...
-        BlogObject obj = BlogServer.STORAGE.read( request.getId(), BlogObjectType.METADATA, request.getAccessRequirements(), true );
+        BlogObject obj = BlogServer.STORAGE.read( request.getId(), BlogObjectType.METADATA, request.getAccessRequirements(), DO_NOT_COMPRESS );
         if( !obj.isValid() ) {
             // TODO: handle invalid object retrieved...
         }

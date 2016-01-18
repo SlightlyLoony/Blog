@@ -49,6 +49,11 @@ public class BlogResponse {
     }
 
 
+    public void setResponseCode( final int _statusCode ) {
+        response.setStatus( _statusCode );
+    }
+
+
     public void setContentEncoding( final String _contentEncoding ) {
         response.setHeader( "Content-Encoding", _contentEncoding );
     }

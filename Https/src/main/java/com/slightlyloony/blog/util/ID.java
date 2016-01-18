@@ -62,6 +62,46 @@ public class ID {
 
 
     /**
+     * Returns -1, 0, or +1 as the given base64url character _a is less than, equal to, or greater than the given base64url character _b, using the
+     * base64url collation sequence.  Throws {@link IllegalArgumentException} if either character is invalid for base64urls.
+     *
+     * @param _a the first comparand
+     * @param _b the second comparand
+     * @return the value -1, 0, or +1 as the given base64url character _a is less than, equal to, or greater than the given base64url character _b
+     */
+    public static int compare( final char _a, final char _b ) {
+
+        if( !isValid( _a )|| !isValid( _b ))
+            throw new IllegalArgumentException( "Invalid value: " + _a + " or " + _b );
+
+        return Integer.signum( get( _a ) - get( _b ));
+    }
+
+
+    /**
+     * Returns -1, 0, or +1 as the given base64url _a is less than, equal to, or greater than the given base64url _b.  Throws
+     * {@link IllegalArgumentException} if either given string is null, if the given strings aren't of equal length, or if either string contains
+     * invalid base64url characters.
+     *
+     * @param _a the first comparand
+     * @param _b the second comparand
+     * @return the value -1, 0, or +1 as the given base64url _a is less than, equal to, or greater than the given base64url _b
+     */
+    public static int compare( final String _a, final String _b ) {
+
+        if( (_a == null) || (_b == null) || (_a.length() != _b.length()) )
+            throw new IllegalArgumentException( "Invalid value: " + _a + " or " + _b );
+
+        for( int i = 0; i < _a.length(); i++ ) {
+            int cc = compare( _a.charAt( i ), _b.charAt( i ) );
+            if( cc != 0 )
+                return cc;
+        }
+        return 0;
+    }
+
+
+    /**
      * Returns the numeric value of the given character, or -1 if the character is invalid.
      *
      * @param _char the character to get a numeric value for
