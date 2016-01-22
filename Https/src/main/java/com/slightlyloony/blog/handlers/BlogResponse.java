@@ -43,7 +43,7 @@ public class BlogResponse {
     public void setMimeType( final BlogObjectType _mimeType ) {
 
         if( _mimeType == null)
-            throw new IllegalArgumentException( "Missing MIME type" );
+            throw new HandlerIllegalArgumentException( "Missing MIME type" );
 
         response.setContentType( _mimeType.getMime() );
     }

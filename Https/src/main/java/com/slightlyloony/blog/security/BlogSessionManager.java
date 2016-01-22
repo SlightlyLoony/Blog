@@ -2,6 +2,7 @@ package com.slightlyloony.blog.security;
 
 import com.google.common.io.BaseEncoding;
 import com.slightlyloony.blog.ServerInit;
+import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
 import com.slightlyloony.blog.util.Timer;
 import com.slightlyloony.common.ExecutionService;
 import org.apache.logging.log4j.LogManager;
@@ -71,7 +72,7 @@ public class BlogSessionManager {
         }
         catch( NoSuchAlgorithmException | NoSuchProviderException e ) {
             LOG.fatal( "Problem instantiating SecureRandom", e );
-            throw new IllegalStateException( "No session token generator" );
+            throw new HandlerIllegalStateException( "No session token generator" );
         }
     }
 

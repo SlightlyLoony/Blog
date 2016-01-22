@@ -2,10 +2,12 @@ package com.slightlyloony.blog;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
-import com.slightlyloony.blog.config.BlogConfig;
 import com.slightlyloony.blog.config.ServerConfig;
+import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
 import com.slightlyloony.blog.objects.BlogIDs;
 import com.slightlyloony.blog.security.BlogSessionManager;
+import com.slightlyloony.blog.storage.CachedStorage;
+import com.slightlyloony.blog.storage.Storage;
 import com.slightlyloony.common.StandardUncaughtExceptionHandler;
 import com.slightlyloony.common.ipmsgs.IPMsgAction;
 import com.slightlyloony.common.ipmsgs.IPMsgParticipant;
@@ -14,7 +16,6 @@ import com.slightlyloony.common.ipmsgs.IPMsgType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.net.SocketAddress;
@@ -31,7 +32,6 @@ public class ServerInit {
     private static final Logger LOG = LogManager.getLogger();
 
     private static ServerConfig CONFIG;
-    private static Map<String,BlogConfig> BLOGS;
 
 
     public static void init() {
@@ -51,24 +51,7 @@ public class ServerInit {
         }
         catch( FileNotFoundException e ) {
             LOG.fatal( "Problem reading blog server configuration", e );
-            throw new IllegalStateException( "Could not read blog server configuration", e );
-        }
-
-        // read the configuration for our blogs...
-        File contentRoot = new File( CONFIG.getContentRoot() );
-        BLOGS = Maps.newHashMap();
-        for( String blog : CONFIG.getBlogs() ) {
-
-            try {
-                File blogRoot = new File( contentRoot, blog );
-                File blogConfigFile = new File( blogRoot, "blog.json");
-                BlogConfig blogConfig = new Gson().fromJson( new FileReader( blogConfigFile ), BlogConfig.class );
-                BLOGS.put( blog, blogConfig );
-            }
-            catch( FileNotFoundException e ) {
-                LOG.fatal( "Problem reading blog configuration", e );
-                throw new IllegalStateException( "Could not read blog configuration", e );
-            }
+            throw new HandlerIllegalStateException( "Could not read blog server configuration", e );
         }
 
         // initialize our blog object IDs after an integrity check...
@@ -77,6 +60,16 @@ public class ServerInit {
             System.exit( 1 );
         }
         BlogIDs.INSTANCE.init();
+
+        // initialize the storage system...
+        BlogServer.STORAGE = new CachedStorage( new Storage( ServerInit.getConfig().getContentRoot() ) );
+
+        // create our blog instances...
+        for( String blog : CONFIG.getBlogs() ) {
+            Blog blogInstance = Blog.create( blog );
+            if( blogInstance != null )
+                BlogServer.addBlog( blogInstance );
+        }
 
         // start the session manager...
         BlogSessionManager.INSTANCE.init();
@@ -88,11 +81,6 @@ public class ServerInit {
 
     public static ServerConfig getConfig() {
         return CONFIG;
-    }
-
-
-    public static BlogConfig getBlogConfig( final String _blogName ) {
-        return BLOGS.get( _blogName );
     }
 
 

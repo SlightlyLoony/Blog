@@ -11,7 +11,6 @@ public class ServerConfig {
     private Server monitor;
     private Server http;
     private Server https;
-    private VirtualServer[] virtualServers;
     private String keystore;
     private String keystorePassword;  // this implementation assumes the same password is used for both the keystore and the certificate...
     private String contentRoot;
@@ -38,11 +37,6 @@ public class ServerConfig {
 
     public String getContentRoot() {
         return contentRoot;
-    }
-
-
-    public VirtualServer[] getVirtualServers() {
-        return virtualServers;
     }
 
 
@@ -73,29 +67,6 @@ public class ServerConfig {
 
     public String[] getBlogs() {
         return blogs;
-    }
-
-
-    public static class VirtualServer {
-
-        private int port;
-        private String domain;
-        private String alias;
-
-
-        public int getPort() {
-            return port;
-        }
-
-
-        public String getDomain() {
-            return domain;
-        }
-
-
-        public String getAlias() {
-            return alias;
-        }
     }
 
 

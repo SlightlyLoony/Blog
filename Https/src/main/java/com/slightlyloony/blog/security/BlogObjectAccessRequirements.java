@@ -2,6 +2,7 @@ package com.slightlyloony.blog.security;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +22,8 @@ public enum BlogObjectAccessRequirements {
     AUTHOR         ( 'F', Sets.newHashSet( BlogAccessRight.AUTHOR                               ) ),  // implies SESSION, AUTHENTICATED...
     ADULT_REVIEWER ( 'G', Sets.newHashSet( BlogAccessRight.ADULT, BlogAccessRight.REVIEWER      ) ),  // implies SESSION, AUTHENTICATED...
     ADULT_AUTHOR   ( 'H', Sets.newHashSet( BlogAccessRight.ADULT, BlogAccessRight.AUTHOR        ) ),  // implies SESSION, AUTHENTICATED...
-    MANAGER        ( 'Z', Sets.newHashSet( BlogAccessRight.MANAGER                              ) );  // implies SESSION, AUTHENTICATED...
+    MANAGER        ( 'Z', Sets.newHashSet( BlogAccessRight.MANAGER                              ) ),  // implies SESSION, AUTHENTICATED...
+    ADMIN          ( '0', Sets.newHashSet( BlogAccessRight.ADMIN                                ) );  // implies SESSION, AUTHENTICATED...
 
 
     private static Map<Character,BlogObjectAccessRequirements> MAP_CODE;
@@ -68,7 +70,7 @@ public enum BlogObjectAccessRequirements {
     public boolean isAuthorized( final BlogUserRights _userRights ) {
 
         if( _userRights == null )
-            throw new IllegalArgumentException( "User rights are null" );
+            throw new HandlerIllegalArgumentException( "User rights are null" );
 
         for( BlogAccessRight requirement : requirements ) {
             if( !_userRights.has( requirement ))

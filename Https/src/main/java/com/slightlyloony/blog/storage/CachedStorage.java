@@ -2,6 +2,8 @@ package com.slightlyloony.blog.storage;
 
 import com.slightlyloony.blog.ServerInit;
 import com.slightlyloony.blog.config.ServerConfig;
+import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
+import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
 import com.slightlyloony.blog.objects.*;
 import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
 import org.apache.logging.log4j.LogManager;
@@ -88,7 +90,7 @@ public class CachedStorage {
                 if( content.contentLength() < maxEntrySize ) {
 
                     // make the blog object cacheable (resolve to bytes and try compressing)...
-                    readObj.makeReadyForCache( _compressionState.mayCompress() );
+                    readObj.makeReadyForCache( _type.isCompressible() &&_compressionState.mayCompress() );
 
                     // tell the cache to take it...
                     cache.add( readObj );
@@ -97,7 +99,7 @@ public class CachedStorage {
             else {
                 String msg = "Problem reading blog object " + _id + "." + _type;
                 LOG.error( msg );
-                throw new IllegalStateException( msg );
+                throw new HandlerIllegalStateException( msg );
             }
 
             // leave with our shiny new object...
@@ -106,6 +108,65 @@ public class CachedStorage {
 
         // if we have no cache for this category, then we'll just have to read it from storage...
         return storage.read( _id, _type, _accessRequirements, _compressionState );
+    }
+
+
+    /**
+     * Creates a new blog object with the given content, type, and access requirements, without affecting the cache at all.
+     *
+     * @param _content the content of the new object
+     * @param _type the blog object type of the new object
+     * @param _accessRequirements the optional access requirements (for externally available objects only) for the new object
+     * @param _compressionState the compression state of this object
+     * @return the blog object representing the shiny new object
+     */
+    public BlogObject create( final BlogObjectContent _content, final BlogObjectType _type,
+                              final BlogObjectAccessRequirements _accessRequirements, final ContentCompressionState _compressionState ) {
+
+        return storage.create( _content, _type, _accessRequirements, _compressionState );
+    }
+
+
+    /**
+     * Updates an existing blog object with the new content given blog object.  The returned blog object contains a stream for the updated blog
+     * object.  If the updated object was in the cache prior to the invocation of this method, it will be deleted and the new object will be cached
+     * instead (if possible).
+     *
+     * @param _object the blog object with updated content
+     * @return the blog object representing the shiny new object
+     */
+    public BlogObject modify( final BlogObject _object ) {
+
+        if( _object == null )
+            throw new HandlerIllegalArgumentException( "Missing blog object to modify" );
+
+        // remember the ID and type...
+        BlogID id = _object.getBlogID();
+        BlogObjectType type = _object.getType();
+
+        // do the modify operation...
+        BlogObject object = storage.modify( _object );
+
+        // if we have a valid object, and a cache for this kind of object...
+        int cacheNum = _object.getType().getCache().getOrdinal();
+        if( object.isValid() && (cacheNum >= 0) && (cacheNum < caches.length) && (caches[cacheNum] != null) ) {
+
+            // get as much ready outside the synchronization block as we can...
+            BlogObjectCache cache = caches[cacheNum];
+            object.makeReadyForCache( type.isCompressible() );
+
+            // synchronize around the invalidate/add pair, so we don't have another thread also trying to fill the cache for this guy...
+            synchronized( cache.lock ) {
+
+                // invalidate any existing entry...
+                cache.remove( id, type );
+
+                // then add a new entry, if we can...
+                cache.add( object );
+            }
+         }
+
+        return object;
     }
 
 

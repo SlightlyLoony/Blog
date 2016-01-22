@@ -7,6 +7,7 @@ package com.slightlyloony.blog.security;
  */
 public enum BlogAccessRight {
 
+    ADMIN,
     MANAGER,
     AUTHOR,
     REVIEWER,

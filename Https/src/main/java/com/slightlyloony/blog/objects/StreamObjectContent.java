@@ -3,6 +3,8 @@ package com.slightlyloony.blog.objects;
 import com.google.common.io.ByteStreams;
 import com.slightlyloony.blog.handlers.BlogRequest;
 import com.slightlyloony.blog.handlers.BlogResponse;
+import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
+import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
 import com.slightlyloony.blog.storage.StorageInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +30,7 @@ public class StreamObjectContent extends BlogObjectContent {
         super( _compressionState, (_content == null) ? 0 : _content.length() );
 
         if( _content == null )
-            throw new IllegalArgumentException( "Missing content" );
+            throw new HandlerIllegalArgumentException( "Missing content" );
 
         content = _content;
     }
@@ -61,7 +63,7 @@ public class StreamObjectContent extends BlogObjectContent {
         catch( IOException e ) {
             String msg = "Problem copying content input stream to response output stream";
             LOG.error( msg, e );
-            throw new IllegalStateException( msg, e );
+            throw new HandlerIllegalStateException( msg, e );
         }
     }
 
@@ -75,7 +77,7 @@ public class StreamObjectContent extends BlogObjectContent {
         catch( IOException e ) {
             String msg = "Problem copying GZIP decompressing input stream to response output stream";
             LOG.error( msg, e );
-            throw new IllegalStateException( msg, e );
+            throw new HandlerIllegalStateException( msg, e );
         }
     }
 
@@ -96,7 +98,7 @@ public class StreamObjectContent extends BlogObjectContent {
         catch( IOException e ) {
             String msg = "Error converting storage input stream to bytes";
             LOG.error( msg, e );
-            throw new IllegalStateException( msg, e );
+            throw new HandlerIllegalStateException( msg, e );
         }
 
         // return it as a bytes content instance...

@@ -77,3 +77,30 @@ Hosting
   The blog will be hosted on an Amazon EC2 instance, most likely the smallest M3 series.  It will not use S3 storage, for several reasons including
   performance and cost.  That means there's a backup requirement, which I propose to "solve" with a periodic zipped snapshot that I download.  Other
   possible approaches include copying based on change timestamps, or rsync between the blog host and a client.
+
+
+Users
+
+  The blog allows authenticated users, and in particular, users with greater-than-normal access.  For instance, blog authors will be able to create
+  new posts, whereas other users cannot.  Authentication is through simple user name/password authentication using a web form with communications over
+  SSL-secured traffic.  Anything more elaborate/secure than that is almost certainly overkill for the purposes of a blog :)  In addition, the blog
+  will allow (optionally) the setting of a persistent user cookie to obviate the need for a login.  This cookie will expire in a relatively long
+  period (probably between a week and a month), requiring the user to login again.  The cookie will also be invalidatable via a blog manager action.
+
+  The blog's configuration will include the name of a user's index.  If this configuration is missing at startup, the blog will create a users index
+  with a single entry (for user name "manager", with password "blog"), and will create a single user entry (for user "manager") with full blog rights
+  (but not administrative rights for the blog server).  This is intended as a simple way to bootstrap a new blog.  The users index will consist of a
+  list of triplets (user name, user cookie ID, user record ID) that are read at startup and then kept in memory for fast user lookups.  Changes or
+  additions to the users index and user data will be made immediately to in-memory data structures and then lazily written to persistent storage.
+
+
+Templates
+
+  I looked at several widely used, available template engines (Moustache, Velocity, and Freemarker).  Velocity was the closest match to my objectives,
+  but the project has been inactive for 8 years, and it's huge and complicated.  Freemarker doesn't have the notion of compiled templates (which I
+  want).  Moustache is Javascript-based.  So I'm rolling my own.  The basic notion I have in mind is to have a compiled form that consists of a list
+  of "sources".  Some sources will be fixed strings.  Others will be filled in by dotted form variables, where all but the tail (rightmost) is itself
+  a "source", and the tail is the name of the property on the preceding source.  Sources can have parameters, in parens.  Escaping would be by tacking
+  on left-most "sources" that do nothing but escape (so, for example, "dqEsc.user(AlCapone).bio" would be the double-quote escaped version of the
+  user AlCapone's biography).  Iteration would be represented by a source with a datasource and a list of repeated sources.  Conditional text would
+  be represented by a source with a test and true/false lists.  Since all the elements are sources, infinitely deep nesting is possible.

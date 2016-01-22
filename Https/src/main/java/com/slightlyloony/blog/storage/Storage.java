@@ -1,6 +1,9 @@
 package com.slightlyloony.blog.storage;
 
+import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
+import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
+import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
 import com.slightlyloony.blog.objects.*;
 import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
 import org.apache.logging.log4j.LogManager;
@@ -8,6 +11,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.text.MessageFormat;
+import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 /**
  * Provides access to the storage system (disk) for the blog.
@@ -19,6 +24,7 @@ public class Storage {
     private static final Logger LOG = LogManager.getLogger();
 
     private final File objectsRoot;
+    private final Map<String,Semaphore> locks;
 
 
     /**
@@ -29,13 +35,14 @@ public class Storage {
     public Storage( String _rootPath ) {
 
         if( _rootPath == null )
-            throw new IllegalArgumentException( "Missing path information" );
+            throw new HandlerIllegalArgumentException( "Missing path information" );
 
         objectsRoot = new File( _rootPath, Constants.OBJECTS_ROOT );
+        locks = Maps.newHashMap();
 
         // do a little sanity checking, to make sure that we actually HAVE this directory and that we can write into it...
         if( !objectsRoot.exists() || !objectsRoot.isDirectory() || !objectsRoot.canWrite() )
-            throw new IllegalStateException( "Path supplied for content objectsRoot doesn't exist, isn't a directory, or isn't writable: " + _rootPath );
+            throw new HandlerIllegalStateException( "Path supplied for content objectsRoot doesn't exist, isn't a directory, or isn't writable: " + _rootPath );
     }
 
 
@@ -54,32 +61,45 @@ public class Storage {
                             final BlogObjectAccessRequirements _accessRequirements, final ContentCompressionState _compressionState ) {
 
         if( (_id == null) || (_type == null) )
-            throw new IllegalArgumentException( "Missing ID or type" );
+            throw new HandlerIllegalArgumentException( "Missing ID or type" );
 
-        // get the file...
-        File file = getObjectFile( _id, _type, _accessRequirements );
+        // get a lock for this blog ID...
+        getLock( _id );
 
-        // make sure it exists and we can read it...
-        if( (!file.exists()) || (!file.isFile()) || (!file.canRead()) ) {
-            String msg = MessageFormat.format( "Blog object file (\"{0}\") problem: doesn't exist, isn't a file, or can't read", file.getAbsolutePath() );
-            LOG.warn( msg );
-            return new BlogObject( _id, _type, _accessRequirements );
-        }
-
-        // create our blog object and return it...
         try {
-            StorageInputStream sis = new StorageInputStream( new FileInputStream( file ), (int) file.length() );
-            StreamObjectContent soc = new StreamObjectContent( sis, _compressionState );
-            return new BlogObject( _id, _type, _accessRequirements, soc );
+            // get the file...
+            File file = getObjectFile( _id, _type, _accessRequirements );
+
+            // make sure it exists and we can read it...
+            if( (!file.exists()) || (!file.isFile()) || (!file.canRead()) ) {
+                String msg = MessageFormat.format( "Blog object file (\"{0}\") problem: doesn't exist, isn't a file, or can't read", file.getAbsolutePath() );
+                LOG.warn( msg );
+                return new BlogObject( _id, _type, _accessRequirements );
+            }
+
+            // create our blog object and return it...
+            try {
+                StorageInputStream sis = new StorageInputStream( new FileInputStream( file ), (int) file.length() );
+                StreamObjectContent soc = new StreamObjectContent( sis,
+                        _type.isCompressible() ? _compressionState : ContentCompressionState.DO_NOT_COMPRESS );
+                return new BlogObject( _id, _type, _accessRequirements, soc );
+            }
+            catch( FileNotFoundException e ) {
+                String msg = MessageFormat.format( "Blog object file (\"{1}\") problem: {0}", e.getMessage(), file.getAbsolutePath() );
+                LOG.error( msg, e );
+                return new BlogObject( _id, _type, _accessRequirements );
+            }
         }
-        catch( FileNotFoundException e ) {
-            String msg = MessageFormat.format( "Blog object file (\"{1}\") problem: {0}", e.getMessage(), file.getAbsolutePath() );
-            LOG.error( msg, e );
-            return new BlogObject( _id, _type, _accessRequirements );
+
+        // now release our lock...
+        finally {
+            releaseLock( _id );
         }
     }
 
 
+    // TODO: redo content length to be an object (and nullable) to deal with unknown lengths.  Review the use of content length through the stack
+    // TODO: Review use of compression state as a parameter - is it REALLY the right way to do this?
     /**
      * Creates a new blog object with the given content, type, and access requirements.  The access requirements are optional; if missing (null) then
      * this will be an object accessible only through an internal request.  The returned blog object contains a stream for the newly created blog
@@ -95,45 +115,55 @@ public class Storage {
                               final BlogObjectAccessRequirements _accessRequirements, final ContentCompressionState _compressionState ) {
 
         if( (_content == null) || (_type == null) )
-            throw new IllegalArgumentException( "Missing content or type" );
+            throw new HandlerIllegalArgumentException( "Missing content or type" );
 
         // get us a blog ID...
         BlogID newID = BlogIDs.INSTANCE.getNextBlogID();
 
-        // get the file...
-        File file = getObjectFile( newID, _type, _accessRequirements );
+        // get a lock for this blog ID...
+        getLock( newID );
 
         try {
-            // create the file, or fail trying...
-            if( !file.createNewFile() ) {
-                String msg = MessageFormat.format( "Blog object file (\"{0}\") problem: already exists, or we can't create it", file.getAbsolutePath() );
-                LOG.warn( msg );
+            // get the file...
+            File file = getObjectFile( newID, _type, _accessRequirements );
+
+            try {
+                // create the file, or fail trying...
+                if( !file.createNewFile() ) {
+                    String msg = MessageFormat.format( "Blog object file (\"{0}\") problem: already exists, or we can't create it", file.getAbsolutePath() );
+                    LOG.warn( msg );
+                    return new BlogObject( newID, _type, _accessRequirements );
+                }
+
+                // write the contents out...
+                try(
+                    InputStream is = _content.asStream().getStream();
+                    OutputStream os = new FileOutputStream( file ); ) {
+                    ByteStreams.copy( is, os );
+                }
+            }
+            catch( IOException e ) {
+                String msg = MessageFormat.format( "Blog object file (\"{0}\") problem: {1}", file.getAbsolutePath(), e.getMessage() );
+                LOG.error( msg, e );
                 return new BlogObject( newID, _type, _accessRequirements );
             }
 
-            // write the contents out...
-            try(
-                InputStream is = _content.asStream().getStream();
-                OutputStream os = new FileOutputStream( file ); ) {
-                ByteStreams.copy( is, os );
+            try {
+                // return our new object in a blog object...
+                StorageInputStream sis = new StorageInputStream( new FileInputStream( file ), (int) file.length() );
+                StreamObjectContent content = new StreamObjectContent( sis, _compressionState );
+                return new BlogObject( newID, _type, _accessRequirements, content );
+            }
+            catch( FileNotFoundException e ) {
+                String msg = MessageFormat.format( "Blog object file (\"{1}\") problem: {0}", e.getMessage(), file.getAbsolutePath() );
+                LOG.error( msg, e );
+                return new BlogObject( newID, _type, _accessRequirements );
             }
         }
-        catch( IOException e ) {
-            String msg = MessageFormat.format( "Blog object file (\"{0}\") problem: {1}", file.getAbsolutePath(), e.getMessage() );
-            LOG.error( msg, e );
-            return new BlogObject( newID, _type, _accessRequirements );
-        }
 
-        try {
-            // return our new object in a blog object...
-            StorageInputStream sis = new StorageInputStream( new FileInputStream( file ), (int) file.length() );
-            StreamObjectContent content = new StreamObjectContent( sis, _compressionState );
-            return new BlogObject( newID, _type, _accessRequirements, content );
-        }
-        catch( FileNotFoundException e ) {
-            String msg = MessageFormat.format( "Blog object file (\"{1}\") problem: {0}", e.getMessage(), file.getAbsolutePath() );
-            LOG.error( msg, e );
-            return new BlogObject( newID, _type, _accessRequirements );
+        // now release our lock...
+        finally {
+            releaseLock( newID );
         }
     }
 
@@ -148,43 +178,100 @@ public class Storage {
     public BlogObject modify( final BlogObject _object ) {
 
         if( _object == null )
-            throw new IllegalArgumentException( "Missing blog object to modify" );
+            throw new HandlerIllegalArgumentException( "Missing blog object to modify" );
 
-        // get the file...
-        File file = getObjectFile( _object.getBlogID(), _object.getType(), _object.getAccessRequirements() );
-
-        // make sure it exists and we can read it...
-        if( (!file.exists()) || (!file.isFile()) || (!file.canRead()) ) {
-            String msg = MessageFormat.format( "Blog object file (\"{0}\") problem: doesn't exist, isn't a file, or can't read", file.getAbsolutePath() );
-            LOG.warn( msg );
-            return new BlogObject( _object.getBlogID(), _object.getType(), _object.getAccessRequirements() );
-        }
+        // get a lock...
+        getLock( _object.getBlogID() );
 
         try {
+            // get the file...
+            File file = getObjectFile( _object.getBlogID(), _object.getType(), _object.getAccessRequirements() );
 
-            // write the contents out...
-            try(
-                InputStream is = _object.getContent().asStream().getStream();
-                OutputStream os = new FileOutputStream( file ); ) {
-                ByteStreams.copy( is, os );
+            // make sure it exists and we can read it...
+            if( (!file.exists()) || (!file.isFile()) || (!file.canRead()) ) {
+                String msg = MessageFormat.format( "Blog object file (\"{0}\") problem: doesn't exist, isn't a file, or can't read", file.getAbsolutePath() );
+                LOG.warn( msg );
+                return new BlogObject( _object.getBlogID(), _object.getType(), _object.getAccessRequirements() );
+            }
+
+            try {
+
+                // write the contents out...
+                try(
+                    InputStream is = _object.getContent().asStream().getStream();
+                    OutputStream os = new FileOutputStream( file ); ) {
+                    ByteStreams.copy( is, os );
+                }
+            }
+            catch( IOException e ) {
+                String msg = MessageFormat.format( "Blog object file (\"{0}\") problem: {1}", file.getAbsolutePath(), e.getMessage() );
+                LOG.error( msg, e );
+                return new BlogObject( _object.getBlogID(), _object.getType(), _object.getAccessRequirements() );
+            }
+
+            try {
+                // return our new object in a blog object...
+                StorageInputStream sis = new StorageInputStream( new FileInputStream( file ), (int) file.length() );
+                StreamObjectContent content = new StreamObjectContent( sis, _object.getContent().getCompressionState() );
+                return new BlogObject( _object.getBlogID(), _object.getType(), _object.getAccessRequirements(), content );
+            }
+            catch( FileNotFoundException e ) {
+                String msg = MessageFormat.format( "Blog object file (\"{1}\") problem: {0}", e.getMessage(), file.getAbsolutePath() );
+                LOG.error( msg, e );
+                return new BlogObject( _object.getBlogID(), _object.getType(), _object.getAccessRequirements() );
             }
         }
-        catch( IOException e ) {
-            String msg = MessageFormat.format( "Blog object file (\"{0}\") problem: {1}", file.getAbsolutePath(), e.getMessage() );
-            LOG.error( msg, e );
-            return new BlogObject( _object.getBlogID(), _object.getType(), _object.getAccessRequirements() );
+
+        // now release our lock...
+        finally {
+            releaseLock( _object.getBlogID() );
+        }
+    }
+
+
+    /**
+     * Blocks until an exclusive lock is obtained for the given blog ID.
+     *
+     * @param _id the blog ID to obtain a lock for
+     */
+    private void getLock( final BlogID _id ) {
+
+        // get or make our lock...
+        Semaphore semaphore;
+        synchronized( locks ) {
+            semaphore = locks.get( _id.getID() );
+            if( semaphore == null ) {
+                semaphore = new Semaphore( 1 );
+                locks.put( _id.getID(), semaphore );
+            }
         }
 
-        try {
-            // return our new object in a blog object...
-            StorageInputStream sis = new StorageInputStream( new FileInputStream( file ), (int) file.length() );
-            StreamObjectContent content = new StreamObjectContent( sis, _object.getContent().getCompressionState() );
-            return new BlogObject( _object.getBlogID(), _object.getType(), _object.getAccessRequirements(), content );
-        }
-        catch( FileNotFoundException e ) {
-            String msg = MessageFormat.format( "Blog object file (\"{1}\") problem: {0}", e.getMessage(), file.getAbsolutePath() );
-            LOG.error( msg, e );
-            return new BlogObject( _object.getBlogID(), _object.getType(), _object.getAccessRequirements() );
+        // block until (and if!) we get a permit...
+        semaphore.acquireUninterruptibly();
+    }
+
+
+    /**
+     * Releases a previously obtained exclusive lock on the given blog ID.
+     *
+     * @param _id the blog ID to release a lock for
+     */
+    private void releaseLock( final BlogID _id ) {
+
+        // get our lock (and we'd better darned well have one!)...
+        Semaphore semaphore;
+        synchronized( locks ) {
+            semaphore = locks.get( _id.getID() );
+            if( semaphore == null ) {
+                LOG.error( "Trying to release a lock on a blog ID that has no lock: " + _id );
+                return;
+            }
+
+            // release our permit and delete the lock if no other threads are waiting on it...
+            semaphore.release();
+            if( !semaphore.hasQueuedThreads() ) {
+                locks.remove( _id.getID() );
+            }
         }
     }
 

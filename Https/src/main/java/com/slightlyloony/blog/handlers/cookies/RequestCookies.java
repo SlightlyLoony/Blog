@@ -1,6 +1,7 @@
 package com.slightlyloony.blog.handlers.cookies;
 
 import com.slightlyloony.blog.handlers.BlogRequest;
+import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +20,7 @@ public class RequestCookies {
     public RequestCookies( final BlogRequest _request ) {
 
         if( _request == null )
-            throw new IllegalArgumentException( "Missing request" );
+            throw new HandlerIllegalArgumentException( "Missing request" );
 
         cookieMap = new HashMap<>();
         List<String> cookies = _request.getHeaders( "Cookie" );
@@ -44,7 +45,7 @@ public class RequestCookies {
     public RequestCookie get( final String _name ) {
 
         if( _name == null )
-            throw new IllegalArgumentException( "Missing name" );
+            throw new HandlerIllegalArgumentException( "Missing name" );
 
         return cookieMap.get( _name.toLowerCase() );
     }

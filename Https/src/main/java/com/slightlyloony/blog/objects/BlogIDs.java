@@ -1,6 +1,7 @@
 package com.slightlyloony.blog.objects;
 
 import com.slightlyloony.blog.ServerInit;
+import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
 import com.slightlyloony.blog.storage.Constants;
 import com.slightlyloony.blog.util.ID;
 import com.slightlyloony.blog.util.Timer;
@@ -100,7 +101,7 @@ public class BlogIDs {
         // get all our entries, sorted by name...
         File[] entries = _dir.listFiles();
         if( entries == null )
-            throw new IllegalStateException( "Given entry is not a directory: " + _dir.getName() );
+            throw new HandlerIllegalStateException( "Given entry is not a directory: " + _dir.getName() );
         Arrays.sort( entries, ( _file1, _file2 ) -> _file1.getName().compareTo( _file2.getName() ) );
 
         // if we're at the lowest level, look for files...
@@ -193,11 +194,16 @@ public class BlogIDs {
     }
 
 
+    /**
+     * Returns the next available (unused) blog object ID, in sequential order.
+     *
+     * @return the next available (unused) blog object ID
+     */
     public synchronized BlogID getNextBlogID() {
 
         BlogID result =  BlogID.create( ID.encode( ++lastUsedID ) );
         if( result == null)
-            throw new IllegalStateException( "Could not create next blog object ID" );
+            throw new HandlerIllegalStateException( "Could not create next blog object ID" );
 
         return result;
     }

@@ -3,11 +3,12 @@ package com.slightlyloony.blog.objects;
 import com.google.common.io.ByteStreams;
 import com.slightlyloony.blog.handlers.BlogRequest;
 import com.slightlyloony.blog.handlers.BlogResponse;
+import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
+import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -32,7 +33,7 @@ public abstract class BlogObjectContent {
     protected BlogObjectContent( final ContentCompressionState _compressionState, final int _contentLength ) {
 
         if( _compressionState == null )
-            throw new IllegalArgumentException( "Missing compression state" );
+            throw new HandlerIllegalArgumentException( "Missing compression state" );
 
         compressionState = _compressionState;
         contentLength = _contentLength;
@@ -67,8 +68,8 @@ public abstract class BlogObjectContent {
         }
         catch( IOException e ) {
             String msg = "Problem copying content input stream to response output stream";
-            LOG.error( msg, e );
-            throw new IllegalStateException( msg, e );
+            LOG.error( msg );
+            throw new HandlerIllegalStateException( msg, e );
         }
     }
 
@@ -81,7 +82,7 @@ public abstract class BlogObjectContent {
         catch( IOException e ) {
             String msg = "Problem getting GZIP output stream";
             LOG.error( msg, e );
-            throw new IllegalStateException( msg, e );
+            throw new HandlerIllegalStateException( msg, e );
         }
     }
 
@@ -94,7 +95,7 @@ public abstract class BlogObjectContent {
         catch( IOException e ) {
             String msg = "Problem getting GZIP input stream";
             LOG.error( msg, e );
-            throw new IllegalStateException( msg, e );
+            throw new HandlerIllegalStateException( msg, e );
         }
     }
 
@@ -107,7 +108,7 @@ public abstract class BlogObjectContent {
         catch( IOException e ) {
             String msg = "Problem getting response output stream";
             LOG.error( msg, e );
-            throw new IllegalStateException( msg, e );
+            throw new HandlerIllegalStateException( msg, e );
         }
     }
 
@@ -135,7 +136,7 @@ public abstract class BlogObjectContent {
         catch( IOException e ) {
             String msg = "Problem trying to compress bytes";
             LOG.error( msg, e );
-            throw new IllegalStateException( msg, e );
+            throw new HandlerIllegalStateException( msg, e );
         }
     }
 
@@ -159,7 +160,7 @@ public abstract class BlogObjectContent {
         catch( IOException e ) {
             String msg = "Problem trying to decompress bytes";
             LOG.error( msg, e );
-            throw new IllegalStateException( msg, e );
+            throw new HandlerIllegalStateException( msg, e );
         }
     }
 

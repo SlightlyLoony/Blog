@@ -1,9 +1,9 @@
 package com.slightlyloony.blog;
 
+import com.google.common.collect.Maps;
 import com.slightlyloony.blog.config.ServerConfig;
 import com.slightlyloony.blog.handlers.BlogHandler;
 import com.slightlyloony.blog.storage.CachedStorage;
-import com.slightlyloony.blog.storage.Storage;
 import com.slightlyloony.common.ExecutionService;
 import com.slightlyloony.common.ipmsgs.*;
 import com.slightlyloony.common.logging.Jetty2Log4j2Bridge;
@@ -20,6 +20,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +37,7 @@ public class BlogServer {
     private static long sequence = 0;
     private static boolean shutdown = false;
     private static Server server;
+    private static Map<String,Blog> blogs = Maps.newHashMap();
 
 
 
@@ -49,9 +51,6 @@ public class BlogServer {
 
         // initialize the blog application...
         ServerInit.init();
-
-        // initialize the server...
-        STORAGE = new CachedStorage( new Storage( ServerInit.getConfig().getContentRoot() ) );
 
         // tell the monitor we're alive, every fifteen seconds...
         setupAliveMessages();
@@ -126,17 +125,15 @@ public class BlogServer {
 
     private static Connector[] getConnectors() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
 
-        final ServerConfig rc = ServerInit.getConfig();
-
-        // iterate through all our virtual hosts, configuring connectors for them...
-        ServerConfig.VirtualServer[] virtualServers = rc.getVirtualServers();
-        Connector[] connectors = new Connector[virtualServers.length];
+        // iterate through all our blogs, configuring connectors for them...
+        ServerConfig serverConfig = ServerInit.getConfig();
+        Connector[] connectors = new Connector[blogs.size()];
         int i = 0;
-        for( ServerConfig.VirtualServer virtualServer : virtualServers ) {
+        for( Blog blog : blogs.values() ) {
 
             HttpConfiguration http_config = new HttpConfiguration();
             http_config.setSecureScheme( "https" );
-            http_config.setSecurePort( virtualServer.getPort() );
+            http_config.setSecurePort( blog.getConfig().getPort() );
 
             HttpConfiguration https_config = new HttpConfiguration( http_config );
             https_config.addCustomizer( new SecureRequestCustomizer() );
@@ -147,20 +144,20 @@ public class BlogServer {
             // see http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7181721
             // spent a day tracking this down!!!
             KeyStore ks = KeyStore.getInstance( "JKS" );
-            InputStream readStream = new FileInputStream( rc.getKeystore() );
-            ks.load( readStream, rc.getKeystorePassword().toCharArray() );
+            InputStream readStream = new FileInputStream( serverConfig.getKeystore() );
+            ks.load( readStream, serverConfig.getKeystorePassword().toCharArray() );
             readStream.close();
             sslContextFactory.setKeyStore( ks );
 
-            sslContextFactory.setKeyStorePassword( rc.getKeystorePassword() );
-            sslContextFactory.setCertAlias( virtualServer.getAlias() );
+            sslContextFactory.setKeyStorePassword( serverConfig.getKeystorePassword() );
+            sslContextFactory.setCertAlias( blog.getConfig().getCertAlias() );
 
             ServerConnector httpsConnector = new ServerConnector(
                     server,
                     new SslConnectionFactory( sslContextFactory, "http/1.1" ),
                     new HttpConnectionFactory( https_config )
             );
-            httpsConnector.setPort( virtualServer.getPort() );
+            httpsConnector.setPort( blog.getConfig().getPort() );
             httpsConnector.setIdleTimeout( 50000 );
             connectors[i++] = httpsConnector;
         }
@@ -197,5 +194,15 @@ public class BlogServer {
             }
         };
         aliveMessageFuture = ExecutionService.INSTANCE.scheduleAtFixedRate( cmd, 0, 15, TimeUnit.SECONDS );
+    }
+
+
+    public static void addBlog( final Blog _blog ) {
+        blogs.put( _blog.getHost(), _blog );
+    }
+
+
+    public static Blog getBlog( final String _host ) {
+        return blogs.get( _host );
     }
 }

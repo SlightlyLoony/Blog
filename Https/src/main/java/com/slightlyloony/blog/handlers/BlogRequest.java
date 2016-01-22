@@ -1,7 +1,7 @@
 package com.slightlyloony.blog.handlers;
 
-import com.slightlyloony.blog.ServerInit;
-import com.slightlyloony.blog.config.BlogConfig;
+import com.slightlyloony.blog.Blog;
+import com.slightlyloony.blog.BlogServer;
 import com.slightlyloony.blog.handlers.cookies.RequestCookie;
 import com.slightlyloony.blog.handlers.cookies.RequestCookies;
 import com.slightlyloony.blog.handlers.cookies.ResponseCookie;
@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -32,8 +31,7 @@ public class BlogRequest {
 
     private RequestMethod requestMethod;
     private String errorMessage;
-    private String blog;
-    private BlogConfig blogConfig;
+    private Blog blog;
     private BlogID id;
     private BlogObjectAccessRequirements accessRequirements;
     private BlogUserRights rights;
@@ -61,7 +59,7 @@ public class BlogRequest {
     public boolean initialize() {
 
         if( !initializeRequestMethod() )  return false;
-        if( !initializeBlogName() )       return false;
+        if( !initializeBlog() )           return false;
         if( !initializePathParts() )      return false;
         if( !initializeBlogUserRights() ) return false;
 
@@ -91,7 +89,7 @@ public class BlogRequest {
             // if we succeeded, then set a name and set a session cookie...
             if( session != null ) {
                 session.setName( httpServletRequest.getRemoteAddr() );  // default the name to the client's IP address...
-                response.addCookie( new ResponseCookie( Constants.SESSION_COOKIE_NAME, session.getToken(), blog, "/" ) );
+                response.addCookie( new ResponseCookie( Constants.SESSION_COOKIE_NAME, session.getToken(), blog.getName(), "/" ) );
             }
         }
     }
@@ -103,7 +101,7 @@ public class BlogRequest {
 
 
     private boolean initializePathParts() {
-        String path = blogConfig.map( request.getPathInfo() );
+        String path = blog.getConfig().map( request.getPathInfo() );
         if( (path == null) || (path.length() != 12) ) {
             errorMessage = "Malformed URI path: " + path + " (path in request was: " + request.getPathInfo() + ")";
             return false;
@@ -132,17 +130,11 @@ public class BlogRequest {
     }
 
 
-    private boolean initializeBlogName() {
+    private boolean initializeBlog() {
         String host = request.getHeader( "Host" );
-        Matcher mat = HOST_PATTERN.matcher( host );
-        if( !mat.matches() ) {
-            errorMessage = "Invalid host in request: " + host;
-            return false;
-        }
-        blog = mat.group( 1 );
-        blogConfig = ServerInit.getBlogConfig( blog );
-        if( blogConfig == null ) {
-            errorMessage = "Unknown or unconfigured blog: " + blog;
+        blog = BlogServer.getBlog( host );
+        if( blog == null ) {
+            errorMessage = "Unknown or unconfigured blog: " + host;
             return false;
         }
         return true;
@@ -189,13 +181,8 @@ public class BlogRequest {
     }
 
 
-    public String getBlog() {
+    public Blog getBlog() {
         return blog;
-    }
-
-
-    public BlogConfig getBlogConfig() {
-        return blogConfig;
     }
 
 

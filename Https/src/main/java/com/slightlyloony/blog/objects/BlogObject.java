@@ -1,6 +1,9 @@
 package com.slightlyloony.blog.objects;
 
+import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
+import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
 import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
+import com.slightlyloony.blog.storage.StorageInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,7 +30,7 @@ public class BlogObject {
                        final BlogObjectAccessRequirements __accessRequirements, final BlogObjectContent _content ) {
 
         if( (_type == null) || (_id == null) )
-            throw new IllegalArgumentException( "Missing required argument _type or _id" );
+            throw new HandlerIllegalArgumentException( "Missing required argument _type or _id" );
 
         type = _type;
         content = _content;
@@ -50,7 +53,7 @@ public class BlogObject {
         if( !isValid() ) {
             String msg = "Attempted to compress an invalid instance, ID: " + blogID;
             LOG.error( msg );
-            throw new IllegalStateException( msg );
+            throw new HandlerIllegalStateException( msg );
         }
 
         // make sure we have bytes, and attempt to compress them...
@@ -85,6 +88,21 @@ public class BlogObject {
 
     public synchronized BlogObjectContent getContent() {
         return content;
+    }
+
+
+    public synchronized StorageInputStream getStream() {
+        return content.asStream().getStream();
+    }
+
+
+    public synchronized byte[] getBytes() {
+        return content.asBytes().getBytes();
+    }
+
+
+    public synchronized String getUTF8String() {
+        return content.asBytes().getUTF8String();
     }
 
 

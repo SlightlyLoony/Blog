@@ -1,18 +1,17 @@
 package com.slightlyloony.blog.objects;
 
-import com.google.common.io.ByteStreams;
 import com.slightlyloony.blog.handlers.BlogRequest;
 import com.slightlyloony.blog.handlers.BlogResponse;
+import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 import com.slightlyloony.blog.storage.StorageInputStream;
+import com.slightlyloony.blog.util.Constants;
+import com.slightlyloony.blog.util.S;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.util.zip.GZIPInputStream;
 
 /**
  * Encapsulates the notion of content to be written to an HTTP response.  The content may be available either as an array of bytes or as a stream,
@@ -33,10 +32,10 @@ public class BytesObjectContent extends BlogObjectContent {
         super( _compressionState, _contentLength );
 
         if( _content == null )
-            throw new IllegalArgumentException( "Missing content" );
+            throw new HandlerIllegalArgumentException( "Missing content" );
 
         if( _content.length > _contentLength )
-            throw new IllegalArgumentException( "Actual content is longer than specified length: " + _content.length + " vs. " + _contentLength );
+            throw new HandlerIllegalArgumentException( "Actual content is longer than specified length: " + _content.length + " vs. " + _contentLength );
 
         content = _content;
     }
@@ -57,7 +56,7 @@ public class BytesObjectContent extends BlogObjectContent {
                 else
                     copy( _response, gzipIS( contIS() ), respOS( _response ), false, -1 );
             else
-                copy( _response, contIS(), respOS( _response ), true, content.length );
+                copy( _response, contIS(), respOS( _response ), false, content.length );
     }
 
 
@@ -102,7 +101,7 @@ public class BytesObjectContent extends BlogObjectContent {
     public synchronized String getUTF8String() {
 
         // get the bytes, convert them to a string, and return that...
-        return new String( content, Charset.forName( "UTF-8" ) );
+        return S.fromUTF8( getUncompressedBytes() );
     }
 
 
@@ -114,5 +113,10 @@ public class BytesObjectContent extends BlogObjectContent {
 
     public byte[] getBytes() {
         return (byte[]) content;
+    }
+
+
+    public byte[] getUncompressedBytes() {
+        return !compressionState.isCompressed() ? content : decompress( content );
     }
 }

@@ -24,6 +24,11 @@ public class BlogID {
     }
 
 
+    public long asLong() {
+        return ID.decode( id );
+    }
+
+
     @Override
     public boolean equals( final Object o ) {
         if( this == o ) return true;

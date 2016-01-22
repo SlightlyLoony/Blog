@@ -14,8 +14,8 @@ import static com.slightlyloony.blog.storage.BlogObjectUseCache.*;
  */
 public enum BlogObjectType {
 
-    METADATA  ( "meta",   "application/json",                     META,   true  ),
-    JPEG      ( "jpg",    "image/jpeg",                           IMAGE,  false ),
+    METADATA  ( "meta",   "",                                     META,   true  ),
+    JPG       ( "jpg",    "image/jpeg",                           IMAGE,  false ),
     PNG       ( "png",    "image/png",                            IMAGE,  false ),
     GIF       ( "gif",    "image/gif",                            IMAGE,  false ),
     ICO       ( "ico",    "image/x-icon",                         IMAGE,  false ),
@@ -34,7 +34,8 @@ public enum BlogObjectType {
     AAC       ( "aac",    "audio/mp4",                            BINARY, false ),
     KMZ       ( "kmz",    "application/vnd.google-earth.kmz",     BINARY, true  ),
     KML       ( "kml",    "application/vnd.google-earth.kml+xml", TEXT,   true  ),
-    XHTML     ( "xhtml",  "application/xhtml+xml",                TEXT,   true  );
+    XHTML     ( "xhtml",  "application/xhtml+xml",                TEXT,   true  ),
+    USERDATA  ( "user",   "",                                     USER,   true  );
 
 
     private static Map<String,BlogObjectType> EXTENSION_MAP;
@@ -93,9 +94,11 @@ public enum BlogObjectType {
 
 
     private void map( final String _extension, final String _mime ) {
+
         if( EXTENSION_MAP == null )
             EXTENSION_MAP = Maps.newHashMap();
         EXTENSION_MAP.put( _extension, this );
+
         if( MIME_MAP == null )
             MIME_MAP = Maps.newHashMap();
         MIME_MAP.put( _mime, this );

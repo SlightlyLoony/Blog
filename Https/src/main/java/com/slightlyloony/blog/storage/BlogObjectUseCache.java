@@ -10,6 +10,7 @@ public enum BlogObjectUseCache {
     TEXT(    2 ),
     BINARY(  3 ),
     SCRIPT(  4 ),
+    USER(    5 ),
     NONE(   -1 );
 
 

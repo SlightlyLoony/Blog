@@ -1,6 +1,7 @@
 package com.slightlyloony.blog.util;
 
 import com.google.common.io.BaseEncoding;
+import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 
 import java.util.Arrays;
 
@@ -25,7 +26,7 @@ public class ID {
     public static String encode( final long _idNum ) {
 
         char[] chars = new char[10];
-        long id = Long.rotateLeft( _idNum, 2 );  // gets the most significant 6 bits of _idNum as the most significant 6 bits of id...
+        long id = Long.rotateLeft( _idNum, 4 );  // gets the most significant 6 bits of _idNum as the most significant 6 bits of id...
 
         for( int i = 0; i < 10; i++ ) {
             id = Long.rotateLeft( id, 6 );
@@ -45,7 +46,7 @@ public class ID {
 
         // make sure we didn't get something crazy...
         if( (_id == null) || (_id.length() != 10) )
-            throw new IllegalArgumentException( "Invalid ID: " + _id );
+            throw new HandlerIllegalArgumentException( "Invalid ID: " + _id );
 
         long result = 0;
 
@@ -53,7 +54,7 @@ public class ID {
             result <<= 6;
             int val = get( _id.charAt( i ) );
             if( val < 0 )
-                throw new IllegalArgumentException( "Invalid character in ID: " + _id.charAt( i ) );
+                throw new HandlerIllegalArgumentException( "Invalid character in ID: " + _id.charAt( i ) );
             result += val;
         }
 
@@ -72,7 +73,7 @@ public class ID {
     public static int compare( final char _a, final char _b ) {
 
         if( !isValid( _a )|| !isValid( _b ))
-            throw new IllegalArgumentException( "Invalid value: " + _a + " or " + _b );
+            throw new HandlerIllegalArgumentException( "Invalid value: " + _a + " or " + _b );
 
         return Integer.signum( get( _a ) - get( _b ));
     }
@@ -90,7 +91,7 @@ public class ID {
     public static int compare( final String _a, final String _b ) {
 
         if( (_a == null) || (_b == null) || (_a.length() != _b.length()) )
-            throw new IllegalArgumentException( "Invalid value: " + _a + " or " + _b );
+            throw new HandlerIllegalArgumentException( "Invalid value: " + _a + " or " + _b );
 
         for( int i = 0; i < _a.length(); i++ ) {
             int cc = compare( _a.charAt( i ), _b.charAt( i ) );

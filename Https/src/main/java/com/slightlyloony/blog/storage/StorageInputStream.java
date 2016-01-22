@@ -1,5 +1,7 @@
 package com.slightlyloony.blog.storage;
 
+import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +20,7 @@ public class StorageInputStream extends InputStream implements Closeable {
     public StorageInputStream( final InputStream _inputStream, final int _length ) {
 
         if( (_inputStream == null) || (_length < 1) )
-            throw new IllegalArgumentException( "Missing input stream or length is invalid: " + _length );
+            throw new HandlerIllegalArgumentException( "Missing input stream or length is invalid: " + _length );
 
         length = _length;
         inputStream = _inputStream;

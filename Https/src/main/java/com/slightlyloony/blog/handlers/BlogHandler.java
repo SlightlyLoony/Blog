@@ -58,15 +58,39 @@ public class BlogHandler extends AbstractHandler implements Handler {
         // try to read the metadata for this request...
         BlogObject obj = BlogServer.STORAGE.read( request.getId(), BlogObjectType.METADATA, request.getAccessRequirements(), DO_NOT_COMPRESS );
         if( !obj.isValid() ) {
-            // TODO: handle invalid object retrieved...
+
+            // TODO: handle invalid objects mo' bettah...
+            response.setResponseCode( HttpServletResponse.SC_INTERNAL_SERVER_ERROR );
+            request.handled();
+
+            t.mark();
+
+            LOG.info( LU.msg( "{0} {2}{1} from {3} completed (but resulting object is invalid) in {4}",
+                    _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
+            return;
         }
         BlogObjectMetadata metadata = BlogObjectMetadata.create( obj.getContent().asBytes().getUTF8String() );
         Responder responder = metadata.getResponder( request.getRequestMethod() );
 
         // TODO: handle browserCacheable in metadata...
         // TODO: determine whether request is authorized...
+        // TODO: verify accept vs. object type...
 
-        responder.respond( request, response, metadata, true );
+        try {
+            responder.respond( request, response, metadata, true );
+        }
+        catch( HandlerIllegalArgumentException | HandlerIllegalStateException e ) {
+
+            // TODO: handle error in request mo' bettah...
+            response.setResponseCode( HttpServletResponse.SC_INTERNAL_SERVER_ERROR );
+            request.handled();
+
+            t.mark();
+
+            LOG.info( LU.msg( "{0} {2}{1} from {3} completed (but had a problem in responder) in {4}",
+                    _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
+            return;
+        }
 
         t.mark();
 
