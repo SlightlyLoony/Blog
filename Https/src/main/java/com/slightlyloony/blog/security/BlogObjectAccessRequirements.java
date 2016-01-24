@@ -2,8 +2,10 @@ package com.slightlyloony.blog.security;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.gson.*;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Set;
 
@@ -78,5 +80,29 @@ public enum BlogObjectAccessRequirements {
         }
 
         return true;
+    }
+
+
+    public static class Deserializer implements JsonDeserializer<BlogObjectAccessRequirements> {
+
+        @Override
+        public BlogObjectAccessRequirements deserialize( final JsonElement _jsonElement, final Type _type, final JsonDeserializationContext _jsonDeserializationContext )
+                throws JsonParseException {
+
+            if( !_jsonElement.isJsonPrimitive() )
+                throw new JsonParseException( "Expected string, got something else" );
+
+            return BlogObjectAccessRequirements.get( _jsonElement.getAsString().charAt( 0 ) );
+        }
+    }
+
+
+    public static class Serializer implements JsonSerializer<BlogObjectAccessRequirements> {
+
+
+        @Override
+        public JsonElement serialize( final BlogObjectAccessRequirements _accessRequirements, final Type _type, final JsonSerializationContext _context ) {
+            return new JsonPrimitive( _accessRequirements.getCode() );
+        }
     }
 }

@@ -23,8 +23,6 @@ import java.util.zip.GZIPOutputStream;
 public abstract class BlogObjectContent {
 
     private static final Logger LOG = LogManager.getLogger();
-    private final static byte[] CRLF = new byte[] { (byte) 13, (byte) 10 };
-    private final static byte[] TERMINAL_CHUNK = new byte[] { (byte) 13, (byte) 10, (byte) 48, (byte) 13, (byte) 10 };
 
     protected ContentCompressionState compressionState;
     protected final int contentLength;

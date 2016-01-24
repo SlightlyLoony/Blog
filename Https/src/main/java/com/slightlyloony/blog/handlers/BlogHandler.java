@@ -5,6 +5,7 @@ import com.slightlyloony.blog.objects.BlogObject;
 import com.slightlyloony.blog.objects.BlogObjectMetadata;
 import com.slightlyloony.blog.objects.BlogObjectType;
 import com.slightlyloony.blog.responders.Responder;
+import com.slightlyloony.blog.storage.StorageException;
 import com.slightlyloony.blog.util.Timer;
 import com.slightlyloony.common.logging.LU;
 import org.apache.logging.log4j.LogManager;
@@ -56,8 +57,11 @@ public class BlogHandler extends AbstractHandler implements Handler {
         }
 
         // try to read the metadata for this request...
-        BlogObject obj = BlogServer.STORAGE.read( request.getId(), BlogObjectType.METADATA, request.getAccessRequirements(), DO_NOT_COMPRESS );
-        if( !obj.isValid() ) {
+        BlogObject obj;
+        try {
+            obj = BlogServer.STORAGE.read( request.getId(), BlogObjectType.METADATA, request.getAccessRequirements(), DO_NOT_COMPRESS );
+        }
+        catch( StorageException e ) {
 
             // TODO: handle invalid objects mo' bettah...
             response.setResponseCode( HttpServletResponse.SC_INTERNAL_SERVER_ERROR );
@@ -69,17 +73,30 @@ public class BlogHandler extends AbstractHandler implements Handler {
                     _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
             return;
         }
-        BlogObjectMetadata metadata = BlogObjectMetadata.create( obj.getContent().asBytes().getUTF8String() );
+
+        BlogObjectMetadata metadata = (BlogObjectMetadata) obj;
         Responder responder = metadata.getResponder( request.getRequestMethod() );
 
         // TODO: handle browserCacheable in metadata...
         // TODO: determine whether request is authorized...
-        // TODO: verify accept vs. object type...
+
+        if( !request.accepts( metadata.getContentType().getMime() ) ) {
+
+            // TODO: handle accept mismatch mo' bettah...
+            response.setResponseCode( HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE );
+            request.handled();
+
+            t.mark();
+
+            LOG.info( LU.msg( "{0} {2}{1} from {3} completed (but media type is not supported) in {4}",
+                    _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
+            return;
+        }
 
         try {
             responder.respond( request, response, metadata, true );
         }
-        catch( HandlerIllegalArgumentException | HandlerIllegalStateException e ) {
+        catch( HandlerIllegalArgumentException | HandlerIllegalStateException | StorageException e ) {
 
             // TODO: handle error in request mo' bettah...
             response.setResponseCode( HttpServletResponse.SC_INTERNAL_SERVER_ERROR );

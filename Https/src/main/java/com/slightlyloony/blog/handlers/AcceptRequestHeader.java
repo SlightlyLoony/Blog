@@ -51,7 +51,7 @@ public class AcceptRequestHeader {
     }
 
 
-    private class Accept implements Comparable<Accept> {
+    public class Accept implements Comparable<Accept> {
 
         private final String type;
         private final String subType;

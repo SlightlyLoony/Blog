@@ -194,4 +194,11 @@ public class BlogRequest {
     public BlogObjectAccessRequirements getAccessRequirements() {
         return accessRequirements;
     }
+
+
+    public boolean accepts( final String _mediaType ) {
+
+        AcceptRequestHeader.Accept accept = accepts.accept( _mediaType );
+        return accept != null;
+    }
 }

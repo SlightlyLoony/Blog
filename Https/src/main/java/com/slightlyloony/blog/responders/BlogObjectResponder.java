@@ -3,8 +3,8 @@ package com.slightlyloony.blog.responders;
 import com.slightlyloony.blog.BlogServer;
 import com.slightlyloony.blog.handlers.BlogRequest;
 import com.slightlyloony.blog.handlers.BlogResponse;
-import com.slightlyloony.blog.objects.BlogObject;
-import com.slightlyloony.blog.objects.BlogObjectMetadata;
+import com.slightlyloony.blog.objects.*;
+import com.slightlyloony.blog.storage.StorageException;
 
 /**
  * Handles the response when the content comes from a blog object (in other words, static content).
@@ -14,12 +14,18 @@ import com.slightlyloony.blog.objects.BlogObjectMetadata;
 public class BlogObjectResponder implements Responder {
 
     @Override
-    public void respond( final BlogRequest _request, final BlogResponse _response, final BlogObjectMetadata _metadata, final boolean isAuthorized ) {
+    public void respond( final BlogRequest _request, final BlogResponse _response, final BlogObjectMetadata _metadata,
+                         final boolean isAuthorized ) throws StorageException {
 
         if( isAuthorized ) {
 
-            BlogObject obj = BlogServer.STORAGE.read( _metadata.getContent(), _metadata.getType(), null, _metadata.getCompressionState() );
-            _response.setMimeType( _metadata.getType() );
+            BlogID content = _metadata.getContent();
+            BlogObjectType contentType = _metadata.getContentType();
+            ContentCompressionState compressionState = _metadata.getCompressionState();
+            BlogContentObject obj;
+            obj = (BlogContentObject) BlogServer.STORAGE.read( content, contentType, null, compressionState );
+
+            _response.setMimeType( _metadata.getContentType() );
 
             obj.getContent().write( _request, _response, _metadata.getCompressionState().mayCompress() );
             _request.handled();

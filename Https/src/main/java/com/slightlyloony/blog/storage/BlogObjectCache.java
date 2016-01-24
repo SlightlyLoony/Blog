@@ -70,30 +70,32 @@ public class BlogObjectCache {
                 throw new HandlerIllegalArgumentException( msg );
             }
 
-            // refuse to add any object that hasn't been resolved to bytes...
-            // we don't want to wait for the read from inside a synchronized method...
-            BlogObjectContent content = _obj.getContent();
-            if( !(content instanceof BytesObjectContent) ) {
-                LOG.warn( "Attempted to add object {0}.{1} that wasn't resolved to bytes", _obj.getBlogID(), _obj.getType().getCache() );
-                return;
+            // refuse to add any object that is still a stream, as we don't want to wait for the read from inside a synchronized method...
+            if( _obj instanceof BlogContentObject ) {
+                BlogContentObject contentObject = (BlogContentObject) _obj;
+                BlogObjectContent content = contentObject.getContent();
+                if( !(content instanceof BytesObjectContent) ) {
+                    LOG.warn( "Attempted to add object {0}.{1} that wasn't resolved to bytes", _obj.getBlogID(), _obj.getType().getCache() );
+                    return;
+                }
             }
 
             // if we don't have room in the cache, make some by removing the least recently used items until we have enough space...
-            if( maxSize < content.memorySize() + currentSize ) {
+            if( maxSize < _obj.size() + currentSize ) {
 
                 // iterate over our least recently used entries, removing them, until we have enough space for the new entry...
                 Iterator<Map.Entry<BlogID,BlogObject>> it = cache.entrySet().iterator();
-                while( it.hasNext() && (maxSize < content.memorySize() + currentSize) ) {
+                while( it.hasNext() && (maxSize < _obj.size() + currentSize) ) {
 
                     BlogObject loser = it.next().getValue();
-                    currentSize -= loser.getContent().memorySize();
+                    currentSize -= loser.size();
                     it.remove();
                 }
             }
 
             // ok, now we can finally add it...
             cache.put( _obj.getBlogID(), _obj );
-            currentSize += content.memorySize();
+            currentSize += _obj.size();
         }
     }
 
@@ -109,7 +111,10 @@ public class BlogObjectCache {
             }
 
             BlogObject obj = cache.remove( _id );
-            currentSize -= obj.getContent().memorySize();
+
+            // if we actually removed an entry, update our size...
+            if( obj != null )
+                currentSize -= obj.size();
         }
     }
 }

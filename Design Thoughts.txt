@@ -24,6 +24,19 @@ Blog Architecture:
   to adhere to the factory interface.
 
 
+Blog Objects:
+
+  Blog objects are central to the operation of the blog server, but what exactly IS a blog object?  A blog object is persistable (on disk), is
+  potentially cacheable (though this can be disabled when inappropriate, such as an object that's too big), and is named by a blog ID (a base64url-
+  encoded 60 bit number).  Some blog objects directly provide content, such as html pages, images, etc.  These blog objects present either a byte
+  stream or a byte array, and are directly written to an HTTP response.  Other blog objects are NOT directly providing content, but instead are
+  instantiated as instances of Java classes to provide some service within the blog server.  Examples include request metadata, users, and templates.
+  All of these are cached as instances for high performance.  In some cases (request metadata and users, for example) these are basically simple
+  beans that are instantiated from JSON representations on the storage system.  In other cases (templates, for example) these are much more complex
+  objects that are created from their persisted form and then provide a service internally.  None of these types of blog objects are ever directly
+  written to an HTTP response, though they may help construct one.
+
+
 Interprocess messaging:
 
   The three server processes communicate through a simple network protocol.  The protocol is based on UDP, with packets that contain a single byte

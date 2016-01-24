@@ -1,7 +1,10 @@
 package com.slightlyloony.blog.objects;
 
 import com.google.common.base.Objects;
+import com.google.gson.*;
 import com.slightlyloony.blog.util.ID;
+
+import java.lang.reflect.Type;
 
 /**
  * Contains a 10 character string that is guaranteed to be a semantically valid blog ID.  No guarantee is made about whether the ID refers to an
@@ -52,5 +55,29 @@ public class BlogID {
     @Override
     public String toString() {
         return id;
+    }
+
+
+    public static class Deserializer implements JsonDeserializer<BlogID> {
+
+        @Override
+        public BlogID deserialize( final JsonElement _jsonElement, final Type _type, final JsonDeserializationContext _jsonDeserializationContext )
+                throws JsonParseException {
+
+            if( !_jsonElement.isJsonPrimitive() )
+                throw new JsonParseException( "Expected string, got something else" );
+
+            return BlogID.create( _jsonElement.getAsString() );
+        }
+    }
+
+
+    public static class Serializer implements JsonSerializer<BlogID> {
+
+
+        @Override
+        public JsonElement serialize( final BlogID _id, final Type _type, final JsonSerializationContext _context ) {
+           return new JsonPrimitive( _id.id );
+        }
     }
 }

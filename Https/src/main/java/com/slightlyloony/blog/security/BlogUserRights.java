@@ -1,5 +1,6 @@
 package com.slightlyloony.blog.security;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 import com.google.gson.*;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
@@ -89,6 +90,16 @@ public class BlogUserRights {
     }
 
 
+    /**
+     * Returns the approximate size, in bytes, of this instance.
+     *
+     * @return the approximate size, in bytes, of this instance
+     */
+    public int size() {
+        return rights.size() * 8 + 100;  // the + 100 is just to allow some space for unused hash entries...
+    }
+
+
     public static class Serializer implements JsonSerializer<BlogUserRights> {
 
 
@@ -104,5 +115,20 @@ public class BlogUserRights {
 
             return result;
         }
+    }
+
+
+    @Override
+    public boolean equals( final Object o ) {
+        if( this == o ) return true;
+        if( o == null || getClass() != o.getClass() ) return false;
+        BlogUserRights that = (BlogUserRights) o;
+        return Objects.equal( rights, that.rights );
+    }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode( rights );
     }
 }

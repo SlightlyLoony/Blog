@@ -6,12 +6,10 @@ import com.slightlyloony.blog.BlogServer;
 import com.slightlyloony.blog.config.BlogConfig;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 import com.slightlyloony.blog.objects.*;
-import com.slightlyloony.blog.security.BlogAccessRight;
-import com.slightlyloony.blog.security.BlogUserRights;
 import com.slightlyloony.blog.storage.BlogObjectIterator;
 import com.slightlyloony.blog.storage.BlogObjectIterator.BlogObjectInfo;
+import com.slightlyloony.blog.storage.StorageException;
 import com.slightlyloony.blog.util.ID;
-import com.slightlyloony.blog.util.S;
 import com.slightlyloony.blog.util.Timer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +19,7 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Map;
 
+import static com.slightlyloony.blog.security.BlogAccessRight.*;
 import static com.slightlyloony.blog.util.S.fromUTF8;
 import static com.slightlyloony.blog.util.S.toUTF8;
 import static com.slightlyloony.common.logging.LU.msg;
@@ -32,7 +31,7 @@ import static com.slightlyloony.common.logging.LU.msg;
  *
  * @author Tom Dilatush  tom@dilatush.com
  */
-public class Users {
+public class Users extends BlogObjectObject {
 
     private static final Logger LOG = LogManager.getLogger();
 
@@ -45,14 +44,35 @@ public class Users {
     private final Map<byte[],Keys> reverse;
 
 
-    private Users() {
+
+
+    private Users( final BlogID _id ) {
+        super( _id, BlogObjectType.USERINDEX, null );
+
         byUsername = Maps.newHashMap();
         byCookie = Maps.newHashMap();
         reverse = Maps.newHashMap();
     }
 
 
-    public static Users create( final BlogConfig _blogConfig ) {
+    private Users() {
+        super();
+        byUsername = Maps.newHashMap();
+        byCookie = Maps.newHashMap();
+        reverse = Maps.newHashMap();
+    }
+
+
+    public int size() {
+        int result = super.size();
+        result += reverse.size() * (40 + 10) + 1000;
+        result += byCookie.size() * (20 + 10) + 1000;
+        result += byUsername.size() * (20 + 10) + 1000;
+        return result;
+    }
+
+
+    public static Users create( final BlogConfig _blogConfig ) throws StorageException {
 
         // get the id of our users file...
         BlogID id = BlogID.create( _blogConfig.getUsers() );
@@ -64,23 +84,16 @@ public class Users {
 
         // otherwise, read the users file...
         BlogObject object = null;
-        if( id != null )
-            object = BlogServer.STORAGE.read( id, BlogObjectType.JSON, null, ContentCompressionState.UNCOMPRESSED );
 
-        // if we failed to read the index, recover it the hard way...
-        if( (object == null) || !object.isValid() ) {
-            LOG.error( "Could not read users file; rebuilding from user data" );
-            return initializeFromUserFiles( _blogConfig );
-        }
-
-        // deserialize this beast with our custom deserializer...
         try {
-            return getGson().fromJson( object.getUTF8String(), Users.class );
+            if( id != null )
+                object = BlogServer.STORAGE.read( id, BlogObjectType.USERINDEX, null, ContentCompressionState.UNCOMPRESSED );
         }
-        catch( JsonParseException e ) {
-            LOG.error( "Problem parsing JSON in users record: " + id, e );
-            return null;
+        catch( StorageException e ) {
+            LOG.error( "Could not read users file; rebuilding from user data" );
         }
+
+        return (object == null) ? initializeFromUserFiles( _blogConfig ) : (Users) object;
     }
 
 
@@ -128,7 +141,7 @@ public class Users {
     }
 
 
-    public synchronized User getUserFromUsername( final String _username ) {
+    public synchronized User getUserFromUsername( final String _username ) throws StorageException {
 
         if( _username == null )
             throw new HandlerIllegalArgumentException( "Missing username" );
@@ -137,7 +150,7 @@ public class Users {
     }
 
 
-    public synchronized User getUserFromCookie( final String _cookieValue ) {
+    public synchronized User getUserFromCookie( final String _cookieValue ) throws StorageException {
 
         if( _cookieValue == null )
             throw new HandlerIllegalArgumentException( "Missing cookie value" );
@@ -146,7 +159,7 @@ public class Users {
     }
 
 
-    private User readUser( final byte[] _userIDBytes ) {
+    private User readUser( final byte[] _userIDBytes ) throws StorageException {
 
         if( _userIDBytes == null )
             return null;
@@ -155,11 +168,7 @@ public class Users {
         if( userID == null )
             return null;
 
-        BlogObject object = BlogServer.STORAGE.read( userID, BlogObjectType.USERDATA, null, ContentCompressionState.UNCOMPRESSED );
-        if( !object.isValid() )
-            return null;
-
-        return User.create( object );
+        return (User) BlogServer.STORAGE.read( userID, BlogObjectType.USERDATA, null, ContentCompressionState.UNCOMPRESSED );
     }
 
 
@@ -168,22 +177,15 @@ public class Users {
      *
      * @param _blogName the name of the blog this user belongs to
      */
-    private static void makeDefaultUserFile( final String _blogName ) {
+    private static void makeDefaultUserFile( final String _blogName ) throws StorageException {
 
         // make our synthetic user...
-        User user = new User();
-        user.setBlog( _blogName );
-        user.setUsername( "manager" );
-        user.setPasswordHashedAndSalted( BCrypt.hashpw( "blog", BCrypt.gensalt() ) );
-        BlogUserRights rights = new BlogUserRights();
-        rights.add( BlogAccessRight.MANAGER );
-        rights.add( BlogAccessRight.ADULT );
-        rights.add( BlogAccessRight.AUTHOR );
-        rights.add( BlogAccessRight.REVIEWER );
-        user.setRights( rights );
-
-        // then serialize it...
-        user.update( null );
+        User user = User.create( "manager", _blogName, BCrypt.hashpw( "blog", BCrypt.gensalt() ) );
+        user.addRight( MANAGER );
+        user.addRight( AUTHOR );
+        user.addRight( ADULT );
+        user.addRight( REVIEWER );
+        user.updateIfDirty();
     }
 
 
@@ -194,12 +196,16 @@ public class Users {
      *
      * @return the newly created users instance
      */
-    private static Users initializeFromUserFiles( final BlogConfig _blogConfig ) {
+    private static Users initializeFromUserFiles( final BlogConfig _blogConfig ) throws StorageException {
 
         Timer t = new Timer();
         LOG.info( "Creating Users instance the hard way: reading all blog files" );
 
-        Users result = new Users();
+        // ensure that we have an ID...
+        BlogID oldUsersID = BlogID.create( _blogConfig.getUsers() );
+        BlogID usersID = (oldUsersID == null) ? BlogIDs.INSTANCE.getNextBlogID() : oldUsersID;
+
+        Users result = new Users( usersID );
 
         // iterate over all the blog object files...
         BlogObjectIterator it = new BlogObjectIterator();
@@ -212,14 +218,12 @@ public class Users {
                 continue;
 
             // read the user data in and instantiate it...
-            BlogObject object = BlogServer.STORAGE.read( info.id, BlogObjectType.USERDATA, null, ContentCompressionState.UNCOMPRESSED );
-            if( !object.isValid() ) {
-                LOG.error( "Can't read user: ID " + info.id );
-                continue;
+            User user;
+            try {
+                user = (User) BlogServer.STORAGE.read( info.id, BlogObjectType.USERDATA, null, ContentCompressionState.UNCOMPRESSED );
             }
-            User user = User.create( object );
-            if( user == null ) {
-                LOG.error( "Can't deserialize user: ID " + info.id );
+            catch( StorageException e ) {
+                LOG.error( "Can't read user: ID " + info.id );
                 continue;
             }
 
@@ -231,17 +235,14 @@ public class Users {
             result.indexUser( info.id, user );
         }
 
-        // get the blog ID for this record, or null if none has been assigned yet...
-        BlogID usersID = BlogID.create( _blogConfig.getUsers() );
-
         // now write the users out to disk...
-        BlogObject object = result.update( usersID );
+        if( oldUsersID == null )
+            result = (Users) BlogServer.STORAGE.create( result );
+        else
+            result = result.update();
 
-        // if we created the record (vs. just updating it), then we need to update the blog configuration...
-        if( usersID == null ) {
-            _blogConfig.setUsers( object.getBlogID().getID() );
-            _blogConfig.serialize();
-        }
+        _blogConfig.setUsers( result.getBlogID().getID() );
+        _blogConfig.serialize();
 
         t.mark();
         LOG.info( msg( "Completed creating Users instance by reading file system in {0}", t.toString() ) );
@@ -250,31 +251,37 @@ public class Users {
     }
 
 
-    /**
-     * Writes this index out to a serialized file.  If the blog has not yet assigned an ID for this, the ID will be automatically assigned.
-     *
-     * @param _id the blog ID for this record, or null if it is unknown (in which case it is created).
-     */
-    public BlogObject update( final BlogID _id ) {
-
-        // get our json content...
-        String json = getGson().toJson( this, Users.class );
-        byte[] bytes = S.toUTF8( json );
-        BytesObjectContent content = new BytesObjectContent( bytes, ContentCompressionState.UNCOMPRESSED, bytes.length );
-
-        // store it...
-        if( _id == null )
-            return BlogServer.STORAGE.create( content, BlogObjectType.JSON, null, ContentCompressionState.UNCOMPRESSED );
-        else
-            return BlogServer.STORAGE.modify( new BlogObject( _id, BlogObjectType.JSON, null, content ) );
+    public Users update() throws StorageException {
+        return (Users) BlogServer.STORAGE.update( this );
     }
 
 
-    private static Gson getGson() {
+    private static Gson gson() {
         GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter( Users.class, new UsersDeserializer() );
-        gsonBuilder.registerTypeAdapter( Users.class, new UsersSerializer() );
+        gsonBuild( gsonBuilder );
+        gsonBuilder.registerTypeAdapter( Users.class, new Deserializer() );
+        gsonBuilder.registerTypeAdapter( Users.class, new Serializer()   );
         return gsonBuilder.create();
+    }
+
+
+    public String toJSON() throws StorageException {
+        try {
+            return gson().toJson( this, getClass() );
+        }
+        catch( Exception e ) {
+            throw new StorageException( "Problem serializing Users to JSON", e );
+        }
+    }
+
+
+    public static Users fromJSON( final String _json ) throws StorageException {
+        try {
+            return gson().fromJson( _json, Users.class );
+        }
+        catch( JsonSyntaxException e ) {
+            throw new StorageException( "Problem deserializing Users from JSON", e );
+        }
     }
 
 
@@ -294,27 +301,42 @@ public class Users {
      * We persist this index of users with a JSON array (with one entry per user) of three element string arrays (blog ID, username, and cookie
      * value).  For example, a file with two users might look something like this:
      *
-     * [
-     *    ["AAAAAAABCD", "HamburgerHelper", "LuRdWoHieDkUsoX-_iZw"],
-     *    ["AAAAAABu_Q", "bozo@circus.com", null]
-     * ]
+     * {
+     *    "type":"USERINDEX",
+     *    "blogID":"AAAAAAAAAA",
+     *    "accessRequirements":null,
+     *    "users":[
+     *              ["AAAAAAABCD", "HamburgerHelper", "LuRdWoHieDkUsoX-_iZw"],
+     *              ["AAAAAABu_Q", "bozo@circus.com", null]
+     *            ]
+     * }
      */
 
 
-    private static class UsersDeserializer implements JsonDeserializer<Users> {
+    private static class Deserializer implements JsonDeserializer<Users> {
 
         @Override
         public Users deserialize( final JsonElement _jsonElement,
                                   final Type _type,
                                   final JsonDeserializationContext _jsonDeserializationContext ) throws JsonParseException {
 
-            // iterate over all the users in the JSON file...
-            if( !_jsonElement.isJsonArray() )
-                throw new JsonParseException( "Expected array start" );
-
             Users result = new Users();
 
-            JsonArray usersArray = _jsonElement.getAsJsonArray();
+            if( !_jsonElement.isJsonObject() )
+                throw new JsonParseException( "Expected object start" );
+
+            JsonObject object = _jsonElement.getAsJsonObject();
+
+            // deserialize our base object...
+            result.deserialize( object );
+
+            // iterate over all the users in the JSON file...
+            JsonElement usersElement = object.get( "users" );
+
+            if( !usersElement.isJsonArray() )
+                throw new JsonParseException( "Expected array start" );
+
+            JsonArray usersArray = usersElement.getAsJsonArray();
             for( final JsonElement element : usersArray ) {
 
                 // make sure we got a three-element array...
@@ -349,14 +371,17 @@ public class Users {
     }
 
 
-    public static class UsersSerializer implements JsonSerializer<Users> {
+    public static class Serializer implements JsonSerializer<Users> {
 
 
         @Override
         public JsonElement serialize( final Users _users, final Type _type,
                                       final JsonSerializationContext _context ) {
 
-            JsonArray result = new JsonArray();
+            JsonObject object = new JsonObject();
+            _users.serialize( object );
+
+            JsonArray users = new JsonArray();
 
             // iterate over all the entries in the reverse index, as they have all the data we need...
             for( Map.Entry<byte[],Keys> entry : _users.reverse.entrySet() ) {
@@ -365,10 +390,12 @@ public class Users {
                 item.add( fromUTF8( entry.getKey() ) );
                 item.add( fromUTF8( entry.getValue().username ) );
                 item.add( fromUTF8( entry.getValue().cookieValue ) );
-                result.add( item );
+                users.add( item );
             }
 
-            return result;
+            object.add( "users", users );
+
+            return object;
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.slightlyloony.blog;
 
 import com.slightlyloony.blog.config.BlogConfig;
+import com.slightlyloony.blog.storage.StorageException;
 import com.slightlyloony.blog.users.Users;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,14 +58,19 @@ public class Blog {
         // see if we can read the configuration...
         BlogConfig config = BlogConfig.readConfig( _name );
         if( (config == null) || !config.isMinimallyValid() ) {
-            LOG.error( "Invalid blog configuration: " + _name );
+            LOG.error( "Invalid or non-existant blog configuration: " + _name );
             return null;
         }
 
         // now read our users...
-        Users users = Users.create( config );
-        if( users == null )
+        Users users;
+        try {
+            users = Users.create( config );
+        }
+        catch( StorageException e ) {
+            LOG.error( "Can't create blog users index: " );
             return null;
+        }
 
         // looks like we might actually be able to make a blog...
         return new Blog( _name, config.getHost(), config, users );

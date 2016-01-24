@@ -5,6 +5,8 @@ import com.google.gson.*;
 import com.slightlyloony.blog.handlers.RequestMethod;
 import com.slightlyloony.blog.responders.Responder;
 import com.slightlyloony.blog.responders.ResponderType;
+import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
+import com.slightlyloony.blog.storage.StorageException;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -20,34 +22,52 @@ import static com.slightlyloony.blog.objects.ContentCompressionState.UNCOMPRESSE
  *
  * @author Tom Dilatush  tom@dilatush.com
  */
-public class BlogObjectMetadata {
+public class BlogObjectMetadata extends BlogObjectObject {
 
     private boolean browserCacheable;
     private boolean serverCacheable;
     private ContentCompressionState compressionState;
     private Map<RequestMethod,ResponderType> methods;
     private BlogID content;
-    private BlogObjectType type;
+    private BlogObjectType contentType;
 
 
-    public BlogObjectMetadata() {
+    public BlogObjectMetadata( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements ) {
+        super( _id, _type, _accessRequirements );
         browserCacheable = true;
         serverCacheable = true;
         compressionState = UNCOMPRESSED;
         methods = Maps.newHashMap();
         content = null;
-        type = null;
+        contentType = null;
     }
 
 
+    private BlogObjectMetadata() {
+        super();
+        browserCacheable = true;
+        serverCacheable = true;
+        compressionState = UNCOMPRESSED;
+        methods = Maps.newHashMap();
+        content = null;
+        contentType = null;
+    }
+
     public static BlogObjectMetadata create( final String _json ) {
+        return gson().fromJson( _json, BlogObjectMetadata.class );
+    }
 
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter( BlogID.class, new BlogIDDeserializer() );
-        gsonBuilder.registerTypeAdapter( BlogObjectMetadata.class, new MetadataSerializer() );
-        Gson gson = gsonBuilder.create();
 
-        return gson.fromJson( _json, BlogObjectMetadata.class );
+    public int size() {
+        int result = super.size();
+
+        // primitives...
+        result += (8 + 8 + 8 + 20 + 8);
+
+        // methods...
+        result += methods.size() * 16 + 200;
+
+        return result;
     }
 
 
@@ -71,8 +91,8 @@ public class BlogObjectMetadata {
     }
 
 
-    public BlogObjectType getType() {
-        return type;
+    public BlogObjectType getContentType() {
+        return contentType;
     }
 
 
@@ -106,8 +126,8 @@ public class BlogObjectMetadata {
     }
 
 
-    public void setType( final BlogObjectType _type ) {
-        type = _type;
+    public void setContentType( final BlogObjectType _contentType ) {
+        contentType = _contentType;
     }
 
 
@@ -117,20 +137,36 @@ public class BlogObjectMetadata {
     }
 
 
-    private static class BlogIDDeserializer implements JsonDeserializer<BlogID> {
-
-        @Override
-        public BlogID deserialize( final JsonElement _jsonElement,
-                                   final Type _type,
-                                   final JsonDeserializationContext _jsonDeserializationContext )
-                throws JsonParseException {
-
-            return BlogID.create( _jsonElement.getAsString() );
+    public String toJSON() throws StorageException {
+        try {
+            return gson().toJson( this, getClass() );
+        }
+        catch( Exception e ) {
+            throw new StorageException( "Problem serializing BlogObjectMetadata to JSON", e );
         }
     }
 
 
-    public static class MetadataSerializer implements JsonSerializer<BlogObjectMetadata> {
+    public static BlogObjectMetadata fromJSON( final String _json ) throws StorageException {
+        try {
+            return gson().fromJson( _json, BlogObjectMetadata.class );
+        }
+        catch( JsonSyntaxException e ) {
+            throw new StorageException( "Problem deserializing BlogObjectMetadata from JSON", e );
+        }
+    }
+
+
+    private static Gson gson() {
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuild( gsonBuilder );
+        gsonBuilder.registerTypeAdapter( BlogObjectMetadata.class, new Serializer()   );
+        return gsonBuilder.create();
+    }
+
+
+    public static class Serializer implements JsonSerializer<BlogObjectMetadata> {
 
 
         @Override
@@ -145,7 +181,7 @@ public class BlogObjectMetadata {
             if( _metadata.compressionState != UNCOMPRESSED ) result.add( "compressionState", _context.serialize( _metadata.compressionState ) );
             if( _metadata.methods.size() > 0 )               result.add( "methods",          _context.serialize( _metadata.methods          ) );
             if( _metadata.content != null )                  result.add( "content",          _context.serialize( _metadata.content          ) );
-            if( _metadata.type != null )                     result.add( "type",             _context.serialize( _metadata.type             ) );
+            if( _metadata.contentType != null )              result.add( "contentType",      _context.serialize( _metadata.contentType      ) );
 
             return result;
         }

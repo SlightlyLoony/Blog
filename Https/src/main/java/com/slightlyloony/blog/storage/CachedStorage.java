@@ -3,8 +3,10 @@ package com.slightlyloony.blog.storage;
 import com.slightlyloony.blog.ServerInit;
 import com.slightlyloony.blog.config.ServerConfig;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
-import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
-import com.slightlyloony.blog.objects.*;
+import com.slightlyloony.blog.objects.BlogID;
+import com.slightlyloony.blog.objects.BlogObject;
+import com.slightlyloony.blog.objects.BlogObjectType;
+import com.slightlyloony.blog.objects.ContentCompressionState;
 import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,9 +66,10 @@ public class CachedStorage {
      * @param _type the blog object type for the desired object
      * @param _accessRequirements the optional access requirements (for external requests only)
      * @return the blog object read
+     * @throws StorageException on any problem
      */
     public BlogObject read( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements,
-                            final ContentCompressionState _compressionState ) {
+                            final ContentCompressionState _compressionState ) throws StorageException {
 
         // if we have a cache for this category of object, see if the object is cached...
         int cacheNum = _type.getCache().getOrdinal();
@@ -82,24 +85,14 @@ public class CachedStorage {
             // it wasn't cached, so first we'll have to read it from storage...
             BlogObject readObj = storage.read( _id, _type, _accessRequirements, _compressionState );
 
-            // if we got a valid object...
-            if( readObj.isValid() ) {
+            // if the object's size is less than our threshold, we'll try caching it...
+            if( readObj.size() < maxEntrySize ) {
 
-                // if the content size is less than our threshold, we'll try caching it...
-                BlogObjectContent content = readObj.getContent();
-                if( content.contentLength() < maxEntrySize ) {
+                // make the blog object cacheable (resolve to bytes and try compressing)...
+                readObj.makeReadyForCache( _type.isCompressible() &&_compressionState.mayCompress() );
 
-                    // make the blog object cacheable (resolve to bytes and try compressing)...
-                    readObj.makeReadyForCache( _type.isCompressible() &&_compressionState.mayCompress() );
-
-                    // tell the cache to take it...
-                    cache.add( readObj );
-                }
-            }
-            else {
-                String msg = "Problem reading blog object " + _id + "." + _type;
-                LOG.error( msg );
-                throw new HandlerIllegalStateException( msg );
+                // tell the cache to take it...
+                cache.add( readObj );
             }
 
             // leave with our shiny new object...
@@ -112,18 +105,15 @@ public class CachedStorage {
 
 
     /**
-     * Creates a new blog object with the given content, type, and access requirements, without affecting the cache at all.
+     * Creates a new file to persist the given blog object.
      *
-     * @param _content the content of the new object
-     * @param _type the blog object type of the new object
-     * @param _accessRequirements the optional access requirements (for externally available objects only) for the new object
-     * @param _compressionState the compression state of this object
+     * @param _object the object to persist
      * @return the blog object representing the shiny new object
+     * @throws StorageException on any problem
      */
-    public BlogObject create( final BlogObjectContent _content, final BlogObjectType _type,
-                              final BlogObjectAccessRequirements _accessRequirements, final ContentCompressionState _compressionState ) {
+    public BlogObject create( final BlogObject _object ) throws StorageException {
 
-        return storage.create( _content, _type, _accessRequirements, _compressionState );
+        return storage.create( _object );
     }
 
 
@@ -134,8 +124,9 @@ public class CachedStorage {
      *
      * @param _object the blog object with updated content
      * @return the blog object representing the shiny new object
+     * @throws StorageException on any problem
      */
-    public BlogObject modify( final BlogObject _object ) {
+    public BlogObject update( final BlogObject _object ) throws StorageException {
 
         if( _object == null )
             throw new HandlerIllegalArgumentException( "Missing blog object to modify" );
@@ -145,11 +136,11 @@ public class CachedStorage {
         BlogObjectType type = _object.getType();
 
         // do the modify operation...
-        BlogObject object = storage.modify( _object );
+        BlogObject object = storage.update( _object );
 
         // if we have a valid object, and a cache for this kind of object...
         int cacheNum = _object.getType().getCache().getOrdinal();
-        if( object.isValid() && (cacheNum >= 0) && (cacheNum < caches.length) && (caches[cacheNum] != null) ) {
+        if( (cacheNum >= 0) && (cacheNum < caches.length) && (caches[cacheNum] != null) ) {
 
             // get as much ready outside the synchronization block as we can...
             BlogObjectCache cache = caches[cacheNum];
