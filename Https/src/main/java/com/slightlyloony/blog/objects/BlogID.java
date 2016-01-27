@@ -7,7 +7,7 @@ import com.slightlyloony.blog.util.ID;
 import java.lang.reflect.Type;
 
 /**
- * Contains a 10 character string that is guaranteed to be a semantically valid blog ID.  No guarantee is made about whether the ID refers to an
+ * Contains a 10 character string that is guaranteed to be a semantically valid blog IntegerDatum.  No guarantee is made about whether the IntegerDatum refers to an
  * actual object on the blog.
  *
  * @author Tom Dilatush  tom@dilatush.com

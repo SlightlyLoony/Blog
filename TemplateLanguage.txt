@@ -1,0 +1,27 @@
+Template Language
+
+  Any text file can be "templatized" simply by including template directives in it.  A template directive may appear anywhere in the template.  Every
+  template is surrounded by double braces, like this: {{directive}}.  The directive's opening and closing double braces MUST appear on the same line
+  in the source file.  If the source file contains double-braces itself, they must be escaped by using triple braces.  For example, if the source file
+  needs to contain the term "abc {{def}} ghi", then it must be escaped as "abc {{{def}}} ghi".
+
+  There are several types of template directives:
+
+  Sources:
+
+    These are named sources of text that may appear anywhere within a template.  The actual text is resolved at the time the template is resolved,
+    which is generally while forming the response to a web server request.  A source is specified by a hierarchical name, consisting of components
+    separated by periods (dots).  So, for example, the source "user.firstname" would refer to the first name of the user who made the request.
+    Similarly, the source "user.last_logged_in.month" would refer first to the user who made the request, then to the time that he last logged in,
+    then to the month of that time.  Those dotted names represent the path through the source hierarchy to get to the individual datum desired.  The
+    sources available in any given template may vary depending on the template's context.  For instance, the home page template has access to a source
+    with a list of posts, while a post page template has access to a source with detailed post information.  All the sources available in the system
+    are listed in the "Sources.txt" document.
+
+  Functions:
+
+
+  Tests:
+
+
+  Modes:

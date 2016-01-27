@@ -13,13 +13,13 @@ import java.io.InputStream;
  */
 public class StorageInputStream extends InputStream implements Closeable {
 
-    private final int length;
+    private final Integer length;
     private final InputStream inputStream;
 
 
-    public StorageInputStream( final InputStream _inputStream, final int _length ) {
+    public StorageInputStream( final InputStream _inputStream, final Integer _length ) {
 
-        if( (_inputStream == null) || (_length < 1) )
+        if( (_inputStream == null) || ((_length != null) && (_length < 1)) )
             throw new HandlerIllegalArgumentException( "Missing input stream or length is invalid: " + _length );
 
         length = _length;
@@ -32,7 +32,7 @@ public class StorageInputStream extends InputStream implements Closeable {
      *
      * @return the length of total data available in this stream
      */
-    public int length() {
+    public Integer length() {
         return length;
     }
 

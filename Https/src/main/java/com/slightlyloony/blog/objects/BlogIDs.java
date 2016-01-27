@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 import static com.slightlyloony.common.logging.LU.msg;
 
 /**
- * The main responsibility of this singleton class is to issue a new blog object ID when one is needed.  To do this, it examines the file system
- * upon startup to find the highest blog object ID that's actually on the file system, then issues new IDs starting at the next one.  Key to the
+ * The main responsibility of this singleton class is to issue a new blog object IntegerDatum when one is needed.  To do this, it examines the file system
+ * upon startup to find the highest blog object IntegerDatum that's actually on the file system, then issues new IDs starting at the next one.  Key to the
  * integrity of this scheme is that new blog object IDs should be issued as new objects are created and written.
  *
  * @author Tom Dilatush  tom@dilatush.com
@@ -32,7 +32,7 @@ public class BlogIDs {
 
 
     /**
-     * Reads the file system to determine the last used blog object ID.
+     * Reads the file system to determine the last used blog object IntegerDatum.
      */
     public void init() {
 
@@ -63,7 +63,7 @@ public class BlogIDs {
         lastUsedID = ID.decode( files[0].substring( 0, 10 ) );
 
         t.mark();
-        LOG.info( msg( "Found highest used blog object ID ({0}) in {1}", lastUsedID, t.toString() ) );
+        LOG.info( msg( "Found highest used blog object IntegerDatum ({0}) in {1}", lastUsedID, t.toString() ) );
 
         // schedule an integrity check every 30 minutes...
         ExecutionService.INSTANCE.scheduleAtFixedRate( (Runnable) BlogIDs.INSTANCE::integrityCheck, 30, 30, TimeUnit.MINUTES );
@@ -125,7 +125,7 @@ public class BlogIDs {
 
                 // make sure our file name is at least 10 characters and is comprised of valid base64url characters...
                 if( (name.length() < 10) || !ID.isValid( name.substring( 0, 10 ) ) ) {
-                    LOG.error( msg( "Entry {0} isn't named with a valid blog ID", name ) );
+                    LOG.error( msg( "Entry {0} isn't named with a valid blog IntegerDatum", name ) );
                     return false;
                 }
 
@@ -171,7 +171,7 @@ public class BlogIDs {
 
                 // make sure our file name is exactly 2 characters and is comprised of valid base64url characters...
                 if( (name.length() != 2) || !ID.isValid( name.charAt( 0 ) ) || !ID.isValid( name.charAt( 1 ) ) ) {
-                    LOG.error( msg( "Entry {0} isn't named with a valid blog ID 2 digit part", name ) );
+                    LOG.error( msg( "Entry {0} isn't named with a valid blog IntegerDatum 2 digit part", name ) );
                     return false;
                 }
 
@@ -195,15 +195,15 @@ public class BlogIDs {
 
 
     /**
-     * Returns the next available (unused) blog object ID, in sequential order.
+     * Returns the next available (unused) blog object IntegerDatum, in sequential order.
      *
-     * @return the next available (unused) blog object ID
+     * @return the next available (unused) blog object IntegerDatum
      */
     public synchronized BlogID getNextBlogID() {
 
         BlogID result =  BlogID.create( ID.encode( ++lastUsedID ) );
         if( result == null)
-            throw new HandlerIllegalStateException( "Could not create next blog object ID" );
+            throw new HandlerIllegalStateException( "Could not create next blog object IntegerDatum" );
 
         return result;
     }

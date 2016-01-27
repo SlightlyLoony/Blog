@@ -63,8 +63,9 @@ public class Users extends BlogObjectObject {
     }
 
 
+    @Override
     public int size() {
-        int result = super.size();
+        int result = baseSize();
         result += reverse.size() * (40 + 10) + 1000;
         result += byCookie.size() * (20 + 10) + 1000;
         result += byUsername.size() * (20 + 10) + 1000;
@@ -87,7 +88,7 @@ public class Users extends BlogObjectObject {
 
         try {
             if( id != null )
-                object = BlogServer.STORAGE.read( id, BlogObjectType.USERINDEX, null, ContentCompressionState.UNCOMPRESSED );
+                object = BlogServer.STORAGE.read( id, BlogObjectType.USERINDEX, null, ContentCompressionState.UNCOMPRESSED, true );
         }
         catch( StorageException e ) {
             LOG.error( "Could not read users file; rebuilding from user data" );
@@ -101,14 +102,14 @@ public class Users extends BlogObjectObject {
     public synchronized void indexUser( final BlogID _id, final User _user ) {
 
         if( (_id == null) || (_user == null) )
-            throw new HandlerIllegalArgumentException( "Blog ID or user missing" );
+            throw new HandlerIllegalArgumentException( "Blog IntegerDatum or user missing" );
 
         byte[] blogID = toUTF8( _id.getID() );
         byte[] username = toUTF8( _user.getUsername() );
         byte[] cookieValue = toUTF8( _user.getCookie() );
 
         // first we get the keys to any existing entries for this user, as both the username and session cookie values might have changed...
-        // we use the blog ID (which is invariant for any given user) to look up the keys for the other two maps...
+        // we use the blog IntegerDatum (which is invariant for any given user) to look up the keys for the other two maps...
         Keys keys = reverse.get( blogID );
 
         // if we got no entry for the keys, then we've never indexed this user before - just add him...
@@ -168,12 +169,12 @@ public class Users extends BlogObjectObject {
         if( userID == null )
             return null;
 
-        return (User) BlogServer.STORAGE.read( userID, BlogObjectType.USERDATA, null, ContentCompressionState.UNCOMPRESSED );
+        return (User) BlogServer.STORAGE.read( userID, BlogObjectType.USERDATA, null, ContentCompressionState.UNCOMPRESSED, true );
     }
 
 
     /**
-     * Creates a default manager user, stored at a new ID.
+     * Creates a default manager user, stored at a new IntegerDatum.
      *
      * @param _blogName the name of the blog this user belongs to
      */
@@ -201,7 +202,7 @@ public class Users extends BlogObjectObject {
         Timer t = new Timer();
         LOG.info( "Creating Users instance the hard way: reading all blog files" );
 
-        // ensure that we have an ID...
+        // ensure that we have an IntegerDatum...
         BlogID oldUsersID = BlogID.create( _blogConfig.getUsers() );
         BlogID usersID = (oldUsersID == null) ? BlogIDs.INSTANCE.getNextBlogID() : oldUsersID;
 
@@ -220,10 +221,10 @@ public class Users extends BlogObjectObject {
             // read the user data in and instantiate it...
             User user;
             try {
-                user = (User) BlogServer.STORAGE.read( info.id, BlogObjectType.USERDATA, null, ContentCompressionState.UNCOMPRESSED );
+                user = (User) BlogServer.STORAGE.read( info.id, BlogObjectType.USERDATA, null, ContentCompressionState.UNCOMPRESSED, true );
             }
             catch( StorageException e ) {
-                LOG.error( "Can't read user: ID " + info.id );
+                LOG.error( "Can't read user: IntegerDatum " + info.id );
                 continue;
             }
 
@@ -298,7 +299,7 @@ public class Users extends BlogObjectObject {
 
 
     /*
-     * We persist this index of users with a JSON array (with one entry per user) of three element string arrays (blog ID, username, and cookie
+     * We persist this index of users with a JSON array (with one entry per user) of three element string arrays (blog IntegerDatum, username, and cookie
      * value).  For example, a file with two users might look something like this:
      *
      * {

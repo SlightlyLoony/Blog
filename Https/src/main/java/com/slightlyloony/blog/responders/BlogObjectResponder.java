@@ -15,24 +15,17 @@ public class BlogObjectResponder implements Responder {
 
     @Override
     public void respond( final BlogRequest _request, final BlogResponse _response, final BlogObjectMetadata _metadata,
-                         final boolean isAuthorized ) throws StorageException {
+                         final boolean _isCacheable ) throws StorageException {
 
-        if( isAuthorized ) {
+        BlogID content = _metadata.getContent();
+        BlogObjectType contentType = _metadata.getContentType();
+        ContentCompressionState compressionState = _metadata.getCompressionState();
+        BlogContentObject obj;
+        obj = (BlogContentObject) BlogServer.STORAGE.read( content, contentType, null, compressionState, _isCacheable );
 
-            BlogID content = _metadata.getContent();
-            BlogObjectType contentType = _metadata.getContentType();
-            ContentCompressionState compressionState = _metadata.getCompressionState();
-            BlogContentObject obj;
-            obj = (BlogContentObject) BlogServer.STORAGE.read( content, contentType, null, compressionState );
+        _response.setMimeType( _metadata.getContentType() );
 
-            _response.setMimeType( _metadata.getContentType() );
-
-            obj.getContent().write( _request, _response, _metadata.getCompressionState().mayCompress() );
-            _request.handled();
-        }
-
-        else {
-            // TODO: what do we do if this is unauthorized?
-        }
+        obj.getContent().write( _request, _response, _metadata.getCompressionState().mayCompress() );
+        _request.handled();
     }
 }

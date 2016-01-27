@@ -1,7 +1,6 @@
 package com.slightlyloony.blog.handlers;
 
 import com.slightlyloony.blog.BlogServer;
-import com.slightlyloony.blog.objects.BlogObject;
 import com.slightlyloony.blog.objects.BlogObjectMetadata;
 import com.slightlyloony.blog.objects.BlogObjectType;
 import com.slightlyloony.blog.responders.Responder;
@@ -57,9 +56,10 @@ public class BlogHandler extends AbstractHandler implements Handler {
         }
 
         // try to read the metadata for this request...
-        BlogObject obj;
+        BlogObjectMetadata metadata;
         try {
-            obj = BlogServer.STORAGE.read( request.getId(), BlogObjectType.METADATA, request.getAccessRequirements(), DO_NOT_COMPRESS );
+            metadata = (BlogObjectMetadata) BlogServer.STORAGE
+                    .read( request.getId(), BlogObjectType.METADATA, request.getAccessRequirements(), DO_NOT_COMPRESS, true );
         }
         catch( StorageException e ) {
 
@@ -74,11 +74,20 @@ public class BlogHandler extends AbstractHandler implements Handler {
             return;
         }
 
-        BlogObjectMetadata metadata = (BlogObjectMetadata) obj;
+        // get our responder, if we have one...
         Responder responder = metadata.getResponder( request.getRequestMethod() );
+        if( responder == null ) {
 
-        // TODO: handle browserCacheable in metadata...
-        // TODO: determine whether request is authorized...
+            // TODO: handle no responder mo' bettah...
+            response.setResponseCode( HttpServletResponse.SC_METHOD_NOT_ALLOWED );
+            request.handled();
+
+            t.mark();
+
+            LOG.info( LU.msg( "{0} {2}{1} from {3} completed (but method type is not supported) in {4}",
+                    _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
+            return;
+        }
 
         if( !request.accepts( metadata.getContentType().getMime() ) ) {
 
@@ -93,8 +102,37 @@ public class BlogHandler extends AbstractHandler implements Handler {
             return;
         }
 
+        // take care of cache control...
+        if( metadata.getExternalCacheSeconds() > 0 ) {
+            response.setCacheControl( "public, max-age=" + metadata.getExternalCacheSeconds() );
+        }
+        else {
+            response.setCacheControl( "no-cache, must-revalidate");
+            response.setExpires( "Sat, 26 Jul 1997 05:00:00 GMT" );
+        }
+
+        // TODO: determine whether request is authorized...
+        boolean authorized = true;
+        if( !authorized ) {
+
+            // see if we have a responder for unauthorized access...
+            responder = metadata.getUnauthorizedResponder().getResponder();
+            if( responder == null ) {
+
+                // TODO: handle unauthorized without special responder mo' bettah...
+                response.setResponseCode( HttpServletResponse.SC_FORBIDDEN );
+                request.handled();
+
+                t.mark();
+
+                LOG.info( LU.msg( "{0} {2}{1} from {3} completed (but request is unauthorized) in {4}",
+                        _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
+                return;
+            }
+        }
+
         try {
-            responder.respond( request, response, metadata, true );
+            responder.respond( request, response, metadata, metadata.isServerCacheable() );
         }
         catch( HandlerIllegalArgumentException | HandlerIllegalStateException | StorageException e ) {
 

@@ -11,7 +11,6 @@ import org.apache.logging.log4j.Logger;
 public class BlogContentObject extends BlogObject {
 
     private final static Logger LOG = LogManager.getLogger();
-    private final static int ASSUMED_OVERHEAD_BYTES = 50;
 
     private BlogObjectContent content;  // if this field is null, then the instance is invalid...
 
@@ -21,11 +20,6 @@ public class BlogContentObject extends BlogObject {
         super( _id, _type, _accessRequirements );
 
         content = _content;
-    }
-
-
-    public BlogContentObject( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements ) {
-        this( _id, _type, _accessRequirements, null );
     }
 
 
@@ -39,13 +33,14 @@ public class BlogContentObject extends BlogObject {
     }
 
 
+    @Override
     public synchronized int size() {
-        return super.size() + ASSUMED_OVERHEAD_BYTES + ((content == null) ? 0 : content.memorySize() );
+        return baseSize() + 8 + content.size();
     }
 
 
-    public synchronized int contentLength() {
-        return (content == null) ? 0 : content.contentLength;
+    public Integer contentLength() {
+        return content.contentLength();
     }
 
 
@@ -61,10 +56,5 @@ public class BlogContentObject extends BlogObject {
 
     public synchronized byte[] getBytes() {
         return content.asBytes().getBytes();
-    }
-
-
-    public synchronized String getUTF8String() {
-        return content.asBytes().getUTF8String();
     }
 }

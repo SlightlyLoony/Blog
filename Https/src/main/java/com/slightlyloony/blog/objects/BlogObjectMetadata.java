@@ -24,33 +24,38 @@ import static com.slightlyloony.blog.objects.ContentCompressionState.UNCOMPRESSE
  */
 public class BlogObjectMetadata extends BlogObjectObject {
 
-    private boolean browserCacheable;
+    private static final int DEFAULT_EXTERNAL_CACHE_SECONDS = 30 * 24 * 3600;
+
+    private int externalCacheSeconds;
     private boolean serverCacheable;
     private ContentCompressionState compressionState;
     private Map<RequestMethod,ResponderType> methods;
+    private ResponderType unauthorizedResponder;
     private BlogID content;
     private BlogObjectType contentType;
 
 
     public BlogObjectMetadata( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements ) {
         super( _id, _type, _accessRequirements );
-        browserCacheable = true;
+        externalCacheSeconds = DEFAULT_EXTERNAL_CACHE_SECONDS;
         serverCacheable = true;
         compressionState = UNCOMPRESSED;
         methods = Maps.newHashMap();
         content = null;
         contentType = null;
+        unauthorizedResponder = null;
     }
 
 
     private BlogObjectMetadata() {
         super();
-        browserCacheable = true;
+        externalCacheSeconds = DEFAULT_EXTERNAL_CACHE_SECONDS;
         serverCacheable = true;
         compressionState = UNCOMPRESSED;
         methods = Maps.newHashMap();
         content = null;
         contentType = null;
+        unauthorizedResponder = null;
     }
 
     public static BlogObjectMetadata create( final String _json ) {
@@ -58,8 +63,9 @@ public class BlogObjectMetadata extends BlogObjectObject {
     }
 
 
+    @Override
     public int size() {
-        int result = super.size();
+        int result = baseSize();
 
         // primitives...
         result += (8 + 8 + 8 + 20 + 8);
@@ -71,8 +77,13 @@ public class BlogObjectMetadata extends BlogObjectObject {
     }
 
 
-    public boolean isBrowserCacheable() {
-        return browserCacheable;
+    public int getExternalCacheSeconds() {
+        return externalCacheSeconds;
+    }
+
+
+    public void setExternalCacheSeconds( final int _externalCacheSeconds ) {
+        externalCacheSeconds = _externalCacheSeconds;
     }
 
 
@@ -93,11 +104,6 @@ public class BlogObjectMetadata extends BlogObjectObject {
 
     public BlogObjectType getContentType() {
         return contentType;
-    }
-
-
-    public void setBrowserCacheable( final boolean _browserCacheable ) {
-        browserCacheable = _browserCacheable;
     }
 
 
@@ -128,6 +134,16 @@ public class BlogObjectMetadata extends BlogObjectObject {
 
     public void setContentType( final BlogObjectType _contentType ) {
         contentType = _contentType;
+    }
+
+
+    public ResponderType getUnauthorizedResponder() {
+        return unauthorizedResponder;
+    }
+
+
+    public void setUnauthorizedResponder( final ResponderType _unauthorizedResponder ) {
+        unauthorizedResponder = _unauthorizedResponder;
     }
 
 
@@ -176,12 +192,17 @@ public class BlogObjectMetadata extends BlogObjectObject {
             JsonObject result = new JsonObject();
 
             // only add those fields that DON'T have their default value...
-            if( !_metadata.browserCacheable )                result.addProperty( "browserCacheable", false );
-            if( !_metadata.serverCacheable )                 result.addProperty( "serverCacheable",  false );
-            if( _metadata.compressionState != UNCOMPRESSED ) result.add( "compressionState", _context.serialize( _metadata.compressionState ) );
-            if( _metadata.methods.size() > 0 )               result.add( "methods",          _context.serialize( _metadata.methods          ) );
-            if( _metadata.content != null )                  result.add( "content",          _context.serialize( _metadata.content          ) );
-            if( _metadata.contentType != null )              result.add( "contentType",      _context.serialize( _metadata.contentType      ) );
+            boolean externalCacheSecondsDiff = _metadata.externalCacheSeconds != DEFAULT_EXTERNAL_CACHE_SECONDS;
+            boolean compressionStateDiff = _metadata.compressionState != UNCOMPRESSED;
+            boolean unauthorizedResponderDiff = _metadata.unauthorizedResponder != null;
+
+            if( externalCacheSecondsDiff )      result.addProperty( "externalCacheSeconds", _metadata.externalCacheSeconds );
+            if( !_metadata.serverCacheable )    result.addProperty( "serverCacheable",      false );
+            if( unauthorizedResponderDiff )     result.add( "unauthorizedResponder", _context.serialize( _metadata.unauthorizedResponder ) );
+            if( compressionStateDiff )          result.add( "compressionState",      _context.serialize( _metadata.compressionState      ) );
+            if( _metadata.methods.size() > 0 )  result.add( "methods",               _context.serialize( _metadata.methods               ) );
+            if( _metadata.content != null )     result.add( "content",               _context.serialize( _metadata.content               ) );
+            if( _metadata.contentType != null ) result.add( "contentType",           _context.serialize( _metadata.contentType           ) );
 
             return result;
         }

@@ -37,16 +37,16 @@ public class ID {
 
 
     /**
-     * Decodes the given ID string to a long.  Note that the given string <i>must</i> be exactly 10 characters long.
+     * Decodes the given IntegerDatum string to a long.  Note that the given string <i>must</i> be exactly 10 characters long.
      *
-     * @param _id the ID to decode.
-     * @return the long value of the given ID, decoded.
+     * @param _id the IntegerDatum to decode.
+     * @return the long value of the given IntegerDatum, decoded.
      */
     public static long decode( final String _id ) {
 
         // make sure we didn't get something crazy...
         if( (_id == null) || (_id.length() != 10) )
-            throw new HandlerIllegalArgumentException( "Invalid ID: " + _id );
+            throw new HandlerIllegalArgumentException( "Invalid IntegerDatum: " + _id );
 
         long result = 0;
 
@@ -54,7 +54,7 @@ public class ID {
             result <<= 6;
             int val = get( _id.charAt( i ) );
             if( val < 0 )
-                throw new HandlerIllegalArgumentException( "Invalid character in ID: " + _id.charAt( i ) );
+                throw new HandlerIllegalArgumentException( "Invalid character in IntegerDatum: " + _id.charAt( i ) );
             result += val;
         }
 

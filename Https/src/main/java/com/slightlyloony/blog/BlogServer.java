@@ -93,7 +93,6 @@ public class BlogServer {
 
             // Start the server
             server.start();
-            server.dumpStdErr();
 
             LOG.info( "HTTPS server starting" );
         }

@@ -1,0 +1,72 @@
+Sources
+
+  This document details all sources (and the data available from them) that are available to templates running in various contexts.
+
+
+  In all contexts:
+
+    root source:
+
+      This source has no name; it is implied as the highest level source in the system.  It has these data available in all contexts:
+
+      user         a user source with various information about a user, or a synthetic record for an anonymous user
+      timestamp    a date source that is a timestamp for when the request was received
+
+
+    date source:
+
+      This source may appear under various names, whenever a date is supplied.  For instance, "user.created" and "timestamp" are both date sources.
+      That means that "user.created.hour" will return the hour of the day that the user was created, for example.  A date source has these data
+      available:
+
+      year           the year, 1990...
+      month          the month within the year, 1..12
+      day            the day within the month, 1..28-31
+      hour           the hour within the day, 0..23
+      minute         the minute within the hour, 0..59
+      second         the second within the minute, 0..59
+      timezone       the name of the timezone (like "Mountain Time")
+      month_name     the name of the month (like "March" or "October")
+      day_of_week    the day of the week (like "Tuesday", or "Saturday")
+      am_pm          the AM or PM of the day ("AM" or "PM"); note that 12 noon is 12 PM, and midnight is 12 AM
+      hour12         the hour of the day as on a 12 hour clock, 1..12
+
+
+    user source:
+
+      Available as "user" on the root source.  Note that many of the data available on this source are restricted by what rights the user resolving
+      the template has.  Many of the data require, in particular, MANAGER rights.  Any attempt to access data by a user without the appropriate
+      rights will result in a "[REDACTED]" string instead of the desired data.  It has these data available:
+
+        visible to anyone:
+
+          handle              the public "handle" for the user
+          born                the year that the user was born (like 1955, or 2001)
+          bio                 the public biography for the user
+          gender              the user's gender (one of MALE, FEMALE, OTHER, UNSTATED, or UNCERTAIN)
+          motto               the public motto for the user
+          first_name          the (if marked public) first name of the user
+          last_name           the (if marked public) last name of the user
+          email               the (if marked public) email for the user
+          image               the blog ID of the (optional) image for the user
+          age                 the age of the user, in years (computed from birth_year)
+          created             the date/time that the user was created
+          blog                the blog that the user belongs to
+
+        visible to the user himself (or to managers):
+
+          username            the login name for the user
+          first_name          the (if not marked public) first name of the user
+          last_name           the (if not marked public) last name of the user
+          email               the (if not marked public) email for the user
+
+        visible only to managers:
+
+          rights              the rights held by a user (a comma-separated list of right names, like "MANAGER, AUTHOR")
+          disabled            true if the user has been administratively disabled
+          disabled_reason     a description of why the user was administratively disabled
+          last_verified       the date/time that the user's email was last verified
+          name_public         true if the user's name is publicly available
+          email_public        true if the user's email is publicly available
+          last_visited        the date/time that the user last visited this blog
+          visits              the number of visits the user has made to this blog

@@ -59,6 +59,16 @@ public class BlogResponse {
     }
 
 
+    public void setCacheControl( final String _cacheControl ) {
+        response.setHeader( "Cache-Control", _cacheControl );
+    }
+
+
+    public void setExpires( final String _expires ) {
+        response.setHeader( "Expires", _expires );
+    }
+
+
     public OutputStream getOutputStream() throws IOException {
         return response.getOutputStream();
     }

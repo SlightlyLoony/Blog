@@ -1,22 +1,22 @@
 package com.slightlyloony.blog.objects;
 
+import com.google.common.io.ByteStreams;
 import com.slightlyloony.blog.handlers.BlogRequest;
 import com.slightlyloony.blog.handlers.BlogResponse;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
+import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
 import com.slightlyloony.blog.storage.StorageInputStream;
-import com.slightlyloony.blog.util.Constants;
-import com.slightlyloony.blog.util.S;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.io.*;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Encapsulates the notion of content to be written to an HTTP response.  The content may be available either as an array of bytes or as a stream,
  * and the data may be uncompressed and possibly compressible, not to be compressed (because it's already compressed, like a JPG, or is known to
- * be uncompressable), or compressed.  The {@link #write(com.slightlyloony.blog.handlers.BlogResponse,boolean,boolean,boolean)} method writes the
+ * be uncompressable), or compressed.  The {@link #write(BlogRequest,BlogResponse,boolean)} method writes the
  * instances content &ndash; no matter what form it's in &ndash; to the blog response.
  *
  * @author Tom Dilatush  tom@dilatush.com
@@ -67,6 +67,12 @@ public class BytesObjectContent extends BlogObjectContent {
 
 
     @Override
+    public int size() {
+        return 8 + content.length;
+    }
+
+
+    @Override
     public BytesObjectContent asBytes() {
         return this;
     }
@@ -90,6 +96,55 @@ public class BytesObjectContent extends BlogObjectContent {
     }
 
 
+    private byte[] compress( final byte[] _uncompressed ) {
+
+        try (
+                // make our output buffer 20% larger than the input, just in case we inflate a bit...
+                ByteArrayOutputStream baos = new ByteArrayOutputStream( _uncompressed.length * 5 / 4 );
+
+                OutputStream os = new GZIPOutputStream( baos, true );
+                InputStream is = new ByteArrayInputStream( _uncompressed ) ) {
+
+            ByteStreams.copy( is, os );
+
+            // we have to close to flush the compressor...
+            is.close();
+            os.close();
+
+            return baos.toByteArray();
+        }
+        catch( IOException e ) {
+            String msg = "Problem trying to compress bytes";
+            LOG.error( msg, e );
+            throw new HandlerIllegalStateException( msg, e );
+        }
+    }
+
+
+    private byte[] decompress( final byte[] _compressed ) {
+
+        try (
+                // make our output buffer 300% larger than the input, to reduce possible growths...
+                ByteArrayOutputStream baos = new ByteArrayOutputStream( _compressed.length * 3 );
+
+                InputStream is = new GZIPInputStream( new ByteArrayInputStream( _compressed ) ) ) {
+
+            ByteStreams.copy( is, baos );
+
+            // we have to close to flush the compressor...
+            is.close();
+            baos.close();
+
+            return baos.toByteArray();
+        }
+        catch( IOException e ) {
+            String msg = "Problem trying to decompress bytes";
+            LOG.error( msg, e );
+            throw new HandlerIllegalStateException( msg, e );
+        }
+    }
+
+
     @Override
     public StreamObjectContent asStream() {
 
@@ -98,25 +153,7 @@ public class BytesObjectContent extends BlogObjectContent {
     }
 
 
-    public synchronized String getUTF8String() {
-
-        // get the bytes, convert them to a string, and return that...
-        return S.fromUTF8( getUncompressedBytes() );
-    }
-
-
-    @Override
-    public int memorySize() {
-        return ((byte[])content).length;
-    }
-
-
     public byte[] getBytes() {
-        return (byte[]) content;
-    }
-
-
-    public byte[] getUncompressedBytes() {
-        return !compressionState.isCompressed() ? content : decompress( content );
+        return content;
     }
 }

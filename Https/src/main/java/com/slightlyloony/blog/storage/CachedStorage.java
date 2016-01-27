@@ -57,19 +57,19 @@ public class CachedStorage {
 
 
     /**
-     * Reads the blog object with the given ID, type, and access requirements from the cache if available, otherwise from storage.  The ID and type
+     * Reads the blog object with the given IntegerDatum, type, and access requirements from the cache if available, otherwise from storage.  The IntegerDatum and type
      * are required.  The access requirements are optional; if missing (null) then this is an internal request.  <i>All</i> requests for external
      * access <i>must</i> include access requirements, as this is used as part of the file name.  If an error occurs, an invalid blog object is
      * returned.
      *
-     * @param _id the blog object ID for the desired object
+     * @param _id the blog object IntegerDatum for the desired object
      * @param _type the blog object type for the desired object
      * @param _accessRequirements the optional access requirements (for external requests only)
      * @return the blog object read
      * @throws StorageException on any problem
      */
     public BlogObject read( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements,
-                            final ContentCompressionState _compressionState ) throws StorageException {
+                            final ContentCompressionState _compressionState, final boolean _isCacheable ) throws StorageException {
 
         // if we have a cache for this category of object, see if the object is cached...
         int cacheNum = _type.getCache().getOrdinal();
@@ -85,8 +85,8 @@ public class CachedStorage {
             // it wasn't cached, so first we'll have to read it from storage...
             BlogObject readObj = storage.read( _id, _type, _accessRequirements, _compressionState );
 
-            // if the object's size is less than our threshold, we'll try caching it...
-            if( readObj.size() < maxEntrySize ) {
+            // if the object's size is less than our threshold and it's cacheable, we'll try caching it...
+            if( _isCacheable && (readObj.size() < maxEntrySize) ) {
 
                 // make the blog object cacheable (resolve to bytes and try compressing)...
                 readObj.makeReadyForCache( _type.isCompressible() &&_compressionState.mayCompress() );
@@ -131,7 +131,7 @@ public class CachedStorage {
         if( _object == null )
             throw new HandlerIllegalArgumentException( "Missing blog object to modify" );
 
-        // remember the ID and type...
+        // remember the IntegerDatum and type...
         BlogID id = _object.getBlogID();
         BlogObjectType type = _object.getType();
 

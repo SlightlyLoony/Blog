@@ -11,7 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Provides a memory cache for blog objects.  The cache is a simple LRU cache with hashed access via the blog object ID.
+ * Provides a memory cache for blog objects.  The cache is a simple LRU cache with hashed access via the blog object IntegerDatum.
  *
  * @author Tom Dilatush  tom@dilatush.com
  */

@@ -1,6 +1,5 @@
 package com.slightlyloony.blog.objects;
 
-import com.google.common.io.ByteStreams;
 import com.slightlyloony.blog.handlers.BlogRequest;
 import com.slightlyloony.blog.handlers.BlogResponse;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
@@ -11,8 +10,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.zip.GZIPInputStream;
 
 /**
  * @author Tom Dilatush  tom@dilatush.com
@@ -55,33 +52,6 @@ public class StreamObjectContent extends BlogObjectContent {
     }
 
 
-    private void copy( final OutputStream _outputStream ) {
-
-        try {
-            ByteStreams.copy( content, _outputStream );
-        }
-        catch( IOException e ) {
-            String msg = "Problem copying content input stream to response output stream";
-            LOG.error( msg, e );
-            throw new HandlerIllegalStateException( msg, e );
-        }
-    }
-
-
-    private void copyDecompressed( final OutputStream _outputStream ) {
-
-        try(
-            InputStream inputStream = new GZIPInputStream( content ) ) {
-            ByteStreams.copy( inputStream, _outputStream );
-        }
-        catch( IOException e ) {
-            String msg = "Problem copying GZIP decompressing input stream to response output stream";
-            LOG.error( msg, e );
-            throw new HandlerIllegalStateException( msg, e );
-        }
-    }
-
-
     @Override
     public BytesObjectContent asBytes() {
 
@@ -113,6 +83,12 @@ public class StreamObjectContent extends BlogObjectContent {
 
 
     @Override
+    public int size() {
+        return 8 + ASSUMED_MEMORY_SIZE;
+    }
+
+
+    @Override
     public BytesObjectContent asCompressedBytes( final boolean _mayCompress ) {
         return asBytes().asCompressedBytes( _mayCompress );
     }
@@ -124,13 +100,7 @@ public class StreamObjectContent extends BlogObjectContent {
     }
 
 
-    @Override
-    public int memorySize() {
-        return ASSUMED_MEMORY_SIZE;
-    }
-
-
     public StorageInputStream getStream() {
-        return (StorageInputStream) content;
+        return content;
     }
 }

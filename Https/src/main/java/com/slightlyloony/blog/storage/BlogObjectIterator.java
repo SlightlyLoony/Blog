@@ -11,7 +11,7 @@ import java.util.NoSuchElementException;
 
 /**
  * Iterates over all the blog objects stored on the system, returning an object containing information about each of the blog objects.  The iterator
- * makes no attempt to validate the entries on the system; it simply iterates over them in ID order until there are no more objects.
+ * makes no attempt to validate the entries on the system; it simply iterates over them in IntegerDatum order until there are no more objects.
  *
  * @author Tom Dilatush  tom@dilatush.com
  */

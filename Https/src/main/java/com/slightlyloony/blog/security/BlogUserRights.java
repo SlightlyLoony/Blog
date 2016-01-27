@@ -119,6 +119,20 @@ public class BlogUserRights {
 
 
     @Override
+    public String toString() {
+        if( rights.size() == 0)
+            return "NONE";
+        StringBuilder sb = new StringBuilder();
+        for( BlogAccessRight right : rights ) {
+            if( sb.length() != 0 )
+                sb.append( ", " );
+            sb.append( right.toString() );
+        }
+        return sb.toString();
+    }
+
+
+    @Override
     public boolean equals( final Object o ) {
         if( this == o ) return true;
         if( o == null || getClass() != o.getClass() ) return false;

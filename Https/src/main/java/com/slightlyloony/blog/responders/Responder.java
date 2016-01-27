@@ -10,5 +10,6 @@ import com.slightlyloony.blog.storage.StorageException;
  */
 public interface Responder {
 
-    void respond( final BlogRequest _request, final BlogResponse _response, final BlogObjectMetadata _metadata, final boolean isAuthorized ) throws StorageException;
+    void respond( final BlogRequest _request, final BlogResponse _response, final BlogObjectMetadata _metadata,
+                  final boolean _isCacheable ) throws StorageException;
 }

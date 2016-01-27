@@ -46,7 +46,15 @@ public abstract class BlogObject {
      *
      * @return the approximate number of bytes this instance occupies in memory
      */
-    public int size() {
+    public abstract int size();
+
+
+    /**
+     * The approximate memory requirements for this instance, in bytes.
+     *
+     * @return the approximate number of bytes this instance occupies in memory
+     */
+    protected int baseSize() {
         return 36 + 8 + 8;
     }
 

@@ -50,11 +50,11 @@ public class Storage {
 
 
     /**
-     * Reads the blog object with the given ID, type, and access requirements.  The ID and type are required.  The access requirements are optional;
+     * Reads the blog object with the given IntegerDatum, type, and access requirements.  The IntegerDatum and type are required.  The access requirements are optional;
      * if missing (null) then this is an internal request.  <i>All</i> requests for external access <i>must</i> include access requirements, as this
      * is used as part of the file name.  If an error occurs, an invalid blog object is returned.
      *
-     * @param _id the blog object ID for the desired object
+     * @param _id the blog object IntegerDatum for the desired object
      * @param _type the blog object type for the desired object
      * @param _accessRequirements the optional access requirements (for external requests only)
      * @param _compressionState the compression state of this object
@@ -65,9 +65,9 @@ public class Storage {
                             final ContentCompressionState _compressionState ) throws StorageException {
 
         if( (_id == null) || (_type == null) )
-            throw new HandlerIllegalArgumentException( "Missing ID or type" );
+            throw new HandlerIllegalArgumentException( "Missing IntegerDatum or type" );
 
-        // get a lock for this blog ID...
+        // get a lock for this blog IntegerDatum...
         getLock( _id );
 
         try {
@@ -96,7 +96,7 @@ public class Storage {
     // TODO: redo content length to be an object (and nullable) to deal with unknown lengths.  Review the use of content length through the stack
     // TODO: Review use of compression state as a parameter - is it REALLY the right way to do this?
     /**
-     * Creates a new file to persist the given blog object.  This object's blog ID should have been created just before this method is invoked, to
+     * Creates a new file to persist the given blog object.  This object's blog IntegerDatum should have been created just before this method is invoked, to
      * minimize the possibility that the server could go down with the object not persisted.
      *
      * @param _object the object to be persisted
@@ -108,7 +108,7 @@ public class Storage {
         if( _object == null )
             throw new HandlerIllegalArgumentException( "Missing blog object to create" );
 
-        // get a lock for this blog ID...
+        // get a lock for this blog IntegerDatum...
         getLock( _object.getBlogID() );
 
         // get the file...
@@ -178,9 +178,9 @@ public class Storage {
 
 
     /**
-     * Blocks until an exclusive lock is obtained for the given blog ID.
+     * Blocks until an exclusive lock is obtained for the given blog IntegerDatum.
      *
-     * @param _id the blog ID to obtain a lock for
+     * @param _id the blog IntegerDatum to obtain a lock for
      */
     private void getLock( final BlogID _id ) {
 
@@ -200,9 +200,9 @@ public class Storage {
 
 
     /**
-     * Releases a previously obtained exclusive lock on the given blog ID.
+     * Releases a previously obtained exclusive lock on the given blog IntegerDatum.
      *
-     * @param _id the blog ID to release a lock for
+     * @param _id the blog IntegerDatum to release a lock for
      */
     private void releaseLock( final BlogID _id ) {
 
@@ -211,7 +211,7 @@ public class Storage {
         synchronized( locks ) {
             semaphore = locks.get( _id.getID() );
             if( semaphore == null ) {
-                LOG.error( "Trying to release a lock on a blog ID that has no lock: " + _id );
+                LOG.error( "Trying to release a lock on a blog IntegerDatum that has no lock: " + _id );
                 return;
             }
 

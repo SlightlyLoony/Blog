@@ -108,7 +108,7 @@ public class BlogRequest {
         }
         id = BlogID.create( path.substring( 1, 11 ) );
         if( id == null) {
-            errorMessage = "Invalid blog ID: " + path.substring( 1, 11 );
+            errorMessage = "Invalid blog IntegerDatum: " + path.substring( 1, 11 );
             return false;
         }
         accessRequirements = BlogObjectAccessRequirements.get( path.charAt( 11 ) );
@@ -142,7 +142,8 @@ public class BlogRequest {
 
 
     public boolean acceptsGZIP() {
-        return acceptEncodings.accept( "gzip" ) != null;
+        return false;
+//        return acceptEncodings.accept( "gzip" ) != null;
     }
 
 
