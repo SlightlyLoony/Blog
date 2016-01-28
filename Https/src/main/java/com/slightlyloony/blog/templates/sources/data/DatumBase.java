@@ -47,4 +47,13 @@ public abstract class DatumBase implements Datum {
     public Object getValue() {
         return value;
     }
+
+
+    /**
+     * Returns a copy of this datum with the new given name.
+     *
+     * @param _name the name for the copy
+     * @return the datum copy
+     */
+    public abstract Datum copy( final String _name );
 }

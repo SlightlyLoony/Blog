@@ -41,6 +41,26 @@ public class DatumDef {
         this( _name, _class, _getter, (_user, _source) -> true );
     }
 
+
+    /**
+     * This constructor exists only to support variable sources.  It will create a data definition from a datum that is to be assigned to a variable.
+     * The value getter will be null, because the datum will be instantiated by the variable source, not the usual mechanism in SourceBase.
+     *
+     * @param _name
+     * @param _model
+     */
+    public DatumDef( final String _name, final Datum _model ) {
+
+        if( (_model == null) || (_name == null) )
+            throw new HandlerIllegalArgumentException( "Missing required name or source argument" );
+
+        name = _name;
+        klass = _model.getClass();
+        getter = _source -> null;
+        authorizor = ( _user, _source ) -> true;
+    }
+
+
     public Datum getDatum( final Source _source ) {
 
         if( _source == null )

@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class UserSource extends SourceBase implements Source {
 
-    private static final DataDefs DATA_DEFS = getData();
+    private static final DatumDefs DATA_DEFS = getData();
 
 
     public UserSource( final String _name, final User _user ) {
@@ -26,7 +26,7 @@ public class UserSource extends SourceBase implements Source {
     }
 
 
-    private static DataDefs getData() {
+    private static DatumDefs getData() {
 
         List<DatumDef> result = Lists.newArrayList();
 
@@ -57,7 +57,7 @@ public class UserSource extends SourceBase implements Source {
         result.add( new DatumDef( "last_visited",    DateSource.class,   UserSource::getLastVisited,    UserSource::authManager ) );
         result.add( new DatumDef( "visits",          IntegerDatum.class, UserSource::getVisits,         UserSource::authManager ) );
 
-        return new DataDefs( result );
+        return new DatumDefs( result );
     }
 
 
@@ -189,5 +189,17 @@ public class UserSource extends SourceBase implements Source {
 
     private static User user( final Source _source ) {
         return (User) ((UserSource) _source).value;
+    }
+
+
+    /**
+     * Returns a copy of this datum with the new given name.
+     *
+     * @param _name the name for the copy
+     * @return the datum copy
+     */
+    @Override
+    public Datum copy( final String _name ) {
+        return new UserSource( _name, (User) value );
     }
 }

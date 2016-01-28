@@ -32,4 +32,13 @@ public interface Datum {
      * @return a getter for the value of this datum
      */
     Object getValue();
+
+
+    /**
+     * Returns a copy of this datum with the new given name.
+     *
+     * @param _name the name for the copy
+     * @return the datum copy
+     */
+    Datum copy( final String _name );
 }

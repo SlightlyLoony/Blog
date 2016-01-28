@@ -7,6 +7,61 @@ Template Language
 
   There are several types of template directives:
 
+
+  Control:
+
+    These control whether template elements are resolved at all, and also the iteration (repetition) of template elements.  The control directives
+    available in the system are:
+
+
+    set( .<variable>, <value> )
+
+      The set directive sets the value of the variable to the given value.  The <variable> is a named variable which is created or overwritten by this
+      directive.  The variable's name MUST start with a period (dot).  The variable's scope (lifetime) is during each template resolution.  Once
+      created, a variable is automatically available as a source named .<variableName>.  For instance, a set( .x, 0 ) directive would create the
+      variable .x and set it to the value zero.  It would then be available as the source ".x".  A subsequent set( .x, add( .x, 1 ) ) would have
+      the effect of incrementing .x (though there are easier ways of doing this).
+
+
+    inc( .<variable> )
+
+      This will increment the value of the .<variable>, which must already exist.
+
+
+    dec( .<variable> )
+
+      This will decrement the value of the .<variable>, which must already exist.
+
+
+    if( <test> ) ... end
+
+      This is the simplest control directive.  The template elements between the "if( <test> )" and the matching "end" are resolved if the value of
+      the test is true, and skipped if false.  The <test> must be one of the builtin tests described below.
+
+
+    if( test ) ... else ... end
+
+      This is very similar to the if( test ) ... end control directive, except that there are two sequences of template elements.  The first one
+      (bounded by if( test ) and else) are resolved if the value of the test is true, and skipped if false.  The second one (bounded by else and
+      end) are resolved if the value of the test is false, and skipped if true.  The <test> must be one of the builtin tests described below.
+
+
+    foreach( <source> in <source array> ... end
+
+      This is the basic iteration mechanism for handling an array of sources.  The <source> must be a particular source, as described in the sources
+      section below.  Some parts of the system can supply an array of such sources.  For instance, on the home page there is an array of post sources
+      available, and each post source contains information about an individual blog post.  If the foreach( <source> in <source array> ) ... end
+      control directive is used for that post information, then the text between the foreach( <source> in <source array> and the end would be resolved
+      repeatedly, once for each post.  This might be used to produce the HTML for the home page's list of posts, for example.
+
+
+    while( <test> ) ... end
+
+      This is a logical iteration mechanism that will repeatedly resolve the template elements between the while( <test> ) and the end for so long as
+      the <test> returns true.  It follows that something within these repeatedly resolved template element must change the outcome of the test, or
+      the repetitions will continue forever.  One way to do that is to increment a counter, and have the <test> check its value.
+
+
   Sources:
 
     These are named sources of text that may appear anywhere within a template.  The actual text is resolved at the time the template is resolved,
@@ -18,10 +73,20 @@ Template Language
     with a list of posts, while a post page template has access to a source with detailed post information.  All the sources available in the system
     are listed in the "Sources.txt" document.
 
+
   Functions:
+
+    These transform one or more inputs to produce a new output.  The inputs always include at least one source, and may include any number of other
+    parameters.  Functions can operate on any kind of data, and may produce data of a different data type than that provided by their inputs.  All
+    the functions available in the system are listed in the "Functions.txt" document.  Functions are usable as sources in control directives and as
+    inputs to tests.
 
 
   Tests:
+
+    These produce boolean (logical) outputs from one or more inputs.  The inputs may be of any type, but the output is always a boolean (logical).
+    Tests are used in control directives, for instance in the "if" directive.  All the tests available in the system are listed in the "Tests.txt"
+    document.
 
 
   Modes:
