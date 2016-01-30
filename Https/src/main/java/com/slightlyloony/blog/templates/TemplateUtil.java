@@ -17,7 +17,7 @@ public class TemplateUtil {
      * @param _value the value (of arbitrary type) to convert
      * @return the converted string
      */
-    public static String toString( final Object _value ) {
+    public static String toStr( final Object _value ) {
 
         if( _value == null )
             return "";
@@ -29,7 +29,7 @@ public class TemplateUtil {
     }
 
 
-    public static boolean toBoolean( final Object _value ) {
+    public static boolean toBool( final Object _value ) {
 
         if( _value == null )
             return false;
@@ -57,7 +57,7 @@ public class TemplateUtil {
     }
 
 
-    public static int toInteger( final Object _value ) {
+    public static int toInt( final Object _value ) {
 
         if( _value == null )
             return 0;

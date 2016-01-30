@@ -35,7 +35,7 @@ Template Language
     These control whether template elements are rendered at all, and also the iteration (repetition) of template elements.  The control directives
     available in the system are:
 
-
+// TODO: change to .variable = value, same for inc and dec
     set( .<variable>, <value> )
 
       The set directive sets the value of the variable to the given value.  The <variable> is a named variable which is created or overwritten by this

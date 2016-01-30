@@ -42,10 +42,9 @@ public class Path {
      *
      * @param _source the source at the root of the path
      * @param _user the user whose authorities and name determine whether this datum may be accessed
-     * @param _path the path to the desired datum
      * @return the datum desired, or an explanatory string datum if there was a problem
      */
-    public Datum getDatum( final Source _source, final User _user, final Path _path ) {
+    public Datum getDatum( final Source _source, final User _user ) {
 
         Datum value = _source;
         Source source = null;
