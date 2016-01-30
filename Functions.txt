@@ -1,0 +1,26 @@
+Functions
+
+  This document details all the functions that are in the system.
+
+  String:
+
+    upper( <source> )
+
+      Returns the string argument in all upper case.  Any additional arguments are ignored.
+
+
+    lower( <source> )
+
+      Returns the string argument in all lower case.  Any additional arguments are ignored.
+
+
+    concat( <source>... )
+
+      Returns the concatenation of all the provided arguments.
+
+
+  Numeric:
+
+  Logical:
+
+  Miscellaneous:

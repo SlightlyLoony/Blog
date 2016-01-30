@@ -78,7 +78,13 @@ public class DatumDef {
             }
 
             // then we'll invoke that constructor to get our Datum...
-            result = (Datum) ctors[0].newInstance( name, getter.get( _source ) );
+            Constructor ctor = ctors[0];
+            if( ctor.getParameterCount() == 0)
+                result = (Datum) ctors[0].newInstance();
+            else if( ctor.getParameterCount() == 1)
+                result = (Datum) ctors[0].newInstance( getter.get( _source ) );
+            else
+                throw new InstantiationException( "No constructor found for either 0 or 1 arguments: " + klass.getSimpleName() );
         }
         catch( InstantiationException | IllegalAccessException | InvocationTargetException | ClassCastException e ) {
             String msg = "Couldn't construct Datum: " + klass.getSimpleName();

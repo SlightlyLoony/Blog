@@ -50,20 +50,20 @@ public class HomePageRootSource extends RootSource {
         user.getRights().add( BlogAccessRight.REVIEWER );
         RootSource rootSource = new HomePageRootSource( user );
 
-        VariableSource vs = (VariableSource) rootSource.getDatum( user, "" );
-        vs.set( "x", new StringDatum( "y", "test" ) );
+        VariableSource vs = (VariableSource) rootSource.getDatum( user, Path.create( "" ) );
+        vs.set( "x", new StringDatum( "test" ) );
 
-        String month = (String) rootSource.getValue( user, "user.created.month_name" );
-        int hour = (Integer) rootSource.getValue( user, "timestamp.hour" );
-        String zone = (String) rootSource.getValue( user, "user.created.timezone" );
-        String ampm = (String) rootSource.getValue( user, "user.created.am_pm" );
-        String dow = (String) rootSource.getValue( user, "user.created.day_of_week" );
-        String handle = (String) rootSource.getValue( user, "user.handle" );
-        String rights = (String) rootSource.getValue( user, "user.rights" );
-        int hour12 = (Integer) rootSource.getValue( user, "user.created.hour12" );
-        Object visits = rootSource.getValue( user, "user.visits" );
-        Object x = rootSource.getValue( user, ".x" );
-        Object y = rootSource.getValue( user, ".y" );
+        String month = (String) rootSource.getValue( user, Path.create( "user.created.month_name" ) );
+        int hour = (Integer) rootSource.getValue( user, Path.create( "timestamp.hour" ) );
+        String zone = (String) rootSource.getValue( user, Path.create( "user.created.timezone" ) );
+        String ampm = (String) rootSource.getValue( user, Path.create( "user.created.am_pm" ) );
+        String dow = (String) rootSource.getValue( user, Path.create( "user.created.day_of_week" ) );
+        String handle = (String) rootSource.getValue( user, Path.create( "user.handle" ) );
+        String rights = (String) rootSource.getValue( user, Path.create( "user.rights" ) );
+        int hour12 = (Integer) rootSource.getValue( user, Path.create( "user.created.hour12" ) );
+        Object visits = rootSource.getValue( user, Path.create( "user.visits" ) );
+        Object x = rootSource.getValue( user, Path.create( ".x" ) );
+        Object y = rootSource.getValue( user, Path.create( ".y" ) );
 
         month.hashCode();
     }

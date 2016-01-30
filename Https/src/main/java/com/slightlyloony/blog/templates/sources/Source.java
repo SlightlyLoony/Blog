@@ -1,6 +1,7 @@
 package com.slightlyloony.blog.templates.sources;
 
 import com.slightlyloony.blog.templates.sources.data.Datum;
+import com.slightlyloony.blog.templates.sources.data.DatumDefs;
 import com.slightlyloony.blog.users.User;
 
 /**
@@ -10,16 +11,6 @@ import com.slightlyloony.blog.users.User;
  * @author Tom Dilatush  tom@dilatush.com
  */
 public interface Source extends Datum {
-
-
-    /**
-     * Returns the datum with the given name, or null if none exists by that name, or if the datum has no value.
-     *
-     * @param _user the user whose authorities and name determine whether this value may be accessed
-     * @param _name the name of the datum to retrieve
-     * @return the value of the datum, or null if none exists by that name, or if the datum has no value
-     */
-    Datum get( final User _user, final String _name );
 
 
     /**
@@ -33,39 +24,9 @@ public interface Source extends Datum {
 
 
     /**
-     * Returns true if this source has a datum with the given name.  Note that the value of the datum could still be null; this method just
-     * checks to see if the name is valid.
+     * Returns this source's datum definitions.
      *
-     * @param _name the name to check
-     * @return true if the name is valid
+     * @return this source's datum definitions
      */
-    boolean has( final String _name );
-
-
-    /**
-     * Returns true if this source has a datum at the given index.  Note that the value of the datum could still be null; this method just
-     * checks to see if the index is valid.
-     *
-     * @param _index the index to check
-     * @return true if the index is valid
-     */
-    boolean has( final int _index );
-
-
-    /**
-     * Returns the index associated with the given name, or -1 if the name does not exist.
-     *
-     * @param _name the name to get an index for
-     * @return the index associated with the given name
-     */
-    int indexOf( final String _name );
-
-
-    /**
-     * Returns the name associated with the given index, or null if the index does not exist.
-     *
-     * @param _index the index to get a name for
-     * @return the name associated with the given index
-     */
-    String nameOf( final int _index );
+    public DatumDefs getDefs();
 }

@@ -1,9 +1,8 @@
 package com.slightlyloony.blog.templates.sources;
 
-import com.slightlyloony.blog.templates.sources.data.DatumDefs;
 import com.slightlyloony.blog.templates.sources.data.Datum;
 import com.slightlyloony.blog.templates.sources.data.DatumDef;
-import com.slightlyloony.blog.templates.sources.data.StringDatum;
+import com.slightlyloony.blog.templates.sources.data.DatumDefs;
 import com.slightlyloony.blog.users.User;
 import com.slightlyloony.blog.util.Defaults;
 
@@ -23,14 +22,14 @@ public abstract class RootSource extends SourceBase implements Source {
      *
      */
     protected RootSource( final DatumDefs _data ) {
-        super( null, null, null, _data );
+        super( null, _data );
     }
 
 
     /**
      * Adds the data that are common to all root sources.
      *
-     * @param _data
+     * @param _data the superclass' list of datum definitions
      */
     protected static void addCommon( final List<DatumDef> _data ) {
 
@@ -39,89 +38,15 @@ public abstract class RootSource extends SourceBase implements Source {
 
 
     /**
-     * Returns the datum at the given source name.  The name may include periods to separate names that traverse a hierarchy.  For example, the name
-     * "request.user.firstname" might refer to the "firstname" datum in source found in the "user" datum of the "request" source.  If any of the name
-     * parts evaluate incorrectly, then an error message is returned.  Otherwise, the datum returned by the last name is returned.
+     * Returns the datum at the given path.  If any of the path parts evaluate incorrectly, then an error message is returned as a string datum.
+     * Otherwise, the datum identified by the last part of the path is returned.
      *
      * @param _user the user whose authorities and name determine whether this datum may be accessed
-     * @param _name the possibly dot-separated name of the datum desired
+     * @param _path the path to the desired datum
      * @return the datum desired, or an explanatory string datum if there was a problem
      */
-    public Datum getDatum( final User _user, final String _name ) {
-
-        String[] parts = _name.split( "\\." );
-
-        Datum value = this;
-        Source source = this;
-        String lastPart = "";
-
-        for( String part : parts ) {
-
-            if( !(value instanceof Source) )
-                return new StringDatum( "", "<<non-source: " + lastPart + ">>" );
-
-            source = (Source) value;
-
-            if( !source.has( part ) )
-                return new StringDatum( "", "<<undefined: " + part + ">>" );
-
-            Datum newValue = source.get( _user, part );
-
-            if( newValue == null )
-                return new StringDatum( "", "<<empty: " + part + ">>" );
-
-            lastPart = part;
-            value = newValue;
-        }
-        return value;
-    }
-
-
-    /**
-     * Returns the datum at the given hierarchical indices.  Each index other than the last index is the index for the source returned from the
-     * preceding index lookup (or the root source in the case of the first index).  The last index looks up the returned datum on the last source.
-     *
-     * @param _user the user whose authorities and name determine whether this datum may be accessed
-     * @param _indices the hierarchical indices for looking up a datum
-     * @return the datum desired, or an explanatory string datum if there was a problem
-     */
-    public Datum getDatum( final User _user, final Integer... _indices ) {
-
-        Datum value = this;
-        Source source = this;
-
-        for( Integer index : _indices ) {
-
-            if( !(value instanceof Source) )
-                return new StringDatum( "", "<<non-source: " + source.getName() + ">>" );
-
-            source = (Source) value;
-
-            if( !source.has( index ) )
-                return new StringDatum( "", "<<undefined: " + source.getName() + ">>" );
-
-            Datum newValue = source.get( _user, index );
-
-            if( newValue == null )
-                return new StringDatum( "", "<<empty: " + source.getName() + ">>" );
-
-            value = newValue;
-        }
-        return value;
-    }
-
-
-    /**
-     * Returns the value at the given source name.  The name may include periods to separate names that traverse a hierarchy.  For example, the name
-     * "request.user.firstname" might refer to the "firstname" value in source found in the "user" value of the "request" source.  If any of the name
-     * parts evaluate incorrectly, then an error message is returned.  Otherwise, the value returned by the last name is returned.
-     *
-     * @param _user the user whose authorities and name determine whether this value may be accessed
-     * @param _name the possibly dot-separated name of the value desired
-     * @return the value desired, or an explanatory string value if there was a problem
-     */
-    public Object getValue( final User _user, final String _name ) {
-        return getDatum( _user, _name ).getValue();
+    public Datum getDatum( final User _user, final Path _path ) {
+        return _path.getDatum( this, _user, _path );
     }
 
 
@@ -130,22 +55,10 @@ public abstract class RootSource extends SourceBase implements Source {
      * preceding index lookup (or the root source in the case of the first index).  The last index looks up the returned value on the last source.
      *
      * @param _user the user whose authorities and name determine whether this value may be accessed
-     * @param _indices the hierarchical indices for looking up a value
+     * @param _path the path to the desired value
      * @return the value desired, or an explanatory string value if there was a problem
      */
-    public Object getValue( final User _user, final Integer... _indices ) {
-        return getDatum( _user, _indices ).getValue();
-    }
-
-
-    /**
-     * Returns a copy of this datum with the new given name.
-     *
-     * @param _name the name for the copy
-     * @return the datum copy
-     */
-    @Override
-    public Datum copy( final String _name ) {
-        return null;
+    public Object getValue( final User _user, final Path _path ) {
+        return getDatum( _user, _path ).getValue();
     }
 }

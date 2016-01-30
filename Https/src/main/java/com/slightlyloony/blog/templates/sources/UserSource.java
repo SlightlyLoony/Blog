@@ -21,8 +21,8 @@ public class UserSource extends SourceBase implements Source {
     private static final DatumDefs DATA_DEFS = getData();
 
 
-    public UserSource( final String _name, final User _user ) {
-        super( _name, User.class, _user, DATA_DEFS );
+    public UserSource( final User _user ) {
+        super( _user, DATA_DEFS );
     }
 
 
@@ -189,17 +189,5 @@ public class UserSource extends SourceBase implements Source {
 
     private static User user( final Source _source ) {
         return (User) ((UserSource) _source).value;
-    }
-
-
-    /**
-     * Returns a copy of this datum with the new given name.
-     *
-     * @param _name the name for the copy
-     * @return the datum copy
-     */
-    @Override
-    public Datum copy( final String _name ) {
-        return new UserSource( _name, (User) value );
     }
 }

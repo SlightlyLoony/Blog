@@ -16,8 +16,8 @@ public class DateSource extends SourceBase implements Source {
     private static final DatumDefs DATA_DEFS = getDataDefs();
 
 
-    public DateSource( final String _name, final ZonedDateTime _value ) {
-        super( _name, ZonedDateTime.class, _value, DATA_DEFS );
+    public DateSource( final ZonedDateTime _value ) {
+        super( _value, DATA_DEFS );
     }
 
 
@@ -53,17 +53,5 @@ public class DateSource extends SourceBase implements Source {
 
     private static int hour12( final int _hour ) {
         return (_hour == 0) ? 12 : (_hour > 12) ? _hour - 12 : _hour;
-    }
-
-
-    /**
-     * Returns a copy of this datum with the new given name.
-     *
-     * @param _name the name for the copy
-     * @return the datum copy
-     */
-    @Override
-    public Datum copy( final String _name ) {
-        return new DateSource( _name, (ZonedDateTime) value );
     }
 }
