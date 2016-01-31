@@ -27,6 +27,7 @@ Template Language
       from any other type: through the object's .toString() method, then as from a string
       from null:           a false
 
+
   There are several types of template directives:
 
 
@@ -35,37 +36,38 @@ Template Language
     These control whether template elements are rendered at all, and also the iteration (repetition) of template elements.  The control directives
     available in the system are:
 
-// TODO: change to .variable = value, same for inc and dec
-    set( .<variable>, <value> )
+    .<variable> = <value>
 
-      The set directive sets the value of the variable to the given value.  The <variable> is a named variable which is created or overwritten by this
+      This sets the value of the variable to the given value.  The <variable> is a named variable which is created or overwritten by this
       directive.  The variable's name MUST start with a period (dot).  The variable's scope (lifetime) is during each template rendering.  Once
-      created, a variable is automatically available as a source named .<variableName>.  For instance, a set( .x, 0 ) directive would create the
-      variable .x and set it to the value zero.  It would then be available as the source ".x".  A subsequent set( .x, add( .x, 1 ) ) would have
-      the effect of incrementing .x (though there are easier ways of doing this).
+      created, a variable is automatically available as a source named .<variableName>.  For instance, a ".x = 0" directive would create the
+      variable .x and set it to the value zero.  It would then be available as the source ".x".  A subsequent ".x = add( .x, 1 )"" would have
+      the effect of incrementing .x (though there are easier ways of doing this; see below).
 
 
-    inc( .<variable> )
+    .<variable>++
 
       This will increment the value of the .<variable>, which must already exist.
 
 
-    dec( .<variable> )
+    .<variable>--
 
       This will decrement the value of the .<variable>, which must already exist.
 
 
-    if( <test> ) ... end
+    if( <boolean value> ) ... end
 
-      This is the simplest control directive.  The template elements between the "if( <test> )" and the matching "end" are rendered if the value of
-      the test is true, and skipped if false.  The <test> must be one of the builtin tests described below.
+      This is the simplest control directive.  The template elements between the "if( <boolean value> )" and the matching "end" are rendered if the
+      value of the <boolean value> is true, and skipped if false.  The <boolean value> is the value, converted to boolean, of any expression
+      consisting of sources, functions, or constants.
 
 
-    if( test ) ... else ... end
+    if( <boolean value> ) ... else ... end
 
-      This is very similar to the if( test ) ... end control directive, except that there are two sequences of template elements.  The first one
-      (bounded by if( test ) and else) are rendered if the value of the test is true, and skipped if false.  The second one (bounded by else and
-      end) are rendered if the value of the test is false, and skipped if true.  The <test> must be one of the builtin tests described below.
+      This is very similar to the if( <boolean value> ) ... end control directive, except that there are two sequences of template elements.  The
+      first one (bounded by if( <boolean value> ) and else) are rendered if the <boolean value> is true, and skipped if false.  The second one
+      (bounded by else and end) are rendered if the <boolean value> is false, and skipped if true.  The <boolean value> is the value, converted to
+      boolean, of any expression consisting of sources, functions, or constants.
 
 
     foreach( <source> in <source array> ... end

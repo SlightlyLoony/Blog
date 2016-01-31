@@ -46,7 +46,7 @@ public abstract class RootSource extends SourceBase implements Source {
      * @return the datum desired, or an explanatory string datum if there was a problem
      */
     public Datum getDatum( final User _user, final Path _path ) {
-        return _path.getDatum( this, _user, _path );
+        return _path.getDatum( this, _user );
     }
 
 

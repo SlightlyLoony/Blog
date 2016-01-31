@@ -4,23 +4,176 @@ Functions
 
   String:
 
-    upper( <source> )
+    upper( <string> )
 
       Returns the string argument in all upper case.  Any additional arguments are ignored.
 
 
-    lower( <source> )
+    lower( <string> )
 
       Returns the string argument in all lower case.  Any additional arguments are ignored.
 
 
-    concat( <source>... )
+    concat( <string>... )
 
       Returns the concatenation of all the provided arguments.
 
 
+    left( <string>, <length> )
+
+      Returns the leftmost <length> characters from the given <string>.  If the <string> is shorter than the <length>, the entire <string> is
+      returned.  If the <length> is zero or less, an empty string is returned.
+
+
+    right( <string>, <length> )
+
+      Returns the rightmost <length> characters from the given <string>.  If the <string> is shorter than the <length>, the entire <string> is
+      returned.  If the <length> is zero or less, an empty string is returned.
+
+
+    mid( <string>, <start position>, <length number> )
+
+      Returns <length number> characters from within the <string>, starting at the <start position> character (0-based).  If <start position> is past
+      the end of the <string>, then an empty string is returned.  If <start position> is negative, it is counting backward from the end of the
+      <string>.  If there are less than <length number> characters after the <start position>, then only the characters available are returned.  If
+      the <length number> is 0 or less, an empty string is returned.
+
+
+    substring( <string>, <start position>, <end position> )
+
+      Returns the characters in <string> between the <start position> character (0-based) and the character preceding the <end position> character.
+      If the <end position> is beyond the end of the string, then only those characters between the <start position> and the end of the string will
+      be returned.  If the <start position) is negative, it is counting backward from the end of the string.  If the <end position is negative>, it is
+      also counting backward from the end of the string.  In no case can the absolute value of the <start position> be greater than the absolute
+      value of the <end position>.
+
+
+    length( <string> )
+
+      Returns the length of the <string>.
+
+
+    indexOf( <string> <search string> )
+
+      Returns the position of the first occurence of <search string> in <string>, or -1 if the <search string> isn't in the <string> at all.
+
+
+    trim( <string> )
+
+      Returns the <string> with any leading or trailing whitespace removed.  Whitespace is defined as space, tab, new line, or carriage return
+      characters.
+
+
+    escHTML( <string> )
+
+      Returns the string with particular characters replaced by HTML escape sequences.  For example, a double quote is replaced by "&#34;".  The
+      characters that are escaped are: tab, carriage return, new line, backslash, double quote, single quote, less than, greater than, and
+      ampersand.
+
+
   Numeric:
+
+
+    add( <value>... )
+
+      Returns the sum of all the <value>s.
+
+
+    sub( <first value>, <second value> )
+
+      Returns the result of the <second value> subtracted from the <first value>.
+
+
+    mul( <first value>, <second value> )
+
+      Returns the result of the <first value> multiplied by the <second value>.
+
+
+    div( <first value>, <second value> )
+
+      Returns the result of the <first value> divided by the <second value>.
+
+
+    mod( <first value>, <second value> )
+
+      Returns the remainder of the <first value> divided by the <second value>.
+
+
+    odd( <value> )
+
+      Returns true if the <value> is odd.
+
+
+    even( <value> )
+
+      Returns true if the <value> is even.
+
+
+  Comparison:
+
+
+    eq( <first value>, <second value> )
+
+      Returns true if the <first value> is equal to the <second value>, after the <second value> has been converted (if necessary) to the same type as
+      the <first value>.
+
+
+    neq( <first value>, <second value> )
+
+      Returns true if the <first value> is not equal to the <second value>, after the <second value> has been converted (if necessary) to the same
+      type as the <first value>.
+
+
+    gt( <first value>, <second value> )
+
+      Returns true if the <first value> is greater than the <second value>, after the <second value> has been converted (if necessary) to the same
+      type as the <first value>.  True is greater than false, and strings compare according to their lexicographic order.
+
+
+    gte( <first value>, <second value> )
+
+      Returns true if the <first value> is greater than or equal to the <second value>, after the <second value> has been converted (if necessary) to
+      the same type as the <first value>.  True is greater than false, and strings compare according to their lexicographic order.
+
+
+    lt( <first value>, <second value> )
+
+      Returns true if the <first value> is less than the <second value>, after the <second value> has been converted (if necessary) to the same type
+      as the <first value>.  True is greater than false, and strings compare according to their lexicographic order.
+
+
+    lte( <first value>, <second value> )
+
+      Returns true if the <first value> is less than or equal to the <second value>, after the <second value> has been converted (if necessary) to the
+      same type as the <first value>.  True is greater than false, and strings compare according to their lexicographic order.
+
 
   Logical:
 
+
+    and( <value>... )
+
+      Returns the logical "and" of all the <value>s after each has been converted to a boolean.
+
+
+    or( <value>... )
+
+      Returns the logical "or" of all the <value>s after each has been converted to a boolean.
+
+
+    xor( <value>... )
+
+      Returns the logical "exclusive or" of all the <value>s after each has been converted to a boolean.
+
+
+    not( <value> )
+
+      Returns the logical negation of the <value> after it has been converted to a boolean.
+
+
   Miscellaneous:
+
+    has( <value> )
+
+      Returns true if the <value> is anything other than null or the empty string.  This is intended as a test for whether a source has a particular
+      value set.

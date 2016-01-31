@@ -1,7 +1,7 @@
 package com.slightlyloony.blog.templates;
 
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
-import com.slightlyloony.blog.templates.tests.Test;
+import com.slightlyloony.blog.templates.sources.data.Datum;
 
 /**
  * Provides a template element to handle the if ... else ... end conditional in a template.
@@ -10,12 +10,12 @@ import com.slightlyloony.blog.templates.tests.Test;
  */
 public class IfElseTemplateElement implements TemplateElement {
 
-    private Test test;
+    private Datum test;
     private TemplateElements positive;
     private TemplateElements negative;
 
 
-    public IfElseTemplateElement( final Test _test ) {
+    public IfElseTemplateElement( final Datum _test ) {
 
         test = _test;
         positive = new TemplateElements();
@@ -51,7 +51,7 @@ public class IfElseTemplateElement implements TemplateElement {
      */
     @Override
     public int read() {
-        return test.test() ? positive.read() : negative.read();
+        return TemplateUtil.toBool( test ) ? positive.read() : negative.read();
     }
 
 
@@ -108,6 +108,6 @@ public class IfElseTemplateElement implements TemplateElement {
      */
     @Override
     public int read( final byte[] _bytes, final int _off, final int _len ) {
-        return test.test() ? positive.read( _bytes, _off, _len ) : negative.read( _bytes, _off, _len );
+        return TemplateUtil.toBool( test ) ? positive.read( _bytes, _off, _len ) : negative.read( _bytes, _off, _len );
     }
 }
