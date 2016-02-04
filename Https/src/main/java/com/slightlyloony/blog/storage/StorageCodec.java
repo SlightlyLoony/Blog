@@ -45,6 +45,7 @@ public interface StorageCodec {
      *
      * @param _object the blog object to persist to the given file
      * @param _file the file to persist the given blog object into
+     * @return the blog object updated
      * @throws StorageException on any problem
      */
     BlogObject update( final BlogObject _object, final File _file ) throws StorageException;

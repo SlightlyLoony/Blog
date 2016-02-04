@@ -12,7 +12,7 @@ public interface Datum {
     /**
      * Returns the value of this datum.
      *
-     * @return a getter for the value of this datum
+     * @return the value of this datum
      */
     Object getValue();
 }

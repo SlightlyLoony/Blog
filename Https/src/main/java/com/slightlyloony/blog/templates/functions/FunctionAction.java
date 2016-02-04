@@ -9,5 +9,5 @@ import com.slightlyloony.blog.templates.sources.data.Datum;
  */
 public interface FunctionAction {
 
-    Datum action( final Datum... _arguments );
+    Object action( final Datum... _arguments );
 }

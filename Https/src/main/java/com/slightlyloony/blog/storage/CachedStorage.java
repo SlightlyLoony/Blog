@@ -65,6 +65,8 @@ public class CachedStorage {
      * @param _id the blog object IntegerDatum for the desired object
      * @param _type the blog object type for the desired object
      * @param _accessRequirements the optional access requirements (for external requests only)
+     * @param _compressionState the current compression state of the blog object (on disk)
+     * @param _isCacheable true if the blog object may be compressed (in memory)
      * @return the blog object read
      * @throws StorageException on any problem
      */

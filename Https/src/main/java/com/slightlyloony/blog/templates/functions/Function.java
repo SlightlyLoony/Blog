@@ -17,7 +17,7 @@ public class Function implements Datum {
     private Datum[] args;
 
 
-    private Function( final FunctionDef _def, final Datum[] _args ) {
+    private Function( final FunctionDef _def, final Datum... _args ) {
         def = _def;
         args = _args;
     }
@@ -29,8 +29,9 @@ public class Function implements Datum {
      *
      * @param _def the function definition for the new instance
      * @param _args the arguments for the new instance
+     * @return the newly created function
      */
-    public static Function create( final FunctionDef _def, final Datum[] _args ) {
+    public static Function create( final FunctionDef _def, final Datum... _args ) {
 
         return (validate( _def, _args ) == null ) ? new Function( _def, _args ) : null;
     }
@@ -43,7 +44,7 @@ public class Function implements Datum {
      * @param _args the arguments to be checked
      * @return null if there are no errors, or an explanatory string if there are
      */
-    public static String  validate( final FunctionDef _def, final Datum[] _args ) {
+    public static String  validate( final FunctionDef _def, final Datum... _args ) {
 
         if( (_def == null) || (_args == null) )
             throw new HandlerIllegalArgumentException( "Missing function definition or argument" );
@@ -61,12 +62,12 @@ public class Function implements Datum {
 
 
     /**
-     * Returns the value of this datum.
+     * Returns the function's result as a datum.
      *
-     * @return a getter for the value of this datum
+     * @return the function's result as a datum
      */
     @Override
     public Object getValue() {
-        return def.action( args ).getValue();
+        return def.action( args );
     }
 }

@@ -13,6 +13,7 @@ import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
  *
  * @author Tom Dilatush  tom@dilatush.com
  */
+// TODO: review all blog objects to make sure they are error-free in a concurrent scenario - especially objects like User, Users, Templates...
 public abstract class BlogObject {
 
     protected BlogID blogID;

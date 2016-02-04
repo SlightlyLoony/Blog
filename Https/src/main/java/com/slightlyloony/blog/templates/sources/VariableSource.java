@@ -23,23 +23,29 @@ public class VariableSource extends SourceBase implements Source {
 
 
     /**
-     * Sets the variable with the given name to the given datum.  If the variable does not already exist, it will be created.
+     * Creates the variable with the given name to the given datum.  If the variable does not already exist, it will be created.
      *
      * @param _name the variable name (without the leading dot)
-     * @param _value the value that should be assigned to the variable (a copy will be made)
      */
-    public void set( final String _name, final Datum _value ) {
-
-        if( (_name == null) || (_value == null) )
-            throw new HandlerIllegalArgumentException( "Missing name or value argument" );
+    public void create( final String _name ) {
+        if( _name == null )
+            throw new HandlerIllegalArgumentException( "Missing name argument" );
 
         // some setup...
-        DatumDef def = new DatumDef( _name, _value  );
+        DatumDef def = new DatumDef( _name  );
 
         // make sure this is in our definitions, with the right value...
         int index = datumDefs.ensure( def );
         if( index >= data.length )
             data = Arrays.copyOf( data, index + 1 );
-        data[index] = _value;
+    }
+
+
+    public void set( final int _index, final Datum _value ) {
+
+        if( (_index < 0) || (_index >= data.length) || (_value == null) )
+            return;
+
+        data[_index] = _value;
     }
 }

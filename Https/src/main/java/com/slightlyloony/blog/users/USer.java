@@ -68,9 +68,9 @@ public class User extends BlogObjectObject {
     }
 
 
-    private User() {
+    protected User() {
         super();
-        // naught to do; for use by deserializers only...
+        // naught to do; for use by deserializers and immutable users only...
     }
 
 
@@ -80,6 +80,8 @@ public class User extends BlogObjectObject {
      * @param _username the new user's username
      * @param _blog the blog that the new user belongs to
      * @param _passwordHashedAndSalted the new user's hashed and salted password
+     * @return the newly created user object
+     * @throws StorageException on any problem
      */
     public static  User create( final String _username, final String _blog, final String _passwordHashedAndSalted ) throws StorageException {
 
@@ -95,7 +97,7 @@ public class User extends BlogObjectObject {
      *
      * @param _json the JSON representation of the user object to instantiate
      * @return the new user object
-     * @throws JsonParseException on any problem
+     * @throws StorageException on any problem
      */
     public static User fromJSON( final String _json ) throws StorageException {
         try {

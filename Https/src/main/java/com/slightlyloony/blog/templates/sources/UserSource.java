@@ -3,6 +3,7 @@ package com.slightlyloony.blog.templates.sources;
 import com.google.common.collect.Lists;
 import com.slightlyloony.blog.security.BlogAccessRight;
 import com.slightlyloony.blog.security.BlogUserRights;
+import com.slightlyloony.blog.templates.TemplateRenderingContext;
 import com.slightlyloony.blog.templates.sources.data.*;
 import com.slightlyloony.blog.users.User;
 import com.slightlyloony.blog.util.Defaults;
@@ -61,23 +62,27 @@ public class UserSource extends SourceBase implements Source {
     }
 
 
-    private static boolean authManagerOrSelfOrNamePublic( final User _user, final Source _source ) {
-        return authManager( _user, _source ) || _user.getUsername().equals( user( _source ).getUsername() ) || user( _source ).isNameIsPublic();
+    private static boolean authManagerOrSelfOrNamePublic( final Source _source ) {
+        User user = TemplateRenderingContext.get().getUser();
+        return authManager( _source ) || user.getUsername().equals( user( _source ).getUsername() ) || user( _source ).isNameIsPublic();
     }
 
 
-    private static boolean authManagerOrSelfOrEmailPublic( final User _user, final Source _source ) {
-        return authManager( _user, _source ) || _user.getUsername().equals( user( _source ).getUsername() ) || user( _source ).isEmailIsPublic();
+    private static boolean authManagerOrSelfOrEmailPublic( final Source _source ) {
+        User user = TemplateRenderingContext.get().getUser();
+        return authManager( _source ) || user.getUsername().equals( user( _source ).getUsername() ) || user( _source ).isEmailIsPublic();
     }
 
 
-    private static boolean authManagerOrSelf( final User _user, final Source _source ) {
-        return authManager( _user, _source ) || (_user.getUsername().equals( user( _source ).getUsername() ) );
+    private static boolean authManagerOrSelf( final Source _source ) {
+        User user = TemplateRenderingContext.get().getUser();
+        return authManager( _source ) || (user.getUsername().equals( user( _source ).getUsername() ) );
     }
 
 
-    private static boolean authManager( final User _user, final Source _source ) {
-        BlogUserRights rights = _user.getRights();
+    private static boolean authManager( final Source _source ) {
+        User user = TemplateRenderingContext.get().getUser();
+        BlogUserRights rights = user.getRights();
         return (rights != null) && rights.has( BlogAccessRight.MANAGER );
     }
 

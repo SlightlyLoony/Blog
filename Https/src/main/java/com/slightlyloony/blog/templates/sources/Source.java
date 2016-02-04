@@ -2,7 +2,6 @@ package com.slightlyloony.blog.templates.sources;
 
 import com.slightlyloony.blog.templates.sources.data.Datum;
 import com.slightlyloony.blog.templates.sources.data.DatumDefs;
-import com.slightlyloony.blog.users.User;
 
 /**
  * Implemented by template data sources.  A template data source is conceptually a container of named datum items, each of which is an arbitrary
@@ -16,11 +15,10 @@ public interface Source extends Datum {
     /**
      * Returns the datum at the given index, or null if the index is out of range, or if the datum has no value.
      *
-     * @param _user the user whose authorities and name determine whether this value may be accessed
      * @param _index the name of the datum to retrieve
      * @return the value of the datum, or null if the index is out of range, or if the datum has no value
      */
-    Datum get( final User _user, final int _index );
+    Datum get( final int _index );
 
 
     /**

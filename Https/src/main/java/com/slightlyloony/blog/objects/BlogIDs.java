@@ -72,6 +72,8 @@ public class BlogIDs {
 
     /**
      * Reads the file system to see if there are any missing blog object IDs.
+     *
+     * @return true if the blog object IDs check out ok, with no errors
      */
     public boolean integrityCheck() {
 

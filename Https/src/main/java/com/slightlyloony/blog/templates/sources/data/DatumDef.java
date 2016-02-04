@@ -3,7 +3,6 @@ package com.slightlyloony.blog.templates.sources.data;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
 import com.slightlyloony.blog.templates.sources.Source;
-import com.slightlyloony.blog.users.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,7 +37,7 @@ public class DatumDef {
 
 
     public DatumDef( final String _name, final Class<? extends Datum> _class, final ValueGetter _getter ) {
-        this( _name, _class, _getter, (_user, _source) -> true );
+        this( _name, _class, _getter, (_source) -> true );
     }
 
 
@@ -46,18 +45,17 @@ public class DatumDef {
      * This constructor exists only to support variable sources.  It will create a data definition from a datum that is to be assigned to a variable.
      * The value getter will be null, because the datum will be instantiated by the variable source, not the usual mechanism in SourceBase.
      *
-     * @param _name
-     * @param _model
+     * @param _name the name of this datum
      */
-    public DatumDef( final String _name, final Datum _model ) {
+    public DatumDef( final String _name ) {
 
-        if( (_model == null) || (_name == null) )
-            throw new HandlerIllegalArgumentException( "Missing required name or source argument" );
+        if( _name == null )
+            throw new HandlerIllegalArgumentException( "Missing required name argument" );
 
         name = _name;
-        klass = _model.getClass();
+        klass = null;
         getter = _source -> null;
-        authorizor = ( _user, _source ) -> true;
+        authorizor = (_source ) -> true;
     }
 
 
@@ -71,8 +69,8 @@ public class DatumDef {
 
             // we don't know the type of the value parameter, so we'll just try the one and only constructor this class should have...
             Constructor[] ctors = klass.getConstructors();
-            if( ctors.length != 1 ) {
-                String msg = "Class has other than ONE constructor: " + klass.getSimpleName();
+            if( ctors.length > 1 ) {
+                String msg = "Class has other than ZERO or ONE constructor: " + klass.getSimpleName();
                 LOG.error( msg );
                 throw new HandlerIllegalStateException( msg );
             }
@@ -96,8 +94,8 @@ public class DatumDef {
     }
 
 
-    public boolean isAuthorized( final User _user, final Source _source ) {
-        return authorizor.isAuthorized( _user, _source );
+    public boolean isAuthorized( final Source _source ) {
+        return authorizor.isAuthorized(_source );
     }
 
 

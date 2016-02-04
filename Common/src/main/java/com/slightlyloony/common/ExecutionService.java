@@ -83,6 +83,7 @@ public class ExecutionService {
      * The results of this method are undefined if the given
      * collection is modified while this operation is in progress.
      *
+     * @param <T> the type of the callable task
      * @param tasks the collection of tasks
      * @return the result returned by one of the tasks
      * @throws InterruptedException if interrupted while waiting
@@ -103,6 +104,7 @@ public class ExecutionService {
      * representing that task. The Future's {@code get} method will
      * return the given result upon successful completion.
      *
+     * @param <T> the type of the callable task
      * @param task the task to submit
      * @param result the result to return
      * @return a Future representing pending completion of the task
@@ -140,6 +142,7 @@ public class ExecutionService {
      * The results of this method are undefined if the given
      * collection is modified while this operation is in progress.
      *
+     * @param <T> the type of the callable task
      * @param tasks the collection of tasks
      * @return a list of Futures representing the tasks, in the same
      *         sequential order as produced by the iterator for the
@@ -221,6 +224,7 @@ public class ExecutionService {
      * The results of this method are undefined if the given
      * collection is modified while this operation is in progress.
      *
+     * @param <T> the type of the callable task
      * @param tasks the collection of tasks
      * @param timeout the maximum time to wait
      * @param unit the time unit of the timeout argument
@@ -255,6 +259,7 @@ public class ExecutionService {
      * for example, {@link PrivilegedAction} to
      * {@link Callable} form so they can be submitted.
      *
+     * @param <T> the type of the callable task
      * @param task the task to submit
      * @return a Future representing pending completion of the task
      * @throws RejectedExecutionException if the task cannot be
@@ -360,6 +365,7 @@ public class ExecutionService {
      * The results of this method are undefined if the given
      * collection is modified while this operation is in progress.
      *
+     * @param <T> the type of the callable task
      * @param tasks the collection of tasks
      * @param timeout the maximum time to wait
      * @param unit the time unit of the timeout argument
@@ -384,6 +390,7 @@ public class ExecutionService {
      * Creates and executes a ScheduledFuture that becomes enabled after the
      * given delay.
      *
+     * @param <V> the type of the callable task
      * @param callable the function to execute
      * @param delay the time from now to delay execution
      * @param unit the time unit of the delay parameter

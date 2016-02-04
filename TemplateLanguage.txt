@@ -5,9 +5,12 @@ Template Language
   in the source file.  If the source file contains double-braces itself, they must be escaped by using triple braces.  For example, if the source file
   needs to contain the term "abc {{def}} ghi", then it must be escaped as "abc {{{def}}} ghi".
 
-  The template language works with any Java type, but there is special treatment for integers, booleans, and strings.  Any other type, if used as a
-  source, is converted to a string through the Java .toString() method.  Type conversions will occur when a source is of a different type than what
-  a function needs, or to be converted to a string for insertion in the rendered template.  Those conversions follow these rules:
+  The template language works with simple expressions comprised of data (either from a source or a constant) and functions (which can combine multiple
+  data items to produce a result that's possibly of another type).
+
+  The template language works with data of any Java type, but there is special treatment for integers, booleans, and strings.  Any other type, if used
+  as a datum, is converted to a string through the Java .toString() method.  Type conversions will occur when a source is of a different type than
+  what a function needs, or to be converted to a string for insertion in the rendered template.  Those conversions follow these rules:
 
     to string:
       from boolean:        true to "true", false to "false"
@@ -70,16 +73,16 @@ Template Language
       boolean, of any expression consisting of sources, functions, or constants.
 
 
-    foreach( <source> in <source array> ... end
+    foreach( <value> in <array> ... end
 
-      This is the basic iteration mechanism for handling an array of sources.  The <source> must be a particular source, as described in the sources
-      section below.  Some parts of the system can supply an array of such sources.  For instance, on the home page there is an array of post sources
-      available, and each post source contains information about an individual blog post.  If the foreach( <source> in <source array> ) ... end
-      control directive is used for that post information, then the text between the foreach( <source> in <source array> and the end would be rendered
-      repeatedly, once for each post.  This might be used to produce the HTML for the home page's list of posts, for example.
+      This is the basic iteration mechanism for handling an array of values (which may be sources).  Some parts of the system can supply an array of
+      such <values> that are sources.  For instance, on the home page there is an array of post sources available, and each post source contains
+      information about an individual blog post.  If the foreach( <value> in <array> ) ... end control directive is used for that post information,
+      then the text between the foreach( <value> in <array> and the end would be rendered repeatedly, once for each post in the <array>.  This might
+      be used to produce the HTML for the home page's list of posts, for example.
 
 
-    while( <test> ) ... end
+    while( <boolean value> ) ... end
 
       This is a logical iteration mechanism that will repeatedly resolve the template elements between the while( <test> ) and the end for so long as
       the <test> returns true.  It follows that something within these repeatedly rendered template element must change the outcome of the test, or
@@ -105,13 +108,6 @@ Template Language
     parameters.  Functions can operate on any kind of data, and may produce data of a different data type than that provided by their inputs.  All
     the functions available in the system are listed in the "Functions.txt" document.  Functions are usable as sources in control directives and as
     inputs to tests.
-
-
-  Tests:
-
-    These produce boolean (logical) outputs from one or more inputs.  The inputs may be of any type, but the output is always a boolean (logical).
-    Tests are used in control directives, for instance in the "if" directive.  All the tests available in the system are listed in the "Tests.txt"
-    document.
 
 
   Modes:

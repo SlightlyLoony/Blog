@@ -1,0 +1,153 @@
+package com.slightlyloony.blog.templates;
+
+import com.slightlyloony.blog.templates.sources.data.Datum;
+
+/**
+ * Provides a template element to handle the while ... end iteration in a template.
+ *
+ * @author Tom Dilatush  tom@dilatush.com
+ */
+public class WhileTemplateElement implements TemplateElement {
+
+    private Datum test;
+    private TemplateElements elements;
+
+
+    public WhileTemplateElement( final Datum _test, final TemplateElements _elements ) {
+
+        test = _test;
+        elements = _elements;
+    }
+
+
+    /**
+     * Returns a {@link TemplateInputStream} that provides the bytes in this instance in an input stream.
+     *
+     * @return the {@link TemplateInputStream} that provides the bytes in this instance
+     */
+    @Override
+    public TemplateInputStream inputStream() {
+        return new WhileTemplateElementInputStream();
+    }
+
+
+    private class WhileTemplateElementInputStream extends TemplateInputStream {
+
+        private TemplateInputStream elementsStream;
+        private Boolean testResult;
+
+
+        protected WhileTemplateElementInputStream() {
+            super();
+
+            elementsStream = elements.inputStream();
+        }
+
+
+        private boolean test() {
+            if( testResult == null )
+                testResult = TemplateUtil.toBool( test.getValue() );
+            return testResult;
+        }
+
+
+        /**
+         * Reads the next byte of data from the input stream. The value byte is returned as an <code>int</code> in the range <code>0</code> to
+         * <code>255</code>. If no byte is available because the end of the stream has been reached, the value <code>-1</code> is returned.
+         *
+         * @return the next byte of data, or <code>-1</code> if the end of the stream is reached.
+         */
+        @Override
+        public int read() {
+
+            int code = -1;
+
+            while( test() && (code < 0)) {
+
+                // see what the current stream has...
+                code = elementsStream.read();
+
+                // if it's at the end, kill the test result, then close and reset the stream...
+                if( code == -1 ) {
+                    testResult = null;
+                    elementsStream.close();
+                    elementsStream.reset();
+                }
+            }
+
+            return code;
+        }
+
+
+        /**
+         * Reads up to <code>len</code> bytes of data from the template element into an array of bytes.  An attempt is made to read as many as
+         * <code>len</code> bytes, but a smaller number may be read. The number of bytes actually read is returned as an integer.
+         * <p>
+         * <p> If <code>len</code> is zero, then no bytes are read and <code>0</code> is returned; otherwise, there is an attempt to read at least one
+         * byte. If no byte is available because the template element is at end of its data, the value <code>-1</code> is returned; otherwise, at least
+         * one byte is read and stored into <code>b</code>.
+         * <p>
+         * <p> The first byte read is stored into element <code>b[off]</code>, the next one into <code>b[off+1]</code>, and so on. The number of bytes
+         * read is, at most, equal to <code>len</code>. Let <i>k</i> be the number of bytes actually read; these bytes will be stored in elements
+         * <code>b[off]</code> through <code>b[off+</code><i>k</i><code>-1]</code>, leaving elements <code>b[off+</code><i>k</i><code>]</code> through
+         * <code>b[off+len-1]</code> unaffected.
+         * <p>
+         * <p> In every case, elements <code>b[0]</code> through <code>b[off]</code> and elements <code>b[off+len]</code> through
+         * <code>b[b.length-1]</code> are unaffected.
+         *
+         * @param _bytes the buffer into which the data is read.
+         * @param _off   the start offset in array <code>b</code> at which the data is written.
+         * @param _len   the maximum number of bytes to read.
+         * @return the total number of bytes read into the buffer, or <code>-1</code> if there is no more data because the end of the stream has been
+         * reached.
+         */
+        @Override
+        public int read( final byte[] _bytes, final int _off, final int _len ) {
+
+            int bytesRead = -1;
+
+            while( test() && (bytesRead == -1) ) {
+
+                // see what the current stream has...
+                bytesRead = elementsStream.read( _bytes, _off, _len );
+
+                // if it's at the end, kill the test result, then close and reset the stream...
+                if( bytesRead == -1 ) {
+                    testResult = null;
+                    elementsStream.close();
+                    elementsStream.reset();
+                }
+            }
+            return bytesRead;
+        }
+
+
+        /**
+         * Returns the number of bytes available on the next invocation of a read method.
+         *
+         * @return the number of bytes available on the next invocation of a read method.
+         */
+        @Override
+        public int available() {
+            return elementsStream.available();
+        }
+
+
+        /**
+         * Closes this input stream and releases any memory resources associated with the stream.
+         */
+        @Override
+        public void close() {
+            elementsStream.close();
+        }
+
+
+        /**
+         * Repositions this stream to the first position in the stream.
+         */
+        @Override
+        public void reset() {
+            elementsStream.reset();
+        }
+    }
+}

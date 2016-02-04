@@ -1,8 +1,9 @@
 package com.slightlyloony.blog.templates.sources;
 
+import com.slightlyloony.blog.templates.TemplateRenderingContext;
 import com.slightlyloony.blog.templates.sources.data.Datum;
+import com.slightlyloony.blog.templates.sources.data.IntegerDatum;
 import com.slightlyloony.blog.templates.sources.data.StringDatum;
-import com.slightlyloony.blog.users.User;
 
 /**
  * Represents the hierarchical path to a datum from a root source.  Paths are always created with a dotted-form string path (like "user.firstname")
@@ -40,19 +41,70 @@ public class Path {
      * Returns the datum at the given path.  If any of the path parts evaluate incorrectly, then an error message is returned as a string datum.
      * Otherwise, the datum identified by the last part of the path is returned.
      *
-     * @param _source the source at the root of the path
-     * @param _user the user whose authorities and name determine whether this datum may be accessed
      * @return the datum desired, or an explanatory string datum if there was a problem
      */
-    public Datum getDatum( final Source _source, final User _user ) {
+    public Datum getDatum() {
 
-        Datum value = _source;
-        Source source = null;
+        Datum value = TemplateRenderingContext.get().getSource();
+        Source source;
 
         for( int i = 0; i < names.length; i++ ) {
 
             if( !(value instanceof Source) )
-                return new StringDatum( "Path name '" + names[i-1] + "' is not a source" );
+                return new StringDatum( "{{Path name '" + names[i-1] + "' is not a source}}" );
+
+            source = (Source) value;
+
+            // if we haven't already done so, resolve this name to an index...
+            if( indices[i] == null ) {
+                indices[i] = source.getDefs().byName( names[i] );
+                if( indices[i] == null ) {
+
+                    // make a special, hacky check to see if we're resolving "index" on a list source; if so, hack it in...
+                    if( "index".equals( names[i] ) && (i == names.length - 1) && (source instanceof ListSource) ) {
+                        ListSource listSource = (ListSource) source;
+                        return new IntegerDatum( listSource.index() );
+                    }
+
+                    // otherwise, we've got an undefined element...
+                    else
+                    return new StringDatum( "{{Path name '" + names[i] + "' is undefined}}" );
+                }
+            }
+
+            Datum newValue = source.get( indices[i] );
+
+            if( newValue == null )
+                return new StringDatum( "{{Value was null}}" );
+
+            value = newValue;
+        }
+        return value;
+    }
+
+
+    /**
+     * Sets the value at the given path to the given datum, creating the datum if necessary.  This operation is only valid for the case in which
+     * the last source (the next-to-last path element) is a {@link VariableSource}.  Any attempt to set a value on any other type of {@link Source}
+     * will result in an error indication and no change to the value.
+     *
+     * @param _datum the value to set this path's datum to
+     * @return true if the invocation successfully set the value
+     */
+    public boolean setDatum( final Datum _datum ) {
+
+        if( _datum == null )
+            return false;
+
+        Datum value = TemplateRenderingContext.get().getSource();
+        Source source;
+
+        // first we get the last source...
+        int i;
+        for( i = 0; i < names.length - 1; i++ ) {
+
+            if( !(value instanceof Source) )
+                return false;
 
             source = (Source) value;
 
@@ -60,17 +112,37 @@ public class Path {
             if( indices[i] == null ) {
                 indices[i] = source.getDefs().byName( names[i] );
                 if( indices[i] == null )
-                    return new StringDatum( "Path name '" + names[i] + "' is undefined" );
+                    return false;
             }
 
-            Datum newValue = source.get( _user, indices[i] );
+            Datum newValue = source.get( indices[i] );
 
             if( newValue == null )
-                return new StringDatum( "Value was null" );
+                return false;
 
             value = newValue;
         }
-        return value;
+
+        // if we don't have a VariableSource here, we've got problems...
+        if( !(value instanceof VariableSource) )
+            return false;
+
+        VariableSource variableSource = (VariableSource) value;
+
+        // if this particular variable doesn't already exist, we need to create it...
+        if( variableSource.getDefs().byName( names[i] ) == null )
+            variableSource.create( names[i] );
+
+        // now resolve the index, if that hasn't already been done...
+        if( indices[i] == null ) {
+            indices[i] = variableSource.getDefs().byName( names[i] );
+            if( indices[i] == null )
+                return false;
+        }
+
+        // we thought we'd never get here, but ... now we can actually set the value!
+        variableSource.set( indices[i], _datum );
+        return true;
     }
 
 
@@ -112,6 +184,18 @@ public class Path {
     }
 
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for( String name : names ) {
+            if( sb.length() != 0 )
+                sb.append( '.' );
+            sb.append( name );
+        }
+        return sb.toString();
+    }
+
+
     private static boolean isAlphabetic( final char _c ) {
         return ((_c >= 'a') && (_c <= 'z')) || ((_c >= 'A') && (_c <= 'Z'));
     }
@@ -125,6 +209,7 @@ public class Path {
     private static boolean isValidCenter( final char _c ) {
         return isAlphabetic( _c ) || isNumeric( _c ) || (_c == '_');
     }
+
 
     private static boolean isValidEnd( final char _c ) {
         return isAlphabetic( _c ) || isNumeric( _c );

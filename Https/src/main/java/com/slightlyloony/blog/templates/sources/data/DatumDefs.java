@@ -35,6 +35,12 @@ public class DatumDefs {
     }
 
 
+    public DatumDefs add( final List<DatumDef> _data ) {
+        _data.addAll( Arrays.asList( defs ) );
+        return new DatumDefs( _data );
+    }
+
+
     /**
      * Ensures that the given datum definition is in this class and is updated to the given value.  This method should be used ONLY by a variable
      * source.

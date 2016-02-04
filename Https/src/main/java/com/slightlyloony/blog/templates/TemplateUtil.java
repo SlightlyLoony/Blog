@@ -1,5 +1,10 @@
 package com.slightlyloony.blog.templates;
 
+import com.slightlyloony.blog.templates.sources.data.BooleanDatum;
+import com.slightlyloony.blog.templates.sources.data.Datum;
+import com.slightlyloony.blog.templates.sources.data.IntegerDatum;
+import com.slightlyloony.blog.templates.sources.data.StringDatum;
+
 import java.text.NumberFormat;
 import java.text.ParseException;
 
@@ -22,10 +27,15 @@ public class TemplateUtil {
         if( _value == null )
             return "";
 
-        if( _value instanceof String )
-            return (String) _value;
+        Object val = (_value instanceof Datum) ? ((Datum) _value).getValue() : _value;
 
-        return _value.toString();
+        if( val == null )
+            return "";
+
+        if( val instanceof String )
+            return (String) val;
+
+        return val.toString();
     }
 
 
@@ -34,13 +44,18 @@ public class TemplateUtil {
         if( _value == null )
             return false;
 
-        if( _value instanceof Boolean )
-            return (Boolean) _value;
+        Object val = (_value instanceof Datum) ? ((Datum) _value).getValue() : _value;
 
-        if( _value instanceof Integer )
-            return (Integer) _value != 0;
+        if( val == null )
+            return false;
 
-        String str = (_value instanceof String) ? (String) _value  : _value.toString();
+        if( val instanceof Boolean )
+            return (Boolean) val;
+
+        if( val instanceof Integer )
+            return (Integer) val != 0;
+
+        String str = (val instanceof String) ? (String) val  : val.toString();
 
         switch( str ) {
             case "":
@@ -62,13 +77,18 @@ public class TemplateUtil {
         if( _value == null )
             return 0;
 
-        if( _value instanceof Integer )
-            return (Integer) _value;
+        Object val = (_value instanceof Datum) ? ((Datum) _value).getValue() : _value;
 
-        if( _value instanceof Boolean )
-            return ((Boolean) _value) ? 1 : 0;
+        if( val == null )
+            return 0;
 
-        String str = (_value instanceof String) ? (String) _value  : _value.toString();
+        if( val instanceof Integer )
+            return (Integer) val;
+
+        if( val instanceof Boolean )
+            return ((Boolean) val) ? 1 : 0;
+
+        String str = (val instanceof String) ? (String) val  : val.toString();
         if( str.length() == 0 )
             return 0;
 
@@ -86,6 +106,29 @@ public class TemplateUtil {
             }
         }
         return 0;
+    }
+
+
+    public static Datum toDatum( final Object _arg ) {
+
+        if( _arg == null )
+            return new StringDatum( "" );
+
+        Object arg = ( _arg instanceof Datum ) ? ((Datum) _arg).getValue() : _arg;
+
+        if( arg == null )
+            return new StringDatum( "" );
+
+        if( arg instanceof String )
+            return new StringDatum( (String) arg );
+
+        if( arg instanceof Integer )
+            return new IntegerDatum( (Integer) arg );
+
+        if( arg instanceof Boolean )
+            return new BooleanDatum( (Boolean) arg );
+
+        return new StringDatum( arg.toString() );
     }
 
 
