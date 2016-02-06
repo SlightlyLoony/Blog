@@ -34,6 +34,17 @@ Template Language
   There are several types of template directives:
 
 
+  Literals may appear as data, or as arguments to functions.  The template system supports three literal types:
+
+    string:  Arbitrary strings surrounded by double quotes, with the double quote itself escapable with a leading backslash (Java-style).  For
+             example, "this", "\"Oh, my!\"", "123", and "true" are all valid string literals.
+
+    integer: Strings of digits (with no quotes) and an optional leading minus sign.  For example, 123, -456, and 4762251823 are all valid integer
+             literals.
+
+    boolean: The words true or false, in lower case, are the only valid boolean literals.
+
+
   Control:
 
     These control whether template elements are rendered at all, and also the iteration (repetition) of template elements.  The control directives
