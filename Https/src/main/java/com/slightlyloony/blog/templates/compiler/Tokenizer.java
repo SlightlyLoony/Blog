@@ -2,12 +2,22 @@ package com.slightlyloony.blog.templates.compiler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
+import com.slightlyloony.blog.ServerInit;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 import com.slightlyloony.blog.templates.compiler.tokens.Token;
 import com.slightlyloony.blog.templates.compiler.tokens.TokenType;
+import com.slightlyloony.blog.util.S;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
+import static com.slightlyloony.blog.templates.compiler.tokens.TokenType.*;
+import static com.slightlyloony.blog.templates.compiler.tokens.TokenType.String;
 
 /**
  * @author Tom Dilatush  tom@dilatush.com
@@ -28,6 +38,7 @@ public class Tokenizer {
     private String template;
     private List<Token> tokens;
     private int start;
+    private boolean inComment;
 
 
     public Tokenizer() {
@@ -70,7 +81,7 @@ public class Tokenizer {
                         handleTemplateItem();
                     else
                         if( accumulator.length() > 0 )
-                            tokens.add( new Token( tokenLine, tokenCol, TokenType.String, accumulator.toString() ) );
+                            tokens.add( new Token( tokenLine, tokenCol, String, accumulator.toString(), accumulator.toString() ) );
                     accumulator.setLength( 0 );
                     start = index;
                     index--;
@@ -112,7 +123,7 @@ public class Tokenizer {
             logIssue( tokenLine, tokenCol, "Source contains an unclosed set of braces", "{{" );
 
         if( start < index )
-            tokens.add( new Token( tokenLine, tokenCol - 2, TokenType.String, working.substring( start, index ) ) );
+            tokens.add( new Token( tokenLine, tokenCol, String, working.substring( start, index ), working.substring( start, index ) ) );
 
         return tokens;
     }
@@ -125,12 +136,19 @@ public class Tokenizer {
      */
     private void handleTemplateItem() {
 
+        inComment = false;
+
         for( itemIndex = 0; itemIndex < accumulator.length(); itemIndex++ ) {
 
             char c = accumulator.charAt( itemIndex );
-            Parser p = parsers.get( c );
-            if( p != null )
-                p.parse();
+
+            if( !inComment ) {
+                Parser p = parsers.get( c );
+                if( p != null )
+                    p.parse();
+                else if( !isWhitespace( c ) )
+                    logIssue( tokenLine, tokenCol, "Invalid character", "" + c );
+            }
 
             // update our source position information...
             switch( c ) {
@@ -166,7 +184,7 @@ public class Tokenizer {
         // if the next character is another minus sign, we've got a decrement operator...
         char c = accumulator.charAt( itemIndex + 1 );
         if( c == '-' ) {
-            tokens.add( new Token( tokenLine, tokenCol, TokenType.Dec, "--" ) );
+            tokens.add( new Token( tokenLine, tokenCol, Dec, "--" ) );
             itemIndex++;
             return;
         }
@@ -193,7 +211,7 @@ public class Tokenizer {
         // if the next character is another minus sign, we've got a decrement operator...
         char c = accumulator.charAt( itemIndex + 1 );
         if( c == '+' ) {
-            tokens.add( new Token( tokenLine, tokenCol, TokenType.Inc, "++" ) );
+            tokens.add( new Token( tokenLine, tokenCol, Inc, "++" ) );
             itemIndex++;
             return;
         }
@@ -213,7 +231,7 @@ public class Tokenizer {
 
         // convert it (the only way to have a problem is if it overflows)...
         try {
-            tokens.add( new Token( tokenLine, tokenCol, TokenType.IntegerLiteral, sb.toString(), Integer.parseInt( sb.toString() ) ) );
+            tokens.add( new Token( tokenLine, tokenCol, IntegerLiteral, sb.toString(), Integer.parseInt( sb.toString() ) ) );
         }
         catch( NumberFormatException e ) {
             logIssue( tokenLine, tokenCol, "Invalid number", sb.toString() );
@@ -221,6 +239,49 @@ public class Tokenizer {
 
         tokenCol += sb.length() - 1;
         itemIndex--;
+    }
+
+
+    private void handleDirectives() {
+
+        // if the "@" isn't at the start of the directive, it's an error...
+        if( itemIndex != 0 ) {
+            logIssue( tokenLine, tokenCol, "Directive is not at start of template item", accumulator.toString() );
+            itemIndex = accumulator.length() - 1;
+            tokenCol += itemIndex;
+            return;
+        }
+
+        // accumulate the first word...
+        StringBuilder sb = new StringBuilder();
+        sb.append( accumulator.charAt( itemIndex ) );
+        while( (++itemIndex < accumulator.length()) && isAlpha( accumulator.charAt( itemIndex ) ) )
+            sb.append( accumulator.charAt( itemIndex ) );
+
+        // do we know the word?
+        switch( sb.toString() ) {
+
+            case "@HTML":
+                tokens.add( new Token( tokenLine, tokenCol, HTML, sb.toString() ) );
+                break;
+
+            case "@CSS":
+                tokens.add( new Token( tokenLine, tokenCol, CSS, sb.toString() ) );
+                break;
+
+            default:
+                logIssue( tokenLine, tokenCol, "Invalid directive", sb.toString() );
+        }
+
+        tokenCol += sb.length() - 1;
+        itemIndex--;
+    }
+
+
+    private void handleComment() {
+
+        // ignore everything else in the accumulator...
+        inComment = true;
     }
 
 
@@ -267,12 +328,15 @@ public class Tokenizer {
         while( (++itemIndex < accumulator.length()) && isWord( accumulator.charAt( itemIndex ) ) )
             sb.append( accumulator.charAt( itemIndex ) );
 
-        // if we have a boolean literal, emit that...
+        // if we have a boolean literal, end, or else, emit that; otherwise it's a word...
         String result = sb.toString();
-        if( "true".equals( result ) || "false".equals( result ) )
-            tokens.add( new Token( tokenLine, tokenCol, TokenType.BooleanLiteral, result, "true".equals( result ) ) );
-        else
-            tokens.add( new Token( tokenLine, tokenCol, TokenType.Word, result, result ) );
+        switch( result ) {
+            case "true":  tokens.add( new Token( tokenLine, tokenCol, TokenType.BooleanLiteral, result, true ) );  break;
+            case "false": tokens.add( new Token( tokenLine, tokenCol, TokenType.BooleanLiteral, result, false ) ); break;
+            case "end":   tokens.add( new Token( tokenLine, tokenCol, TokenType.End, result ) );                   break;
+            case "else":  tokens.add( new Token( tokenLine, tokenCol, TokenType.Else, result ) );                  break;
+            default:      tokens.add( new Token( tokenLine, tokenCol, TokenType.Word, result, result ) );
+        }
 
         tokenCol += sb.length() - 1;
         itemIndex--;
@@ -305,8 +369,18 @@ public class Tokenizer {
     }
 
 
+    private boolean isAlpha( final char _char ) {
+        return ((_char >= 'a') && (_char <= 'z')) || ((_char >= 'A') && (_char <= 'Z')) || (_char == '_');
+    }
+
+
     private boolean isNumber( final char _char ) {
         return ((_char >= '0') && (_char <= '9'));
+    }
+
+
+    private boolean isWhitespace( final char _char ) {
+        return (_char == ' ') || (_char == '\n') || (_char == '\t') || (_char == '\r');
     }
 
 
@@ -337,10 +411,12 @@ public class Tokenizer {
         for( char c = '0'; c <= '9'; c++ )
             result.put( c, this::handleNumberLiteral );
         result.put( '"',  this::handleStringLiteral  );
+        result.put( '#',  this::handleComment        );
         result.put( ',',  this::handleComma          );
         result.put( '+',  this::handlePlus           );
         result.put( '=',  this::handleEqual          );
         result.put( '(',  this::handleOpenParen      );
+        result.put( '@',  this::handleDirectives     );
         result.put( ')',  this::handleCloseParen     );
         result.put( '.',  this::handleWordStart      );  // might be a boolean literal, a path, a function, or a directive...
         for( char c = 'a'; c <= 'z'; c++ )
@@ -358,5 +434,24 @@ public class Tokenizer {
 
     private interface Parser {
         void parse();
+    }
+
+
+    // TODO: remove this testing stub...
+    public static void main( final String[] args ) throws IOException {
+
+        // configure the logging properties file...
+        System.getProperties().setProperty( "log4j.configurationFile", "log.xml" );
+
+        // initialize the blog application...
+        ServerInit.init();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ByteStreams.copy( new FileInputStream( new File( "/Users/tom/IdeaProjects/Blog/test.txt" ) ), baos );
+        String source = S.fromUTF8( baos.toByteArray() );
+
+        Tokenizer t = new Tokenizer();
+        List<Token> result = t.tokenize( source );
+        result.hashCode();
     }
 }

@@ -20,8 +20,7 @@ public class BlogObjectResponder implements Responder {
         BlogID content = _metadata.getContent();
         BlogObjectType contentType = _metadata.getContentType();
         ContentCompressionState compressionState = _metadata.getCompressionState();
-        BlogContentObject obj;
-        obj = (BlogContentObject) BlogServer.STORAGE.read( content, contentType, null, compressionState, _isCacheable );
+        BlogContentObject obj = (BlogContentObject) BlogServer.STORAGE.read( content, contentType, null, compressionState, _isCacheable );
 
         _response.setMimeType( _metadata.getContentType() );
 

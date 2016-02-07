@@ -31,6 +31,22 @@ Template Language
       from null:           a false
 
 
+  Comments may appear in any directive, and they may be the ONLY thing in a directive.  A comment is started with a hash ("#"), and is ended by
+  the end of a directive.  All of the following are examples of valid comments:
+
+    {{#this is a comment}}
+      Treated as an empty directive.
+
+    {{upper(user.last_name) # we want the user's last name in upper case!}}
+      Same as {{upper(user.last_name)}}
+
+    {{#
+      This is a multiline comment.
+      See how the multiline comment works.
+    }}
+      Treated as an empty directive.
+
+
   There are several types of template directives:
 
 
@@ -45,10 +61,63 @@ Template Language
     boolean: The words true or false, in lower case, are the only valid boolean literals.
 
 
+  Commands:
+
+    These special template directives all start with an "at" sign ("@") and perform special functions, generally related to the template document:
+
+
+    @HTML
+
+      Instructs the template compiler to eliminate all whitespace at the beginning or end of lines.  This will minimize the number of characters in
+      the rendered document, but will also reduce its readability (considerably!).
+
+
+    @CSS
+
+      Instructs the template compiler to eliminate all unnecessary whitespace.  This will minimize the number of characters in the rendered
+      stylesheet, but will also reduce its readability (considerably!).
+
+
   Control:
 
     These control whether template elements are rendered at all, and also the iteration (repetition) of template elements.  The control directives
     available in the system are:
+
+
+    if( <boolean value> ) ... end
+
+      This is the simplest control directive.  The template elements between the "if( <boolean value> )" and the matching "end" are rendered if the
+      value of the <boolean value> is true, and skipped if false.  The <boolean value> is the value, converted to boolean, of any expression
+      consisting of sources, functions, or constants.
+
+
+    if( <boolean value> ) ... else ... end
+
+      This is very similar to the if( <boolean value> ) ... end control directive, except that there are two sequences of template elements.  The
+      first one (bounded by if( <boolean value> ) and else) are rendered if the <boolean value> is true, and skipped if false.  The second one
+      (bounded by else and end) are rendered if the <boolean value> is false, and skipped if true.  The <boolean value> is the value, converted to
+      boolean, of any expression consisting of sources, functions, or constants.
+
+
+    foreach( <array> ) ... end
+
+      This is the basic iteration mechanism for handling an array of values, which must be sources.  Some parts of the system can supply an array of
+      such values.  For instance, on the home page there is an array of post sources available, and each post source contains information about an
+      individual blog post.  If the foreach( <array> ) ... end control directive is used for that post information, then the text between the
+      foreach( <array> ) and the end would be rendered repeatedly, once for each post in the <array>.  This might be used to produce the HTML for the
+      home page's list of posts, for example.
+
+
+    while( <boolean value> ) ... end
+
+      This is a logical iteration mechanism that will repeatedly resolve the template elements between the while( <test> ) and the end for so long as
+      the <test> returns true.  It follows that something within these repeatedly rendered template element must change the outcome of the test, or
+      the repetitions will continue forever.  One way to do that is to increment a counter, and have the <test> check its value.
+
+
+  Assignment:
+
+    Several kinds of statements allow the value of variables to be set or modified:
 
     .<variable> = <value>
 
@@ -67,37 +136,6 @@ Template Language
     .<variable>--
 
       This will decrement the value of the .<variable>, which must already exist.
-
-
-    if( <boolean value> ) ... end
-
-      This is the simplest control directive.  The template elements between the "if( <boolean value> )" and the matching "end" are rendered if the
-      value of the <boolean value> is true, and skipped if false.  The <boolean value> is the value, converted to boolean, of any expression
-      consisting of sources, functions, or constants.
-
-
-    if( <boolean value> ) ... else ... end
-
-      This is very similar to the if( <boolean value> ) ... end control directive, except that there are two sequences of template elements.  The
-      first one (bounded by if( <boolean value> ) and else) are rendered if the <boolean value> is true, and skipped if false.  The second one
-      (bounded by else and end) are rendered if the <boolean value> is false, and skipped if true.  The <boolean value> is the value, converted to
-      boolean, of any expression consisting of sources, functions, or constants.
-
-
-    foreach( <value> in <array> ... end
-
-      This is the basic iteration mechanism for handling an array of values (which may be sources).  Some parts of the system can supply an array of
-      such <values> that are sources.  For instance, on the home page there is an array of post sources available, and each post source contains
-      information about an individual blog post.  If the foreach( <value> in <array> ) ... end control directive is used for that post information,
-      then the text between the foreach( <value> in <array> and the end would be rendered repeatedly, once for each post in the <array>.  This might
-      be used to produce the HTML for the home page's list of posts, for example.
-
-
-    while( <boolean value> ) ... end
-
-      This is a logical iteration mechanism that will repeatedly resolve the template elements between the while( <test> ) and the end for so long as
-      the <test> returns true.  It follows that something within these repeatedly rendered template element must change the outcome of the test, or
-      the repetitions will continue forever.  One way to do that is to increment a counter, and have the <test> check its value.
 
 
   Sources:

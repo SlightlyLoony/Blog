@@ -5,5 +5,5 @@ package com.slightlyloony.blog.templates.compiler.tokens;
  */
 public enum TokenType {
 
-    String, Comma, OpenParen, CloseParen, Word, IntegerLiteral, BooleanLiteral, StringLiteral, Inc, Dec, Equal;
+    String, Comma, OpenParen, CloseParen, Word, IntegerLiteral, BooleanLiteral, StringLiteral, Inc, Dec, Equal, Else, End, HTML, CSS;
 }

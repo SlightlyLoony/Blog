@@ -145,6 +145,12 @@ public class Path {
     }
 
 
+    /**
+     * Returns a null if the given path is valid, otherwise returns an explanatory string.
+     *
+     * @param _path the path to be validated
+     * @return null if the path is valid, explanatory string otherwise
+     */
     public static String validate( final String _path ) {
 
         if( _path == null )

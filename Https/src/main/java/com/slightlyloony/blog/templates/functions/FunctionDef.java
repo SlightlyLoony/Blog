@@ -1,8 +1,10 @@
 package com.slightlyloony.blog.templates.functions;
 
+import com.google.common.collect.Maps;
 import com.slightlyloony.blog.templates.sources.data.Datum;
 
 import java.util.BitSet;
+import java.util.Map;
 
 import static com.slightlyloony.blog.templates.TemplateUtil.*;
 
@@ -45,6 +47,7 @@ public enum FunctionDef implements FunctionAction {
 
 
     private static BitSet HTML_ESCAPEES = getEscapees();
+    private static Map<String,FunctionDef> byName;
 
 
     private int minArgs;
@@ -56,6 +59,19 @@ public enum FunctionDef implements FunctionAction {
         minArgs = _minArgs;
         maxArgs = _maxArgs;
         functionAction = _action;
+        init();
+    }
+
+
+    private void init() {
+        if( byName == null )
+            byName = Maps.newHashMap();
+        byName.put( name(), this );
+    }
+
+
+    public static FunctionDef getByName( final String _name ) {
+        return byName.get( _name );
     }
 
 
