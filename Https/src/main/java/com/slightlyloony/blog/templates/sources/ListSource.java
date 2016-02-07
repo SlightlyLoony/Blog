@@ -2,10 +2,7 @@ package com.slightlyloony.blog.templates.sources;
 
 import com.google.common.collect.Lists;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
-import com.slightlyloony.blog.templates.sources.data.Datum;
-import com.slightlyloony.blog.templates.sources.data.DatumDef;
-import com.slightlyloony.blog.templates.sources.data.DatumDefs;
-import com.slightlyloony.blog.templates.sources.data.IntegerDatum;
+import com.slightlyloony.blog.templates.sources.data.*;
 
 import java.util.List;
 
@@ -31,7 +28,6 @@ public class ListSource extends SourceBase implements Source {
     }
 
 
-    // TODO: consider whether these next four methods are potentially a concurrency issue - it works if sources are always per-request, but are they?
     public int size() {
         return sources.size();
     }
@@ -49,6 +45,18 @@ public class ListSource extends SourceBase implements Source {
 
     public int index() {
         return index;
+    }
+
+
+    public Datum resolveSpecialVariables( final String _name ) {
+
+        switch( _name ) {
+            case "list_index": return new IntegerDatum( index                       );
+            case "list_size":  return new IntegerDatum( sources.size()              );
+            case "list_first": return new BooleanDatum( index == 0                  );
+            case "list_last":  return new BooleanDatum( index >= sources.size() - 1 );
+            default:           return null;
+        }
     }
 
 

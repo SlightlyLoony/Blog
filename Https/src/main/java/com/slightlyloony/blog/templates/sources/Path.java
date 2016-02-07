@@ -2,7 +2,6 @@ package com.slightlyloony.blog.templates.sources;
 
 import com.slightlyloony.blog.templates.TemplateRenderingContext;
 import com.slightlyloony.blog.templates.sources.data.Datum;
-import com.slightlyloony.blog.templates.sources.data.IntegerDatum;
 import com.slightlyloony.blog.templates.sources.data.StringDatum;
 
 /**
@@ -60,14 +59,14 @@ public class Path {
                 indices[i] = source.getDefs().byName( names[i] );
                 if( indices[i] == null ) {
 
-                    // make a special, hacky check to see if we're resolving "index" on a list source; if so, hack it in...
-                    if( "index".equals( names[i] ) && (i == names.length - 1) && (source instanceof ListSource) ) {
-                        ListSource listSource = (ListSource) source;
-                        return new IntegerDatum( listSource.index() );
+                    // make a special, hacky check to see if we're resolving a built-in variable on a list source; if so, hack it in...
+                    if( source instanceof ListSource ) {
+                        Datum lister = ((ListSource) source).resolveSpecialVariables( names[i] );
+                        if( lister != null )
+                            return lister;
                     }
 
                     // otherwise, we've got an undefined element...
-                    else
                     return new StringDatum( "{{Path name '" + names[i] + "' is undefined}}" );
                 }
             }
