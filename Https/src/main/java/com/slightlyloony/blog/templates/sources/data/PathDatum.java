@@ -22,4 +22,9 @@ public class PathDatum extends DatumBase implements Datum {
     public Object getValue() {
         return ((Path) value).getDatum().getValue();
     }
+
+
+    public Path getPath() {
+        return (Path) value;
+    }
 }

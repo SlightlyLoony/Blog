@@ -22,7 +22,7 @@ public class HomePageRootSource extends RootSource {
     /**
      * Create a new instance of this class with the given sources (or data).
      */
-    protected HomePageRootSource( final User _user, final List<Source> _sources ) {
+    public HomePageRootSource( final User _user, final List<Source> _sources ) {
         super( getData( _user, _sources ) );
     }
 
@@ -41,8 +41,6 @@ public class HomePageRootSource extends RootSource {
 
     // TODO: remove this test code and replace it with something real...
     public static void main( String[] args ) throws IOException {
-
-        int a = 0;
 
         User user = new User( "tom@dilatush.com", "slightlyloony.com", "abcd" );
         user.setFirstName( "Tom" );

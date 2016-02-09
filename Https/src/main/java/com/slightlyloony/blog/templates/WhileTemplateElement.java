@@ -150,4 +150,10 @@ public class WhileTemplateElement implements TemplateElement {
             elementsStream.reset();
         }
     }
+
+
+    @Override
+    public String toString() {
+        return "while(" + test.toString() + ")";
+    }
 }

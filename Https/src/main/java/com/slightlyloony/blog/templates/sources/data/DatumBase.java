@@ -23,4 +23,10 @@ public abstract class DatumBase implements Datum {
     public Object getValue() {
         return value;
     }
+
+
+    @Override
+    public String toString() {
+        return (value == null) ? "null" : value.toString();
+    }
 }

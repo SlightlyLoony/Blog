@@ -2,6 +2,7 @@ package com.slightlyloony.blog.templates;
 
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 import com.slightlyloony.blog.util.Constants;
+import com.slightlyloony.blog.util.S;
 
 /**
  * Provides a template element for a fixed string.
@@ -126,5 +127,11 @@ public class StringTemplateElement implements TemplateElement {
         public void reset() {
             index = 0;
         }
+    }
+
+
+    @Override
+    public String toString() {
+        return "String: " + S.fromUTF8( text );
     }
 }

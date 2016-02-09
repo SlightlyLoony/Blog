@@ -4,20 +4,26 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.google.common.io.ByteStreams;
 import com.slightlyloony.blog.ServerInit;
+import com.slightlyloony.blog.security.BlogAccessRight;
 import com.slightlyloony.blog.templates.*;
 import com.slightlyloony.blog.templates.compiler.tokens.Token;
+import com.slightlyloony.blog.templates.compiler.tokens.TokenType;
 import com.slightlyloony.blog.templates.functions.Function;
 import com.slightlyloony.blog.templates.functions.FunctionDef;
-import com.slightlyloony.blog.templates.sources.Path;
+import com.slightlyloony.blog.templates.sources.*;
 import com.slightlyloony.blog.templates.sources.data.*;
+import com.slightlyloony.blog.users.User;
 import com.slightlyloony.blog.util.S;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Deque;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Tom Dilatush  tom@dilatush.com
@@ -30,6 +36,7 @@ public class Compiler {
     private boolean html;
     private boolean css;
     private String lastWord;
+    private boolean lastComma;
 
 
     public Template compile( final String _source ) {
@@ -41,6 +48,7 @@ public class Compiler {
         html = false;
         css = false;
         lastWord = null;
+        lastComma = false;
 
         // add the base segement for the template itself...
         segmentStack.add( new Segment( SegmentType.Template, Lists.newArrayList() ) );
@@ -57,28 +65,39 @@ public class Compiler {
         // compile the tokens we got...
         for( Token token : tokens ) {
 
+            handleStateTransitions( token );
+
             switch( token.getType() ) {
 
-                case String:         handleString( token );         break;
-                case Comma:          break;
-                case OpenParen:      handleOpenParen( token );      break;
-                case CloseParen:     handleCloseParen( token );     break;
-                case Word:           handleWord( token );           break;
-                case IntegerLiteral: handleIntegerLiteral( token ); break;
-                case BooleanLiteral: handleBooleanLiteral( token ); break;
-                case StringLiteral:  handleStringLiteral( token );  break;
-                case Inc:            break;
-                case Dec:            break;
-                case Equal:          break;
-                case Else:           break;
-                case End:            handleEnd( token );            break;
-                case HTML:           break;
-                case CSS:            break;
+                case String:         handleString         ( token ); break;
+                case Comma:          handleComma          ( token ); break;
+                case OpenParen:      handleOpenParen      ( token ); break;
+                case CloseParen:     handleCloseParen     ( token ); break;
+                case Word:           handleWord           ( token ); break;
+                case IntegerLiteral: handleIntegerLiteral ( token ); break;
+                case BooleanLiteral: handleBooleanLiteral ( token ); break;
+                case StringLiteral:  handleStringLiteral  ( token ); break;
+                case Inc:            handleInc            ( token ); break;
+                case Dec:            handleDec            ( token ); break;
+                case Equal:          handleEqual          ( token ); break;
+                case Else:           handleElse           ( token ); break;
+                case End:            handleEnd            ( token ); break;
+                case HTML:           handleHTML           (       ); break;
+                case CSS:            handleCSS            (       ); break;
                 default:
             }
         }
 
-        return null;
+        // handle transitions to a fake empty string, just to clear out anything lingering behind...
+        handleStateTransitions( new Token( 0, 0, TokenType.String, "" ) );
+
+        // when we get here, there should be just one entry on our segment stack, and none on the value stack...
+        if( valueStack.size() != 0 )
+            logIssue( tokens.get( tokens.size() - 1 ), "Unexpected value remaining on value stack", "" + valueStack.size() );
+        if( segmentStack.size() != 1 )
+            logIssue( tokens.get( tokens.size() - 1 ), "Unexpected segment stack size after compilation", "" + segmentStack.size() );
+
+        return new Template( new TemplateElements( segmentStack.getFirst().elements ) );
     }
 
 
@@ -97,17 +116,17 @@ public class Compiler {
             case IfElse:
                 TemplateElements posElements = new TemplateElements( segment.hadElse ? segment.altElements : segment.elements );
                 TemplateElements negElements = new TemplateElements( segment.hadElse ? segment.elements : segment.altElements );
-                addElement( new IfElseTemplateElement( segment.datum, posElements, negElements ) );
+                addElement( _token, new IfElseTemplateElement( segment.datum, posElements, negElements ) );
                 break;
 
             case While:
-                addElement( new WhileTemplateElement( segment.datum, new TemplateElements( segment.elements ) ) );
+                addElement( _token, new WhileTemplateElement( segment.datum, new TemplateElements( segment.elements ) ) );
                 break;
 
             case Foreach:
                 if( segment.datum instanceof PathDatum ) {
                     PathDatum pathDatum = (PathDatum) segment.datum;
-                    addElement( new ForEachTemplateElement( (Path) pathDatum.getValue(), new TemplateElements( segment.elements ) ) );
+                    addElement( _token, new ForEachTemplateElement( pathDatum.getPath(), new TemplateElements( segment.elements ) ) );
                 }
                 else
                     logIssue( _token, "Argument for foreach() is not a path", "" );
@@ -119,38 +138,67 @@ public class Compiler {
     }
 
 
+    private void handleCSS() {
+        css = !css;
+    }
+
+
+    private void handleHTML() {
+        html = !html;
+    }
+
+
+    private void handleElse( final Token _token ) {
+
+        // if the top of the segment stack doesn't have an IfElse on it, we've got a problem...
+        Segment segment = segmentStack.peekLast();
+        if( segment.type != SegmentType.IfElse ) {
+            logIssue( _token, "Else associated with something other than an If", "" + segment.type );
+            return;
+        }
+
+        // otherwise, swap the elements...
+        List<TemplateElement> elements = segment.altElements;
+        segment.altElements = segment.elements;
+        segment.elements = elements;
+        segment.hadElse = true;
+    }
+
+
     private void handleWord( final Token _token ) {
+
         lastWord = (String) _token.getValue();
     }
 
 
     private void handleIntegerLiteral( final Token _token ) {
 
-        // if we had a preceding word, then it must be a path...
-        ifWordMakePath( _token );
-
-        // now add our literal as an element or value...
-        addElementOrValue( new IntegerDatum( (Integer) _token.getValue() ) );
+        // add our literal as an element or value...
+        addElementOrValue( _token, new IntegerDatum( (Integer) _token.getValue() ) );
     }
 
 
     private void handleBooleanLiteral( final Token _token ) {
 
-        // if we had a preceding word, then it must be a path...
-        ifWordMakePath( _token );
-
         // now add our literal as an element or value...
-        addElementOrValue( new BooleanDatum( (Boolean) _token.getValue() ) );
+        addElementOrValue( _token, new BooleanDatum( (Boolean) _token.getValue() ) );
     }
 
 
     private void handleStringLiteral( final Token _token ) {
 
-        // if we had a preceding word, then it must be a path...
-        ifWordMakePath( _token );
-
         // now add our literal as an element or value...
-        addElementOrValue( new StringDatum( (String) _token.getValue() ) );
+        addElementOrValue( _token, new StringDatum( (String) _token.getValue() ) );
+    }
+
+
+    private void handleComma( final Token _token ) {
+
+        // if we don't have a preceding value on the stack, this is an error...
+        if( (valueStack.size() == 0) || (valueStack.peekLast().datum == null) )
+            logIssue( _token, "Unexpected comma", "," );
+
+        lastComma = true;
     }
 
 
@@ -173,10 +221,53 @@ public class Compiler {
     }
 
 
-    private void handleCloseParen( final Token _token ) {
+    private void handleControls( final Token _token, final SegmentType _type ) {
 
-        // if there's a last word, it's a path...
-        ifWordMakePath( _token );
+        checkForEmptyValueStack( _token );
+
+        // we need to push a new segment, and a control marker on the value stack...
+        valueStack.add( new Value( null, null ) );
+        segmentStack.add( new Segment( _type, Lists.newArrayList() ) );
+
+        lastWord = null;
+    }
+
+
+    private void handleFunctions( final Token _token ) {
+
+        // if the preceding word isn't a function, we've got a problem...
+        FunctionDef def = FunctionDef.getByName( lastWord );
+        if( def == null)
+            logIssue( _token, "Invalid function name", lastWord );
+
+        // otherwise, push the function onto the value stack...
+        else {
+
+            // if the top of stack is a datum, we'd better have a preceding comma...
+            if( (valueStack.size() != 0) && (valueStack.peekLast().datum != null) && !lastComma )
+                logIssue( _token, "Expected preceding comma", "," );
+
+            valueStack.add( new Value( def, null ) );
+        }
+
+        lastWord = null;
+    }
+
+
+    private void handleString( final Token _token ) {
+
+        String text = (String) _token.getValue();
+
+        // do any stripping we need, depending on our mode...
+        if( html ) text = htmlStrip( text );
+        if( css  ) text = cssStrip( text );
+
+        if( text.length() > 0 )
+            addElement( _token, new StringTemplateElement( text ) );
+    }
+
+
+    private void handleCloseParen( final Token _token ) {
 
         // if there are no values on the stack, then we have a bad situation (too many close parens)...
         if( valueStack.size() == 0 ) {
@@ -185,9 +276,9 @@ public class Compiler {
         }
 
         // walk down the stack accumulating data until we hit something else...
-        List<Datum> data = Lists.newArrayList();
+        Deque<Datum> data = Queues.newArrayDeque();
         while( valueStack.peekLast().datum != null )
-            data.add( valueStack.removeLast().datum );
+            data.addFirst( valueStack.removeLast().datum );
 
         // get the next item, and see what we got...
         Value value = valueStack.removeLast();
@@ -204,17 +295,17 @@ public class Compiler {
             // if we have the wrong number of arguments, complain and stuff a boolean false instead of the function...
             if( errs != null ) {
                 logIssue( _token, "Invalid number of arguments: " + errs, "" );
-                valueStack.add( new Value( null, new BooleanDatum( false ), false ) );
+                valueStack.add( new Value( null, new BooleanDatum( false ) ) );
             }
 
             // otherwise, all is well and we need to push our function datum down...
             else
-                valueStack.add( new Value( null, Function.create( value.type, args ), false ) );
+                valueStack.add( new Value( null, Function.create( value.type, args ) ) );
 
             // if the value stack now has just one entry, the value needs to be popped to become a template element...
             if( valueStack.size() == 1 ) {
                 value = valueStack.removeLast();
-                addElement( new DatumTemplateElement( value.datum ) );
+                addElement( _token, new DatumTemplateElement( value.datum ) );
             }
         }
 
@@ -230,66 +321,183 @@ public class Compiler {
                 data.add( new BooleanDatum( false ) );
 
             // stuff our datum into the segment...
-            segmentStack.peekLast().datum = data.get( 0 );
+            segmentStack.peekLast().datum = data.getFirst();
         }
     }
 
 
-    private void handleControls( final Token _token, final SegmentType _type ) {
+    private void handleInc( final Token _token ) {
 
-        // if the value stack isn't empty, we have a problem...
-        if( valueStack.size() > 0 ) {
-            logIssue( _token, "Control element used as a function", _type.toString() );
+        Path lvalue = getLValue( _token );
+        if( lvalue == null )
             return;
+
+        // replace the last template element with an incrementing setter...
+        insertAddSetter( lvalue, 1 );
+    }
+
+
+    private void handleDec( final Token _token ) {
+
+        Path lvalue = getLValue( _token );
+        if( lvalue == null )
+            return;
+
+        // replace the last template element with a decrementing setter...
+        insertAddSetter( lvalue, -1 );
+    }
+
+
+    private void handleEqual( final Token _token ) {
+
+        Path lvalue = getLValue( _token );
+        if( lvalue == null )
+            return;
+
+        // replace the last template element with a placeholder setter...
+        // the rvalue gets put into the placeholder after we process the rvalue tokens...
+        // we also push a marker onto the value stack, so we know that we need to do this...
+        Datum datum = new PlaceholderDatum();
+        insertSetter( lvalue, datum );
+        valueStack.add( new Value( null, datum ) );
+    }
+
+
+    private void insertAddSetter( final Path _lvalue, final int _add ) {
+
+        // make a datum that adds the given number to the given value...
+        Datum adder = Function.create( FunctionDef.add, new PathDatum( _lvalue ), new IntegerDatum( _add ) );
+
+        // then make a setter for that...
+        insertSetter( _lvalue, adder );
+    }
+
+
+    private void insertSetter( final Path _lvalue, final Datum _rvalue ) {
+
+        // remove the last template element (this is safe because getLValue() checked it)...
+        List<TemplateElement> elements = segmentStack.peekLast().elements;
+        elements.remove( elements.size() - 1 );
+
+        // add our new set element...
+        elements.add( new SetTemplateElement( _lvalue, _rvalue ) );
+    }
+
+
+    /**
+     * Returns the path to the lvalue in the last template element, or null if there isn't one (after logging an error).
+     *
+     * @param _token the token being compiled
+     * @return the path to the lvalue if there is one in the the last template element
+     */
+    private Path getLValue( final Token _token ) {
+
+        // make sure we're not in the middle of a function or control test...
+        if( valueStack.size() > 0 ) {
+            logIssue( _token, "Invalid operator in function or test", _token.toString() );
+            return null;
         }
 
-        // we need to push a new segment, and a control marker on the value stack...
-        valueStack.add( new Value( null, null, true ) );
-        segmentStack.add( new Segment( _type, Lists.newArrayList() ) );
+        // make sure the last template element is the right kind...
+        List<TemplateElement> elements = segmentStack.peekLast().elements;
+        if( (elements.size() > 0) && (elements.get( elements.size() - 1 ) instanceof DatumTemplateElement) ) {
 
-        lastWord = null;
+            DatumTemplateElement element = (DatumTemplateElement) elements.get( elements.size() - 1 );
+            Datum datum = element.getDatum();
+            if( datum instanceof PathDatum ) {
+
+                Path path = ((PathDatum) datum).getPath();
+                if( path.isVariable() )
+                    return path;
+            }
+        }
+        logIssue( _token, "Operator requires variable on left, doesn't have one", _token.toString() );
+        return null;
     }
 
 
-    private void handleFunctions( final Token _token ) {
+    /**
+     * Handle possible state transitions before handling the given token.  This method is invoked just before the given token is itself handled.
+     *
+     * @param _token the next token to be handled
+     */
+    private void handleStateTransitions( final Token _token ) {
+        switch( _token.getType() ) {
 
-        // if the preceding word isn't a function, we've got a problem...
-        FunctionDef def = FunctionDef.getByName( lastWord );
-        if( def == null)
-            logIssue( _token, "Invalid function name", lastWord );
+            case Else:
+            case End:
+            case HTML:
+            case CSS:
+            case String:
+                ifWordMakePathElement( _token );
+                checkForEmptyValueStack( _token );
+                break;
 
-        // otherwise, push the function onto the value stack...
-        else
-            valueStack.add( new Value( def, null, false ) );
+            case Comma:
+            case IntegerLiteral:
+            case BooleanLiteral:
+            case StringLiteral:
+                ifWordMakeValue( _token );
+                break;
 
-        lastWord = null;
+            case OpenParen:
+                break;
+
+            case CloseParen:
+                ifWordMakeValue( _token );
+                break;
+
+            case Word:
+            case Equal:
+            case Inc:
+            case Dec:
+                ifWordMakePathElement( _token );
+                break;
+
+            default:
+        }
     }
 
 
-    private void handleString( final Token _token ) {
+    private void checkForEmptyValueStack( final Token _token ) {
 
-        // if we had a preceding word, then it must be a path...
-        ifWordMakePath( _token );
+        // if our value stack is empty, then all is well...
+        if( valueStack.size() == 0 )
+            return;
 
-        String text = (String) _token.getValue();
+        // it's possible we have a placeholder and argument left; if so, clear it...
+        if( valueStack.size() == 2 ) {
 
-        // do any stripping we need, depending on our mode...
-        if( html ) text = htmlStrip( text );
-        if( css  ) text = cssStrip( text );
+            Value arg = valueStack.removeLast();
+            Value ph = valueStack.removeLast();
+            if( (arg.datum != null) && (ph.datum instanceof PlaceholderDatum) ) {
+                PlaceholderDatum pd = (PlaceholderDatum) ph.datum;
+                pd.setValue( arg.datum );
+                return;
+            }
+        }
 
-        addElement( new StringTemplateElement( text ) );
+        // otherwise, we have a problem - so log it and clear the stack, for it is bogus...
+        logIssue( _token, "Expected empty value stack, but it's not", "" + valueStack.size() + "entries" );
+        valueStack.clear();
     }
 
 
-    private void ifWordMakePath( final Token _token ) {
+    private void ifWordMakePathElement( final Token _token ) {
 
         if( lastWord == null )
             return;
 
+        // if the value stack isn't empty, it's an error...
+        if( valueStack.size() != 0 )
+            logIssue( _token, "Unexpected second word", lastWord );
+
         // validate the last word as a path...
         String errs = Path.validate( lastWord );
+
+        // if it was ok, add it as a path template element...
         if( errs == null )
-            addElementOrValue( new PathDatum( Path.create( lastWord ) ) );
+            addElement( _token, new DatumTemplateElement( new PathDatum( Path.create( lastWord ) ) ) );
         else
             logIssue( _token, "Invalid path: " + errs, lastWord );
 
@@ -297,30 +505,81 @@ public class Compiler {
     }
 
 
-    private void addElementOrValue( final Datum _datum ) {
+    private void ifWordMakeValue( final Token _token ) {
 
-        if( valueStack.size() > 0 )
-            valueStack.add( new Value( null, _datum, false ) );
+        if( lastWord == null )
+            return;
+
+        // validate the last word as a path...
+        String errs = Path.validate( lastWord );
+
+        // if it was ok, add it as a value...
+        if( errs == null ) {
+
+            // if the top of stack is a datum, we'd better have a preceding comma...
+            if( (valueStack.size() != 0) && (valueStack.peekLast().datum != null) && !lastComma )
+                logIssue( _token, "Expected preceding comma", "," );
+
+            valueStack.add( new Value( null, new PathDatum( Path.create( lastWord ) ) ) );
+        }
+        else
+            logIssue( _token, "Invalid path: " + errs, lastWord );
+
+        lastWord = null;
+    }
+
+
+    private void addElementOrValue( final Token _token, final Datum _datum ) {
+
+        if( valueStack.size() > 0 ) {
+
+            // if the top of stack is a datum, we'd better have a preceding comma...
+            if( (valueStack.size() != 0) && (valueStack.peekLast().datum != null)
+                    && !(valueStack.peekLast().datum instanceof PlaceholderDatum) && !lastComma )
+                logIssue( _token, "Expected preceding comma", "," );
+
+            valueStack.add( new Value( null, _datum ) );
+        }
 
             // otherwise, make a new template element...
         else
-            addElement( new DatumTemplateElement( _datum ) );
+            addElement( _token, new DatumTemplateElement( _datum ) );
 
     }
 
 
-    private void addElement( final TemplateElement _element ) {
+    private void addElement( final Token _token, final TemplateElement _element ) {
+        checkForEmptyValueStack( _token );
         segmentStack.peekLast().elements.add( _element );
     }
 
 
+    /**
+     * Remove all whitespace at the beginning or end of a line, except that if the last non-whitespace character on a line is not a ">", and the
+     * first non-whitespace character on the following line is not a "<", then a space is left in.
+     *
+     * @param _text the text to strip
+     * @return the stripped text
+     */
+    private static Pattern PASS1 = Pattern.compile( "[ \\t\\x0B\\f\\r]*\\n[ \\t\\x0B\\f\\r]*" );
+    private static Pattern PASS2 = Pattern.compile( "\\> +\\<" );
     private String htmlStrip( final String _text ) {
-        return _text;
+        Matcher mat = PASS1.matcher( _text );
+        String text = mat.replaceAll( "" );
+        return text;
+//        mat = PASS2.matcher( text );
+//        return mat.replaceAll( "><" );
     }
 
 
     private String cssStrip( final String _text ) {
+        // TODO: implement this...
         return _text;
+    }
+
+
+    public String getLog() {
+        return log.toString();
     }
 
 
@@ -361,13 +620,11 @@ public class Compiler {
     private static class Value {
         FunctionDef type;
         Datum datum;
-        boolean control;
 
 
-        public Value( final FunctionDef _type, final Datum _datum, final boolean _control ) {
+        public Value( final FunctionDef _type, final Datum _datum ) {
             type = _type;
             datum = _datum;
-            control = _control;
         }
     }
 
@@ -387,6 +644,30 @@ public class Compiler {
 
         Compiler c = new Compiler();
         Template t = c.compile( source );
+
+
+        User user = new User( "tom@dilatush.com", "slightlyloony.com", "abcd" );
+        user.setFirstName( "Tom" );
+        user.setLastName( "Dilatush" );
+        user.setCreated( Instant.now() );
+        user.getRights().add( BlogAccessRight.MANAGER );
+        user.getRights().add( BlogAccessRight.AUTHOR );
+        user.getRights().add( BlogAccessRight.REVIEWER );
+
+        User user2 = new User( "debi@dilatush.com", "slightlyloony.com", "dfss" );
+        user2.setFirstName( "Debbie" );
+        user2.setLastName( "Dilatush" );
+        user2.setCreated( Instant.now() );
+        user2.getRights().add( BlogAccessRight.ADULT );
+        List<Source> sources = Lists.newArrayList( new UserSource( user ), new UserSource( user2 ) );
+
+        RootSource rootSource = new HomePageRootSource( user, sources );
+
+        TemplateRenderingContext.set( rootSource, user );
+
+        String result = S.fromUTF8( ByteStreams.toByteArray( t.inputStream() ) );
+        String log = c.getLog();
+
 
         c.hashCode();
     }

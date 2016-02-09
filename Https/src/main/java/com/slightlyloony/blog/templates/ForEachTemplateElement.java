@@ -158,4 +158,10 @@ public class ForEachTemplateElement implements TemplateElement {
             listSource.reset();
         }
     }
+
+
+    @Override
+    public String toString() {
+        return "foreach(" + path.toString() + ")";
+    }
 }

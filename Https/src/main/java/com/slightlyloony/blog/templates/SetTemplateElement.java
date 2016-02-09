@@ -105,4 +105,9 @@ public class SetTemplateElement implements TemplateElement {
             // naught to do...
         }
     }
+
+    @Override
+    public String toString() {
+        return "Set: " + lvalue.toString();
+    }
 }

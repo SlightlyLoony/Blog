@@ -131,4 +131,9 @@ public class IfElseTemplateElement implements TemplateElement {
             testResult = null;
         }
     }
+
+    @Override
+    public String toString() {
+        return "if(" + test.toString() + ")";
+    }
 }

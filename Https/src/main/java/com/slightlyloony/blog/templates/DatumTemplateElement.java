@@ -147,4 +147,15 @@ public class DatumTemplateElement implements TemplateElement {
             index = 0;
         }
     }
+
+
+    public Datum getDatum() {
+        return datum;
+    }
+
+
+    @Override
+    public String toString() {
+        return datum.toString();
+    }
 }

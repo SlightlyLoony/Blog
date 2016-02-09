@@ -192,12 +192,18 @@ public class Path {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for( String name : names ) {
-            if( sb.length() != 0 )
+        for( int i = 0; i < names.length; i++ ) {
+            String name = names[i];
+            if( i > 0 )
                 sb.append( '.' );
             sb.append( name );
         }
         return sb.toString();
+    }
+
+
+    public boolean isVariable() {
+        return names[0].length() == 0;
     }
 
 
