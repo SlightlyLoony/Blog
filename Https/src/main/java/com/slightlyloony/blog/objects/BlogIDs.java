@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 import static com.slightlyloony.common.logging.LU.msg;
 
 /**
- * The main responsibility of this singleton class is to issue a new blog object IntegerDatum when one is needed.  To do this, it examines the file system
- * upon startup to find the highest blog object IntegerDatum that's actually on the file system, then issues new IDs starting at the next one.  Key to the
+ * The main responsibility of this singleton class is to issue a new blog object ID when one is needed.  To do this, it examines the file system
+ * upon startup to find the highest blog object ID that's actually on the file system, then issues new IDs starting at the next one.  Key to the
  * integrity of this scheme is that new blog object IDs should be issued as new objects are created and written.
  *
  * @author Tom Dilatush  tom@dilatush.com
@@ -32,7 +32,7 @@ public class BlogIDs {
 
 
     /**
-     * Reads the file system to determine the last used blog object IntegerDatum.
+     * Reads the file system to determine the last used blog object ID.
      */
     public void init() {
 
@@ -197,9 +197,9 @@ public class BlogIDs {
 
 
     /**
-     * Returns the next available (unused) blog object IntegerDatum, in sequential order.
+     * Returns the next available (unused) blog object ID, in sequential order.
      *
-     * @return the next available (unused) blog object IntegerDatum
+     * @return the next available (unused) blog object ID
      */
     public synchronized BlogID getNextBlogID() {
 

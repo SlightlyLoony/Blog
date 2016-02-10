@@ -31,6 +31,17 @@ public class WhileTemplateElement implements TemplateElement {
     }
 
 
+    /**
+     * Returns an estimate of the memory size of this object, in bytes.
+     *
+     * @return the estimated number of bytes of this object
+     */
+    @Override
+    public int size() {
+        return 16 + elements.size() + 50;  // the 50 is just a guesstimate for the datum; good enough for these purposes...
+    }
+
+
     private class WhileTemplateElementInputStream extends TemplateInputStream {
 
         private TemplateInputStream elementsStream;

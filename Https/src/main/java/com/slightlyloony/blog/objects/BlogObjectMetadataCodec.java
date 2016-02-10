@@ -16,7 +16,7 @@ public class BlogObjectMetadataCodec extends StorageCodecBase implements Storage
      * responsible for that.
      *
      * @param _file               the file to use to create the blog object
-     * @param _id                 the blog IntegerDatum for the blog object being read
+     * @param _id                 the blog ID for the blog object being read
      * @param _type               the blog object type
      * @param _accessRequirements the blog object's access requirements
      * @param _compressionState   the blog object's compression state

@@ -38,6 +38,17 @@ public class SetTemplateElement implements TemplateElement {
     }
 
 
+    /**
+     * Returns an estimate of the memory size of this object, in bytes.
+     *
+     * @return the estimated number of bytes of this object
+     */
+    @Override
+    public int size() {
+        return 16 + lvalue.size() + 50;  // the 50 is just a placeholder estimate; getting datum length is probably more work than it's worth...
+    }
+
+
     private class SetTemplateInputStream extends TemplateInputStream {
 
         /**

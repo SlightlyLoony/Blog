@@ -15,4 +15,12 @@ public interface TemplateElement {
      * @return the {@link TemplateInputStream} that provides the bytes in this instance
      */
     TemplateInputStream inputStream();
+
+
+    /**
+     * Returns an estimate of the memory size of this object, in bytes.
+     *
+     * @return the estimated number of bytes of this object
+     */
+    int size();
 }

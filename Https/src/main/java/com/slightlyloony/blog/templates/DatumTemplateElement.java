@@ -35,6 +35,17 @@ public class DatumTemplateElement implements TemplateElement {
 
 
     /**
+     * Returns an estimate of the memory size of this object, in bytes.
+     *
+     * @return the estimated number of bytes of this object
+     */
+    @Override
+    public int size() {
+        return 8 + 50;  // the 50 is just a guesstimate for the datum; good enough for these purposes...
+    }
+
+
+    /**
      * Implements a {@link TemplateInputStream} that provides the bytes in this instance.
      */
     private class DatumTemplateElementInputStream extends TemplateInputStream {

@@ -269,6 +269,10 @@ public class Tokenizer {
                 tokens.add( new Token( tokenLine, tokenCol, CSS, sb.toString() ) );
                 break;
 
+            case "@LOG":
+                tokens.add( new Token( tokenLine, tokenCol, LOG, sb.toString() ) );
+                break;
+
             default:
                 logIssue( tokenLine, tokenCol, "Invalid directive", sb.toString() );
         }

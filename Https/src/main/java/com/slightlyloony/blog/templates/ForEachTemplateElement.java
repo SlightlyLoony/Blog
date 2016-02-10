@@ -34,6 +34,17 @@ public class ForEachTemplateElement implements TemplateElement {
     }
 
 
+    /**
+     * Returns an estimate of the memory size of this object, in bytes.
+     *
+     * @return the estimated number of bytes of this object
+     */
+    @Override
+    public int size() {
+        return 16 + elements.size() + path.size();
+    }
+
+
     private class ForEachTemplateElementInputStream extends TemplateInputStream {
 
         private TemplateInputStream elementsStream;

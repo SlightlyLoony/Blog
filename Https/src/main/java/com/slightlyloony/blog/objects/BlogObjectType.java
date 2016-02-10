@@ -12,35 +12,35 @@ import java.util.Map;
 import static com.slightlyloony.blog.storage.BlogObjectUseCache.*;
 
 /**
- * Defines all the possible types of blog objects, along with their file extensions and mime types.
+ * Defines all the possible types of blog objects, along with their file extensions, mime types, and codecs.
  *
  * @author Tom Dilatush  tom@dilatush.com
  */
 public enum BlogObjectType {
 
-    METADATA  ( "meta",   null,                                   META,   true,  new BlogObjectMetadataCodec() ),
-    JPG       ( "jpg",    "image/jpeg",                           IMAGE,  false, new BlogContentObjectCodec()  ),
-    PNG       ( "png",    "image/png",                            IMAGE,  false, new BlogContentObjectCodec()  ),
-    GIF       ( "gif",    "image/gif",                            IMAGE,  false, new BlogContentObjectCodec()  ),
-    ICO       ( "ico",    "image/x-icon",                         IMAGE,  false, new BlogContentObjectCodec()  ),
-    HTML      ( "html",   "text/html",                            TEXT,   true,  new BlogContentObjectCodec()  ),
-    CSS       ( "css",    "text/css",                             TEXT,   true,  new BlogContentObjectCodec()  ),
-    JSON      ( "json",   "application/json",                     TEXT,   true,  new BlogContentObjectCodec()  ),
-    JS        ( "js",     "application/javascript",               SCRIPT, true,  new BlogContentObjectCodec()  ),
-    TXT       ( "txt",    "text/plain",                           TEXT,   true,  new BlogContentObjectCodec()  ),
-    DOC       ( "doc",    "application/msword",                   NONE,   true,  new BlogContentObjectCodec()  ),
-    PDF       ( "pdf",    "application/pdf",                      NONE,   false, new BlogContentObjectCodec()  ),
-    XLS       ( "xls",    "application/vnd.ms-excel",             NONE,   true,  new BlogContentObjectCodec()  ),
-    ZIP       ( "zip",    "application/zip",                      NONE,   false, new BlogContentObjectCodec()  ),
-    SVG       ( "svg",    "image/svg+xml",                        IMAGE,  true,  new BlogContentObjectCodec()  ),
-    XML       ( "xml",    "application/xml",                      TEXT,   true,  new BlogContentObjectCodec()  ),
-    MP3       ( "mp3",    "audio/mpeg",                           BINARY, false, new BlogContentObjectCodec()  ),
-    AAC       ( "aac",    "audio/mp4",                            BINARY, false, new BlogContentObjectCodec()  ),
-    KMZ       ( "kmz",    "application/vnd.google-earth.kmz",     BINARY, true,  new BlogContentObjectCodec()  ),
-    KML       ( "kml",    "application/vnd.google-earth.kml+xml", TEXT,   true,  new BlogContentObjectCodec()  ),
-    XHTML     ( "xhtml",  "application/xhtml+xml",                TEXT,   true,  new BlogContentObjectCodec()  ),
-    USERDATA  ( "user",   null,                                   USER,   false, new UserCodec()               ),
-    USERINDEX ( "users",  null,                                   USER,   false, new UsersCodec()              );
+    METADATA  ( "meta",  null,                                   META,   true,  new BlogObjectMetadataCodec() ),
+    JPG       ( "jpg",   "image/jpeg",                           IMAGE,  false, new BlogContentObjectCodec()  ),
+    PNG       ( "png",   "image/png",                            IMAGE,  false, new BlogContentObjectCodec()  ),
+    GIF       ( "gif",   "image/gif",                            IMAGE,  false, new BlogContentObjectCodec()  ),
+    ICO       ( "ico",   "image/x-icon",                         IMAGE,  false, new BlogContentObjectCodec()  ),
+    HTML      ( "html",  "text/html",                            TEXT,   true,  new BlogContentObjectCodec()  ),
+    CSS       ( "css",   "text/css",                             TEXT,   true,  new BlogContentObjectCodec()  ),
+    JSON      ( "json",  "application/json",                     TEXT,   true,  new BlogContentObjectCodec()  ),
+    JS        ( "js",    "application/javascript",               SCRIPT, true,  new BlogContentObjectCodec()  ),
+    TXT       ( "txt",   "text/plain",                           TEXT,   true,  new BlogContentObjectCodec()  ),
+    DOC       ( "doc",   "application/msword",                   NONE,   true,  new BlogContentObjectCodec()  ),
+    PDF       ( "pdf",   "application/pdf",                      NONE,   false, new BlogContentObjectCodec()  ),
+    XLS       ( "xls",   "application/vnd.ms-excel",             NONE,   true,  new BlogContentObjectCodec()  ),
+    ZIP       ( "zip",   "application/zip",                      NONE,   false, new BlogContentObjectCodec()  ),
+    SVG       ( "svg",   "image/svg+xml",                        IMAGE,  true,  new BlogContentObjectCodec()  ),
+    XML       ( "xml",   "application/xml",                      TEXT,   true,  new BlogContentObjectCodec()  ),
+    MP3       ( "mp3",   "audio/mpeg",                           BINARY, false, new BlogContentObjectCodec()  ),
+    AAC       ( "aac",   "audio/mp4",                            BINARY, false, new BlogContentObjectCodec()  ),
+    KMZ       ( "kmz",   "application/vnd.google-earth.kmz",     BINARY, true,  new BlogContentObjectCodec()  ),
+    KML       ( "kml",   "application/vnd.google-earth.kml+xml", TEXT,   true,  new BlogContentObjectCodec()  ),
+    XHTML     ( "xhtml", "application/xhtml+xml",                TEXT,   true,  new BlogContentObjectCodec()  ),
+    USERDATA  ( "user",  null,                                   USER,   false, new UserCodec()               ),
+    USERINDEX ( "users", null,                                   USER,   false, new UsersCodec()              );
 
 
     private static Map<String,BlogObjectType> EXTENSION_MAP;

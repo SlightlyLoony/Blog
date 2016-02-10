@@ -33,7 +33,8 @@ public abstract class RootSource extends SourceBase implements Source {
      */
     protected static void addCommon( final List<DatumDef> _data ) {
 
-        _data.add( new DatumDef( "timestamp", DateSource.class, _source -> ZonedDateTime.now( Defaults.TIME_ZONE ) ) );
+        _data.add( new DatumDef( "timestamp", DateSource.class,     _source -> ZonedDateTime.now( Defaults.TIME_ZONE ) ) );
+        _data.add( new DatumDef( "",          VariableSource.class, _source -> null                                    ) );
     }
 
 

@@ -10,6 +10,8 @@ import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
 import com.slightlyloony.blog.security.BlogSession;
 import com.slightlyloony.blog.security.BlogSessionManager;
 import com.slightlyloony.blog.security.BlogUserRights;
+import com.slightlyloony.blog.users.Gender;
+import com.slightlyloony.blog.users.User;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Request;
 
@@ -39,6 +41,7 @@ public class BlogRequest {
     private RequestCookies cookies;
     private AcceptRequestHeader accepts;
     private AcceptEncodingRequestHeader acceptEncodings;
+    private User user;
 
     // TODO: switch from valid/error message model to exceptions?
 
@@ -62,6 +65,7 @@ public class BlogRequest {
         if( !initializeBlog() )           return false;
         if( !initializePathParts() )      return false;
         if( !initializeBlogUserRights() ) return false;
+        if( !initializeUser() )           return false;
 
         cookies = new RequestCookies( this );
         accepts = new AcceptRequestHeader( request.getHeader( "Accept" ) );
@@ -96,6 +100,18 @@ public class BlogRequest {
 
 
     private boolean initializeBlogUserRights() {
+        return true;
+    }
+
+
+    private boolean initializeUser() {
+        // TODO: replace this with the real deal...
+        user = new User( "tom@dilatush.com", "slightlyloony.com", "xyz" );
+        user.setFirstName( "Tom" );
+        user.setLastName( "Dilatush" );
+        user.setHandle( "SlightlyLoony" );
+        user.setGender( Gender.MALE );
+        user.setBirthYear( 1952 );
         return true;
     }
 
@@ -189,6 +205,11 @@ public class BlogRequest {
 
     public BlogID getId() {
         return id;
+    }
+
+
+    public User getUser() {
+        return user;
     }
 
 

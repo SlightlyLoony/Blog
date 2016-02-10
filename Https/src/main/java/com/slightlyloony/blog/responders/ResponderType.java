@@ -5,7 +5,7 @@ package com.slightlyloony.blog.responders;
  */
 public enum ResponderType {
 
-    BLOG_OBJECT( BlogObjectResponder::new );
+    BLOG_OBJECT  ( BlogObjectResponder::new );
 
 
     private GetResponder getResponder;

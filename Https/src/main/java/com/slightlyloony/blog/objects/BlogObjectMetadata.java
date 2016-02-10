@@ -7,6 +7,7 @@ import com.slightlyloony.blog.responders.Responder;
 import com.slightlyloony.blog.responders.ResponderType;
 import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
 import com.slightlyloony.blog.storage.StorageException;
+import com.slightlyloony.blog.templates.sources.SourceType;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -33,6 +34,7 @@ public class BlogObjectMetadata extends BlogObjectObject {
     private ResponderType unauthorizedResponder;
     private BlogID content;
     private BlogObjectType contentType;
+    private SourceType sourceType;
 
 
     public BlogObjectMetadata( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements ) {
@@ -74,6 +76,16 @@ public class BlogObjectMetadata extends BlogObjectObject {
         result += methods.size() * 16 + 200;
 
         return result;
+    }
+
+
+    public SourceType getSourceType() {
+        return sourceType;
+    }
+
+
+    public void setSourceType( final SourceType _sourceType ) {
+        sourceType = _sourceType;
     }
 
 
@@ -203,6 +215,7 @@ public class BlogObjectMetadata extends BlogObjectObject {
             if( _metadata.methods.size() > 0 )  result.add( "methods",               _context.serialize( _metadata.methods               ) );
             if( _metadata.content != null )     result.add( "content",               _context.serialize( _metadata.content               ) );
             if( _metadata.contentType != null ) result.add( "contentType",           _context.serialize( _metadata.contentType           ) );
+            if( _metadata.sourceType != null )  result.add( "sourceType",            _context.serialize( _metadata.sourceType            ) );
 
             return result;
         }

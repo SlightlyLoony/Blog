@@ -12,7 +12,7 @@ public class BlogContentObject extends BlogObject {
 
     private final static Logger LOG = LogManager.getLogger();
 
-    private BlogObjectContent content;  // if this field is null, then the instance is invalid...
+    protected BlogObjectContent content;  // if this field is null, then the instance is invalid...
 
 
     public BlogContentObject( final BlogID _id, final BlogObjectType _type,

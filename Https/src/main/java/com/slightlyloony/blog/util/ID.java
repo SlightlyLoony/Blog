@@ -37,10 +37,10 @@ public class ID {
 
 
     /**
-     * Decodes the given IntegerDatum string to a long.  Note that the given string <i>must</i> be exactly 10 characters long.
+     * Decodes the given ID string to a long.  Note that the given string <i>must</i> be exactly 10 characters long.
      *
-     * @param _id the IntegerDatum to decode.
-     * @return the long value of the given IntegerDatum, decoded.
+     * @param _id the ID to decode.
+     * @return the long value of the given ID, decoded.
      */
     public static long decode( final String _id ) {
 

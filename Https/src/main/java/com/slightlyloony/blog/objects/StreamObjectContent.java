@@ -24,7 +24,7 @@ public class StreamObjectContent extends BlogObjectContent {
 
 
     public StreamObjectContent( final StorageInputStream _content, final ContentCompressionState _compressionState ) {
-        super( _compressionState, (_content == null) ? 0 : _content.length() );
+        super( _compressionState, (_content == null) ? null : _content.length() );
 
         if( _content == null )
             throw new HandlerIllegalArgumentException( "Missing content" );
@@ -56,7 +56,7 @@ public class StreamObjectContent extends BlogObjectContent {
     public BytesObjectContent asBytes() {
 
         byte[] bytes = new byte[contentLength];
-        try( StorageInputStream sis = content ) {
+        try( StorageInputStream sis = getStream() ) {
             int i = 0;
             while( i < bytes.length ) {
                 int read = sis.read( bytes, i, bytes.length - i );
@@ -78,7 +78,7 @@ public class StreamObjectContent extends BlogObjectContent {
 
     @Override
     protected InputStream contIS() {
-        return content;
+        return getStream();
     }
 
 

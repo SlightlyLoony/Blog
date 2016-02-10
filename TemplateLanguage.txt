@@ -78,6 +78,12 @@ Template Language
       stylesheet, but will also reduce its readability (considerably!).
 
 
+    @LOG
+
+      Instructs the template compiler to emit the error log from the template compiler.  This can be used, for example, to dump the log into a web
+      page being rendered by a template.
+
+
   Control:
 
     These control whether template elements are rendered at all, and also the iteration (repetition) of template elements.  The control directives

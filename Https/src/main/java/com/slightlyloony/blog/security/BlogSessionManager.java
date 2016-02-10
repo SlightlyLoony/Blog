@@ -78,10 +78,10 @@ public class BlogSessionManager {
 
 
     /**
-     * Returns the blog session with the given session IntegerDatum if it exists and is active; otherwise return null.  If this call successfully returns a
+     * Returns the blog session with the given session ID if it exists and is active; otherwise return null.  If this call successfully returns a
      * blog session, the last-used time of the associated token is updated to the current time.
      *
-     * @param _sessionID the IntegerDatum of the desired session
+     * @param _sessionID the ID of the desired session
      * @return the desired session, or null if that session is not available
      */
     public BlogSession claimSession( final String _sessionID ) {

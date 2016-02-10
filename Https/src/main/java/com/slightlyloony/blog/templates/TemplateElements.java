@@ -30,6 +30,20 @@ public class TemplateElements implements TemplateElement {
     }
 
 
+    /**
+     * Returns an estimate of the memory size of this object, in bytes.
+     *
+     * @return the estimated number of bytes of this object
+     */
+    @Override
+    public int size() {
+        int size = 8 + (elements.size() * 8 );
+        for( TemplateElement element : elements )
+            size += element.size();
+        return size;
+    }
+
+
     private class TemplateElementsInputStream extends TemplateInputStream {
 
         private TemplateInputStream[] inputStreams;

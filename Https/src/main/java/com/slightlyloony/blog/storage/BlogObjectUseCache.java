@@ -5,13 +5,13 @@ package com.slightlyloony.blog.storage;
  */
 public enum BlogObjectUseCache {
 
-    META(    0 ),
-    IMAGE(   1 ),
-    TEXT(    2 ),
-    BINARY(  3 ),
-    SCRIPT(  4 ),
-    USER(    5 ),
-    NONE(   -1 );
+    META   (  0 ),
+    IMAGE  (  1 ),
+    TEXT   (  2 ),
+    BINARY (  3 ),
+    SCRIPT (  4 ),
+    USER   (  5 ),
+    NONE   ( -1 );
 
 
     private final int ordinal;

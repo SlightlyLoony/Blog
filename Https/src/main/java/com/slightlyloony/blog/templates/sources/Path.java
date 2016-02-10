@@ -37,6 +37,19 @@ public class Path {
 
 
     /**
+     * Returns an estimate of the memory size of this object, in bytes.
+     *
+     * @return the estimated memory size of this object, in bytes
+     */
+    public int size() {
+        int size = 16 + 4 * indices.length;
+        for( String name : names )
+            size += name.length() * 2;
+        return size;
+    }
+
+
+    /**
      * Returns the datum at the given path.  If any of the path parts evaluate incorrectly, then an error message is returned as a string datum.
      * Otherwise, the datum identified by the last part of the path is returned.
      *

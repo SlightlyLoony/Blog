@@ -22,4 +22,15 @@ public class Template implements TemplateElement {
     public TemplateInputStream inputStream() {
         return elements.inputStream();
     }
+
+
+    /**
+     * Returns an estimate of the memory size of this object, in bytes.
+     *
+     * @return the estimated number of bytes of this object
+     */
+    @Override
+    public int size() {
+        return elements.size();
+    }
 }

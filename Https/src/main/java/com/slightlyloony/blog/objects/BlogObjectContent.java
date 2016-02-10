@@ -59,14 +59,14 @@ public abstract class BlogObjectContent {
      * @param _length the length of the data being transferred, or negative if that length is unknown
      */
     protected void copy( final BlogResponse _response, final InputStream _inputStream, final OutputStream _outputStream,
-                         final boolean _setGZIP, final int _length ) {
+                         final boolean _setGZIP, final Integer _length ) {
 
         // set gzip encoding if needed...
         if( _setGZIP )
             _response.setContentEncoding( "gzip" );
 
         // if we know the length, set the Content-Length...
-        if( _length >= 0 ) _response.setContentLength( _length );
+        if( (_length != null) && (_length >= 0) ) _response.setContentLength( _length );
 
         // now copy the data...
         try {

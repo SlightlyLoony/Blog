@@ -2,6 +2,7 @@ package com.slightlyloony.blog.storage;
 
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 import com.slightlyloony.blog.objects.*;
+import com.slightlyloony.blog.templates.TemplateObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,7 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Provides a memory cache for blog objects.  The cache is a simple LRU cache with hashed access via the blog object IntegerDatum.
+ * Provides a memory cache for blog objects.  The cache is a simple LRU cache with hashed access via the blog object ID.
  *
  * @author Tom Dilatush  tom@dilatush.com
  */
@@ -71,10 +72,11 @@ public class BlogObjectCache {
             }
 
             // refuse to add any object that is still a stream, as we don't want to wait for the read from inside a synchronized method...
+            // we'll allow TemplateObjects, though, as they're not going to read from disk...
             if( _obj instanceof BlogContentObject ) {
                 BlogContentObject contentObject = (BlogContentObject) _obj;
                 BlogObjectContent content = contentObject.getContent();
-                if( !(content instanceof BytesObjectContent) ) {
+                if( !(content instanceof BytesObjectContent)  && !(_obj instanceof TemplateObject) ) {
                     LOG.warn( "Attempted to add object {0}.{1} that wasn't resolved to bytes", _obj.getBlogID(), _obj.getType().getCache() );
                     return;
                 }

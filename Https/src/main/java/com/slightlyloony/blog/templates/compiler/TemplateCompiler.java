@@ -2,24 +2,14 @@ package com.slightlyloony.blog.templates.compiler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
-import com.google.common.io.ByteStreams;
-import com.slightlyloony.blog.ServerInit;
-import com.slightlyloony.blog.security.BlogAccessRight;
 import com.slightlyloony.blog.templates.*;
 import com.slightlyloony.blog.templates.compiler.tokens.Token;
 import com.slightlyloony.blog.templates.compiler.tokens.TokenType;
 import com.slightlyloony.blog.templates.functions.Function;
 import com.slightlyloony.blog.templates.functions.FunctionDef;
-import com.slightlyloony.blog.templates.sources.*;
+import com.slightlyloony.blog.templates.sources.Path;
 import com.slightlyloony.blog.templates.sources.data.*;
-import com.slightlyloony.blog.users.User;
-import com.slightlyloony.blog.util.S;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.time.Instant;
 import java.util.Deque;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -28,7 +18,7 @@ import java.util.regex.Pattern;
 /**
  * @author Tom Dilatush  tom@dilatush.com
  */
-public class Compiler {
+public class TemplateCompiler {
 
     private StringBuilder log;
     private Deque<Value> valueStack;
@@ -84,6 +74,7 @@ public class Compiler {
                 case End:            handleEnd            ( token ); break;
                 case HTML:           handleHTML           (       ); break;
                 case CSS:            handleCSS            (       ); break;
+                case LOG:            handleLOG            ( token ); break;
                 default:
             }
         }
@@ -145,6 +136,14 @@ public class Compiler {
 
     private void handleHTML() {
         html = !html;
+    }
+
+
+    private void handleLOG( final Token _token ) {
+
+        String text = log.toString();
+        if( text.length() > 0 )
+            addElement( _token, new StringTemplateElement( text ) );
     }
 
 
@@ -428,6 +427,7 @@ public class Compiler {
             case End:
             case HTML:
             case CSS:
+            case LOG:
             case String:
                 ifWordMakePathElement( _token );
                 checkForEmptyValueStack( _token );
@@ -626,49 +626,5 @@ public class Compiler {
             type = _type;
             datum = _datum;
         }
-    }
-
-
-    // TODO: remove this testing stub...
-    public static void main( final String[] args ) throws IOException {
-
-        // configure the logging properties file...
-        System.getProperties().setProperty( "log4j.configurationFile", "log.xml" );
-
-        // initialize the blog application...
-        ServerInit.init();
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ByteStreams.copy( new FileInputStream( new File( "/Users/tom/IdeaProjects/Blog/test.txt" ) ), baos );
-        String source = S.fromUTF8( baos.toByteArray() );
-
-        Compiler c = new Compiler();
-        Template t = c.compile( source );
-
-
-        User user = new User( "tom@dilatush.com", "slightlyloony.com", "abcd" );
-        user.setFirstName( "Tom" );
-        user.setLastName( "Dilatush" );
-        user.setCreated( Instant.now() );
-        user.getRights().add( BlogAccessRight.MANAGER );
-        user.getRights().add( BlogAccessRight.AUTHOR );
-        user.getRights().add( BlogAccessRight.REVIEWER );
-
-        User user2 = new User( "debi@dilatush.com", "slightlyloony.com", "dfss" );
-        user2.setFirstName( "Debbie" );
-        user2.setLastName( "Dilatush" );
-        user2.setCreated( Instant.now() );
-        user2.getRights().add( BlogAccessRight.ADULT );
-        List<Source> sources = Lists.newArrayList( new UserSource( user ), new UserSource( user2 ) );
-
-        RootSource rootSource = new HomePageRootSource( user, sources );
-
-        TemplateRenderingContext.set( rootSource, user );
-
-        String result = S.fromUTF8( ByteStreams.toByteArray( t.inputStream() ) );
-        String log = c.getLog();
-
-
-        c.hashCode();
     }
 }

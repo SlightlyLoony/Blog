@@ -109,7 +109,7 @@ public class Users extends BlogObjectObject {
         byte[] cookieValue = toUTF8( _user.getCookie() );
 
         // first we get the keys to any existing entries for this user, as both the username and session cookie values might have changed...
-        // we use the blog IntegerDatum (which is invariant for any given user) to look up the keys for the other two maps...
+        // we use the blog ID (which is invariant for any given user) to look up the keys for the other two maps...
         Keys keys = reverse.get( blogID );
 
         // if we got no entry for the keys, then we've never indexed this user before - just add him...
@@ -174,7 +174,7 @@ public class Users extends BlogObjectObject {
 
 
     /**
-     * Creates a default manager user, stored at a new IntegerDatum.
+     * Creates a default manager user, stored at a new ID.
      *
      * @param _blogName the name of the blog this user belongs to
      */
@@ -202,7 +202,7 @@ public class Users extends BlogObjectObject {
         Timer t = new Timer();
         LOG.info( "Creating Users instance the hard way: reading all blog files" );
 
-        // ensure that we have an IntegerDatum...
+        // ensure that we have an ID...
         BlogID oldUsersID = BlogID.create( _blogConfig.getUsers() );
         BlogID usersID = (oldUsersID == null) ? BlogIDs.INSTANCE.getNextBlogID() : oldUsersID;
 
@@ -299,7 +299,7 @@ public class Users extends BlogObjectObject {
 
 
     /*
-     * We persist this index of users with a JSON array (with one entry per user) of three element string arrays (blog IntegerDatum, username, and cookie
+     * We persist this index of users with a JSON array (with one entry per user) of three element string arrays (blog ID, username, and cookie
      * value).  For example, a file with two users might look something like this:
      *
      * {

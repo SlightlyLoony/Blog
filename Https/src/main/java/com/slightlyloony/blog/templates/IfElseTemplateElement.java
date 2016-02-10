@@ -33,6 +33,17 @@ public class IfElseTemplateElement implements TemplateElement {
     }
 
 
+    /**
+     * Returns an estimate of the memory size of this object, in bytes.
+     *
+     * @return the estimated number of bytes of this object
+     */
+    @Override
+    public int size() {
+        return 24 + positive.size() + negative.size() + 50; // the 50 is just a guesstimate for the test; it's good enough for this purpose...
+    }
+
+
     private class IfElseTemplateElementInputStream extends TemplateInputStream {
 
         private TemplateInputStream posInputStream;
