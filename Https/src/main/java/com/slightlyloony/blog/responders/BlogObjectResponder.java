@@ -66,8 +66,6 @@ public class BlogObjectResponder implements Responder {
         _response.setMimeType( _metadata.getContentType() );
 
         obj.getContent().write( _request, _response, _metadata.getCompressionState().mayCompress() );
-        if( obj instanceof TemplateObject )
-            ((TemplateObject) obj).reset();
         _request.handled();
     }
 }

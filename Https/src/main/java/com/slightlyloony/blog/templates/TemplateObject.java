@@ -1,12 +1,9 @@
 package com.slightlyloony.blog.templates;
 
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
-import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
 import com.slightlyloony.blog.objects.*;
 import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
 import com.slightlyloony.blog.storage.StorageInputStream;
-
-import java.io.IOException;
 
 /**
  * @author Tom Dilatush  tom@dilatush.com
@@ -21,24 +18,7 @@ public class TemplateObject extends BlogContentObject {
                            final Template _template ) {
         super( _id, _type, _accessRequirements, getContent( _template ) );
         template = _template;
-    }
-
-
-    @Override
-    public synchronized StorageInputStream getStream() {
-        TemplateInputStream is = template.inputStream();
-        is.reset();
-        return new StorageInputStream( is, null );
-    }
-
-
-    public void reset() {
-        try {
-            ( (StreamObjectContent) content ).getStream().reset();
-        }
-        catch( IOException e ) {
-            throw new HandlerIllegalStateException( "Should not be possible for TemplateInputStream to get IOException" );
-        }
+        ((TemplateObjectContent) content).setTemplate( template );
     }
 
 
@@ -58,6 +38,30 @@ public class TemplateObject extends BlogContentObject {
         if( _template == null )
             throw new HandlerIllegalArgumentException( "Missing required template" );
 
-        return new StreamObjectContent( new StorageInputStream( _template.inputStream(), null), ContentCompressionState.DO_NOT_COMPRESS );
+        return new TemplateObjectContent( new StorageInputStream( _template.inputStream(), null), ContentCompressionState.DO_NOT_COMPRESS );
+    }
+
+
+    /**
+     * Extends {@link StreamObjectContent} to override {@link StreamObjectContent#getStream()}, to get a new stream object every time it's called.
+     */
+    private static class TemplateObjectContent extends StreamObjectContent {
+
+        private Template template;
+
+        public TemplateObjectContent( final StorageInputStream _content, final ContentCompressionState _compressionState ) {
+            super( _content, _compressionState );
+        }
+
+
+        public void setTemplate( final Template _template ) {
+            template = _template;
+        }
+
+
+        @Override
+        public StorageInputStream getStream() {
+            return new StorageInputStream( template.inputStream(), null);
+        }
     }
 }
