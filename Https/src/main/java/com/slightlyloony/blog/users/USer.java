@@ -1,19 +1,17 @@
 package com.slightlyloony.blog.users;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParseException;
+import com.google.gson.*;
 import com.slightlyloony.blog.BlogServer;
-import com.slightlyloony.blog.objects.BlogIDs;
-import com.slightlyloony.blog.objects.BlogObjectObject;
-import com.slightlyloony.blog.objects.BlogObjectType;
+import com.slightlyloony.blog.objects.*;
 import com.slightlyloony.blog.security.BlogAccessRight;
+import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
 import com.slightlyloony.blog.security.BlogUserRights;
 import com.slightlyloony.blog.storage.StorageException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.lang.reflect.Type;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -89,32 +87,6 @@ public class User extends BlogObjectObject {
         BlogServer.STORAGE.create( result );
         result.dirty = false;
         return result;
-    }
-
-
-    /**
-     * Creates a new instance of this class by deserializing the given JSON data.
-     *
-     * @param _json the JSON representation of the user object to instantiate
-     * @return the new user object
-     * @throws StorageException on any problem
-     */
-    public static User fromJSON( final String _json ) throws StorageException {
-        try {
-            return gson().fromJson( _json, User.class );
-        }
-        catch( JsonParseException e ) {
-            throw new StorageException( "Problem deserializing User from JSON", e );
-        }
-    }
-
-
-    private static Gson gson() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuild( gsonBuilder );
-        gsonBuilder.registerTypeAdapter( BlogUserRights.class, new BlogUserRights.Serializer()   );
-        gsonBuilder.registerTypeAdapter( BlogUserRights.class, new BlogUserRights.Deserializer() );
-        return gsonBuilder.create();
     }
 
 
@@ -465,12 +437,75 @@ public class User extends BlogObjectObject {
     }
 
 
+    public static User fromJSON( final String _json, final BlogID _id, final BlogObjectType _type,
+                                 final BlogObjectAccessRequirements _accessRequirements ) throws StorageException {
+        try {
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter( BlogUserRights.class, new BlogUserRights.Deserializer()                   );
+            gsonBuilder.registerTypeAdapter( User.class,           new Deserializer( _id, _type, _accessRequirements ) );
+            Gson gson = gsonBuilder.create();
+            return gson.fromJson( _json, User.class );
+        }
+        catch( JsonSyntaxException e ) {
+            throw new StorageException( "Problem deserializing User from JSON", e );
+        }
+    }
+
+
     public String toJSON() throws StorageException {
         try {
-            return gson().toJson( this, getClass() );
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter( User.class, new Serializer() );
+            Gson gson = gsonBuilder.create();
+            return gson.toJson( this, getClass() );
         }
         catch( Exception e ) {
             throw new StorageException( "Problem serializing User to JSON", e );
+        }
+    }
+
+
+    private static class Deserializer implements JsonDeserializer<User> {
+
+        private final BlogID id;
+        private final BlogObjectType type;
+        private final BlogObjectAccessRequirements accessRequirements;
+
+
+        public Deserializer( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements ) {
+            id = _id;
+            type = _type;
+            accessRequirements = _accessRequirements;
+        }
+
+        @Override
+        public User deserialize( final JsonElement _jsonElement, final Type _type, final JsonDeserializationContext _jsonDeserializationContext )
+                throws JsonParseException {
+
+            // first we deserialize it...
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter( BlogUserRights.class, new BlogUserRights.Deserializer()                   );
+            Gson gson = gsonBuilder.create();
+            User result = gson.fromJson( _jsonElement, User.class );
+
+            // then we set the fields from our file name...
+            result.type = type;
+            result.blogID = id;
+            result.accessRequirements = accessRequirements;
+
+            return result;
+        }
+    }
+
+
+    private static class Serializer implements JsonSerializer<User> {
+
+        @Override
+        public JsonElement serialize( final User _user, final Type _type, final JsonSerializationContext _jsonSerializationContext ) {
+
+            JsonElement element = _jsonSerializationContext.serialize( _user, User.class );
+            _user.stripFields( element );
+            return element;
         }
     }
 }

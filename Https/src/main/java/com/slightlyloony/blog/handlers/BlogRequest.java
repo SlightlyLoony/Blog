@@ -1,21 +1,21 @@
 package com.slightlyloony.blog.handlers;
 
+import com.google.common.io.ByteStreams;
 import com.slightlyloony.blog.Blog;
 import com.slightlyloony.blog.BlogServer;
 import com.slightlyloony.blog.handlers.cookies.RequestCookie;
 import com.slightlyloony.blog.handlers.cookies.RequestCookies;
 import com.slightlyloony.blog.handlers.cookies.ResponseCookie;
 import com.slightlyloony.blog.objects.BlogID;
-import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
-import com.slightlyloony.blog.security.BlogSession;
-import com.slightlyloony.blog.security.BlogSessionManager;
-import com.slightlyloony.blog.security.BlogUserRights;
+import com.slightlyloony.blog.security.*;
+import com.slightlyloony.blog.storage.StorageException;
 import com.slightlyloony.blog.users.Gender;
 import com.slightlyloony.blog.users.User;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Request;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -59,19 +59,18 @@ public class BlogRequest {
      *
      * @return true if the request is valid
      */
-    public boolean initialize() {
+    public boolean initialize() throws StorageException {
 
         if( !initializeRequestMethod() )  return false;
         if( !initializeBlog() )           return false;
         if( !initializePathParts() )      return false;
-        if( !initializeBlogUserRights() ) return false;
-        if( !initializeUser() )           return false;
 
         cookies = new RequestCookies( this );
         accepts = new AcceptRequestHeader( request.getHeader( "Accept" ) );
         acceptEncodings = new AcceptEncodingRequestHeader( request.getHeader( "Accept-Encoding" ) );
 
         initializeSession();
+        initializeUser();
 
         return true;
     }
@@ -99,20 +98,42 @@ public class BlogRequest {
     }
 
 
-    private boolean initializeBlogUserRights() {
-        return true;
+    private void initializeUser() throws StorageException {
+
+        // if our session already has a user, we're done...
+        user = (session == null) ? null : session.getUser();
+        if( user != null)
+            return;
+
+        // if we don't have a session, then we're going to have a generic public user, which we manufacture...
+        if( session == null ) {
+            user = makeAnonymousUser( BlogAccessRight.PUBLIC );
+            return;
+        }
+
+        // if we have a user cookie, use that to look up this user...
+        RequestCookie cookie = cookies.get( Constants.USER_COOKIE_NAME );
+        if( cookie != null ) {
+            user = blog.getUsers().getUserFromCookie( cookie.getValue() );
+            if( user != null )
+                return;
+        }
+
+        // we get here if we don't have a user, so we need an anonymous one...
+        user = makeAnonymousUser( BlogAccessRight.PUBLIC, BlogAccessRight.SESSION );
     }
 
 
-    private boolean initializeUser() {
-        // TODO: replace this with the real deal...
-        user = new User( "tom@dilatush.com", "slightlyloony.com", "xyz" );
-        user.setFirstName( "Tom" );
-        user.setLastName( "Dilatush" );
-        user.setHandle( "SlightlyLoony" );
-        user.setGender( Gender.MALE );
-        user.setBirthYear( 1952 );
-        return true;
+    private User makeAnonymousUser( final BlogAccessRight... _rights ) {
+        User anonUser = new User( "anonymous******", blog.getName(), "impossible hash" );
+        anonUser.setFirstName( "Anonymous" );
+        anonUser.setLastName( "" );
+        anonUser.setHandle( "" );
+        anonUser.setGender( Gender.UNCERTAIN );
+        anonUser.setBirthYear( 1800 );
+        for( BlogAccessRight right : _rights )
+            anonUser.addRight( right );
+        return anonUser;
     }
 
 
@@ -183,6 +204,11 @@ public class BlogRequest {
     }
 
 
+    public byte[] getPostData() throws IOException {
+        return ByteStreams.toByteArray( request.getInputStream() );
+    }
+
+
     public void handled() {
         request.setHandled( true );
     }
@@ -222,5 +248,15 @@ public class BlogRequest {
 
         AcceptRequestHeader.Accept accept = accepts.accept( _mediaType );
         return accept != null;
+    }
+
+
+    public AcceptEncodingRequestHeader getAcceptEncodings() {
+        return acceptEncodings;
+    }
+
+
+    public BlogSession getSession() {
+        return session;
     }
 }

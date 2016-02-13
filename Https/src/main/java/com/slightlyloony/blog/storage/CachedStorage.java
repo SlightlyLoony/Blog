@@ -8,6 +8,8 @@ import com.slightlyloony.blog.objects.BlogObject;
 import com.slightlyloony.blog.objects.BlogObjectType;
 import com.slightlyloony.blog.objects.ContentCompressionState;
 import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
+import com.slightlyloony.blog.util.Timer;
+import com.slightlyloony.common.logging.LU;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -73,6 +75,8 @@ public class CachedStorage {
     public BlogObject read( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements,
                             final ContentCompressionState _compressionState, final boolean _isCacheable ) throws StorageException {
 
+        Timer t = new Timer();
+
         // if this object is cacheable, and we have a cache for this category of object, see if the object is cached...
         int cacheNum = _type.getCache().getOrdinal();
         if( _isCacheable && (cacheNum >= 0) && (cacheNum < caches.length) && (caches[cacheNum] != null) ) {
@@ -81,11 +85,17 @@ public class CachedStorage {
             BlogObject cachedObj = cache.get( _id, _type );
 
             // if it was cached, we're done...
-            if( cachedObj != null )
+            if( cachedObj != null ) {
+                t.mark();
+                LOG.info( LU.msg( "Read {0} from cache {2} in {1}", _id.getID(), t.toString(), _type.getCache().name() ) );
                 return cachedObj;
+            }
 
             // it wasn't cached, so first we'll have to read it from storage...
             BlogObject readObj = storage.read( _id, _type, _accessRequirements, _compressionState );
+
+            t.mark();
+            LOG.info( LU.msg( "Read {0} from disk in {1}", _id.getID(), t.toString() ) );
 
             // if the object's size is less than our threshold, we'll try caching it...
             if( readObj.size() < maxEntrySize ) {

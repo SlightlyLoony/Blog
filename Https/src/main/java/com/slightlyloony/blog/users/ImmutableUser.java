@@ -1,7 +1,6 @@
 package com.slightlyloony.blog.users;
 
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
 import com.slightlyloony.blog.objects.BlogID;
 import com.slightlyloony.blog.objects.BlogObjectType;
 import com.slightlyloony.blog.security.BlogAccessRight;
@@ -437,20 +436,6 @@ public class ImmutableUser extends User {
     @Override
     public BlogObjectAccessRequirements getAccessRequirements() {
         return user.getAccessRequirements();
-    }
-
-
-    @Override
-    @Deprecated
-    public void serialize( final JsonObject _object ) {
-        throw new UnsupportedOperationException( "Operation not allowed on ImmutableUser" );
-    }
-
-
-    @Override
-    @Deprecated
-    public void deserialize( final JsonObject _object ) {
-        throw new UnsupportedOperationException( "Operation not allowed on ImmutableUser" );
     }
 
 

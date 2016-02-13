@@ -6,6 +6,7 @@ import com.slightlyloony.blog.BlogServer;
 import com.slightlyloony.blog.config.BlogConfig;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 import com.slightlyloony.blog.objects.*;
+import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
 import com.slightlyloony.blog.storage.BlogObjectIterator;
 import com.slightlyloony.blog.storage.BlogObjectIterator.BlogObjectInfo;
 import com.slightlyloony.blog.storage.StorageException;
@@ -39,11 +40,9 @@ public class Users extends BlogObjectObject {
      * These three structures use byte[] instances to hold the UTF-8 encoded string values that would otherwise be in String instances.  By encoding
      * them into byte arrays we (roughly) cut the memory consumed by 50%.
      */
-    private final Map<byte[],byte[]> byUsername;
-    private final Map<byte[],byte[]> byCookie;
-    private final Map<byte[],Keys> reverse;
-
-
+    private final Map<Bytes,Bytes> byUsername;
+    private final Map<Bytes,Bytes> byCookie;
+    private final Map<Bytes,Keys> reverse;
 
 
     private Users( final BlogID _id ) {
@@ -104,9 +103,9 @@ public class Users extends BlogObjectObject {
         if( (_id == null) || (_user == null) )
             throw new HandlerIllegalArgumentException( "Blog IntegerDatum or user missing" );
 
-        byte[] blogID = toUTF8( _id.getID() );
-        byte[] username = toUTF8( _user.getUsername() );
-        byte[] cookieValue = toUTF8( _user.getCookie() );
+        Bytes blogID      = new Bytes( toUTF8( _id.getID() ) );
+        Bytes username    = new Bytes( toUTF8( _user.getUsername() ) );
+        Bytes cookieValue = new Bytes( toUTF8( _user.getCookie() ) );
 
         // first we get the keys to any existing entries for this user, as both the username and session cookie values might have changed...
         // we use the blog ID (which is invariant for any given user) to look up the keys for the other two maps...
@@ -123,22 +122,20 @@ public class Users extends BlogObjectObject {
         }
 
         // if both keys are unchanged, we've got nothing to do here...
-        if( Arrays.equals( keys.username, username ) || Arrays.equals( keys.cookieValue, cookieValue ) )
+        if( username.equals( keys.username )  || keys.cookieValue.equals( cookieValue ) )
             return;
 
         // if the username has changed, update it...
         if( keys.username != null )
             blogID = byUsername.remove( keys.username );  // this updates blogID to the original instance stored...
         keys.username = username;
-        if( username != null )
-            byUsername.put( username, blogID );
+        byUsername.put( username, blogID );
 
         // if the cookie value has changed, update it...
         if( keys.cookieValue != null )
             blogID = byCookie.remove( keys.cookieValue );  // this updates blogID to the original instance stored...
         keys.cookieValue = cookieValue;
-        if( cookieValue != null )
-            byCookie.put( cookieValue, blogID );
+        byCookie.put( cookieValue, blogID );
     }
 
 
@@ -147,7 +144,7 @@ public class Users extends BlogObjectObject {
         if( _username == null )
             throw new HandlerIllegalArgumentException( "Missing username" );
 
-        return readUser( byUsername.get( toUTF8( _username ) ) );
+        return readUser( byUsername.get( new Bytes( toUTF8( _username ) ) ) );
     }
 
 
@@ -156,16 +153,16 @@ public class Users extends BlogObjectObject {
         if( _cookieValue == null )
             throw new HandlerIllegalArgumentException( "Missing cookie value" );
 
-        return readUser( byCookie.get( toUTF8( _cookieValue ) ) );
+        return readUser( byCookie.get( new Bytes( toUTF8( _cookieValue ) ) ) );
     }
 
 
-    private User readUser( final byte[] _userIDBytes ) throws StorageException {
+    private User readUser( final Bytes _userIDBytes ) throws StorageException {
 
         if( _userIDBytes == null )
             return null;
 
-        BlogID userID = BlogID.create( fromUTF8( _userIDBytes ) );
+        BlogID userID = BlogID.create( fromUTF8( _userIDBytes.bytes ) );
         if( userID == null )
             return null;
 
@@ -257,18 +254,52 @@ public class Users extends BlogObjectObject {
     }
 
 
-    private static Gson gson() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuild( gsonBuilder );
-        gsonBuilder.registerTypeAdapter( Users.class, new Deserializer() );
-        gsonBuilder.registerTypeAdapter( Users.class, new Serializer()   );
-        return gsonBuilder.create();
+    private static class Keys {
+        private Bytes username;
+        private Bytes cookieValue;
+
+
+        public Keys( final Bytes _username, final Bytes _cookieValue ) {
+            username = _username;
+            cookieValue = _cookieValue;
+        }
+    }
+
+
+    /**
+     * Provides a byte array with a real equals method.
+     */
+    private static class Bytes {
+
+        private byte[] bytes;
+
+        private Bytes( final byte[] _bytes ) {
+            bytes = _bytes;
+        }
+
+
+        @Override
+        public boolean equals( final Object o ) {
+            if( this == o ) return true;
+            if( o == null || getClass() != o.getClass() ) return false;
+            Bytes bytes1 = (Bytes) o;
+            return Arrays.equals( bytes, bytes1.bytes );
+        }
+
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode( bytes );
+        }
     }
 
 
     public String toJSON() throws StorageException {
         try {
-            return gson().toJson( this, getClass() );
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter( Users.class, new Serializer()   );
+            Gson gson = gsonBuilder.create();
+            return gson.toJson( this, getClass() );
         }
         catch( Exception e ) {
             throw new StorageException( "Problem serializing Users to JSON", e );
@@ -276,24 +307,16 @@ public class Users extends BlogObjectObject {
     }
 
 
-    public static Users fromJSON( final String _json ) throws StorageException {
+    public static Users fromJSON( final String _json, final BlogID _id, final BlogObjectType _type,
+                                  final BlogObjectAccessRequirements _accessRequirements ) throws StorageException {
         try {
-            return gson().fromJson( _json, Users.class );
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter( Users.class, new Deserializer( _id, _type, _accessRequirements )   );
+            Gson gson = gsonBuilder.create();
+            return gson.fromJson( _json, Users.class );
         }
         catch( JsonSyntaxException e ) {
             throw new StorageException( "Problem deserializing Users from JSON", e );
-        }
-    }
-
-
-    private static class Keys {
-        private byte[] username;
-        private byte[] cookieValue;
-
-
-        public Keys( final byte[] _username, final byte[] _cookieValue ) {
-            username = _username;
-            cookieValue = _cookieValue;
         }
     }
 
@@ -316,6 +339,17 @@ public class Users extends BlogObjectObject {
 
     private static class Deserializer implements JsonDeserializer<Users> {
 
+        private final BlogID id;
+        private final BlogObjectType type;
+        private final BlogObjectAccessRequirements accessRequirements;
+
+
+        public Deserializer( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements ) {
+            id = _id;
+            type = _type;
+            accessRequirements = _accessRequirements;
+        }
+
         @Override
         public Users deserialize( final JsonElement _jsonElement,
                                   final Type _type,
@@ -328,8 +362,10 @@ public class Users extends BlogObjectObject {
 
             JsonObject object = _jsonElement.getAsJsonObject();
 
-            // deserialize our base object...
-            result.deserialize( object );
+            // handle the fields we got from our file name...
+            result.type = type;
+            result.blogID = id;
+            result.accessRequirements = accessRequirements;
 
             // iterate over all the users in the JSON file...
             JsonElement usersElement = object.get( "users" );
@@ -357,14 +393,13 @@ public class Users extends BlogObjectObject {
                     throw new JsonParseException( "Invalid values in id or username" );
 
                 // update the indexes...
-                byte[] idKey = toUTF8( id );
-                byte[] usernameKey = toUTF8( username );
-                byte[] cookieKey = toUTF8( cookie );
+                Bytes idKey       = new Bytes( toUTF8( id )       );
+                Bytes usernameKey = new Bytes( toUTF8( username ) );
+                Bytes cookieKey   = new Bytes( toUTF8( cookie )   );
                 Keys keys = new Keys( usernameKey, cookieKey );
                 result.reverse.put( idKey, keys );
                 result.byUsername.put( usernameKey, idKey );
-                if( cookieKey != null )
-                    result.byCookie.put( cookieKey, idKey );
+                result.byCookie.put( cookieKey, idKey );
             }
 
             return result;
@@ -380,17 +415,16 @@ public class Users extends BlogObjectObject {
                                       final JsonSerializationContext _context ) {
 
             JsonObject object = new JsonObject();
-            _users.serialize( object );
 
             JsonArray users = new JsonArray();
 
             // iterate over all the entries in the reverse index, as they have all the data we need...
-            for( Map.Entry<byte[],Keys> entry : _users.reverse.entrySet() ) {
+            for( Map.Entry<Bytes,Keys> entry : _users.reverse.entrySet() ) {
 
                 JsonArray item = new JsonArray();
-                item.add( fromUTF8( entry.getKey() ) );
-                item.add( fromUTF8( entry.getValue().username ) );
-                item.add( fromUTF8( entry.getValue().cookieValue ) );
+                item.add( fromUTF8( entry.getKey().bytes               ) );
+                item.add( fromUTF8( entry.getValue().username.bytes    ) );
+                item.add( fromUTF8( entry.getValue().cookieValue.bytes ) );
                 users.add( item );
             }
 

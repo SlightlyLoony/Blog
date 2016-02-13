@@ -49,7 +49,7 @@ public abstract class BlogObjectContent {
 
     /**
      * Does the actual work of copying data to the response, from the given input stream to the given output stream.  Sets "gzip" Content-Encoding
-     * if setGZIP is true, and Content-Length if the given length is zero or greater.  If the given length is negative, it's treated as unknown and
+     * if setGZIP is true, and Content-Length if the given length is zero or greater.  If the given length is null, it's treated as unknown and
      * a chunked transfer is done (Jetty handles this automagically).
      *
      * @param _response the blog response to copy the content to

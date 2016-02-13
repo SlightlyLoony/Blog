@@ -1,7 +1,6 @@
 package com.slightlyloony.blog.objects;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 import com.slightlyloony.blog.security.BlogObjectAccessRequirements;
@@ -83,36 +82,19 @@ public abstract class BlogObject {
     }
 
 
-    protected void serialize( final JsonObject _object ) {
-        Gson gson = gson();
-        _object.add( "type", gson.toJsonTree( type ) );
-        _object.add( "blogID", gson.toJsonTree( blogID ));
-        _object.add( "accessRequirements", gson.toJsonTree( accessRequirements ) );
-    }
+    /**
+     * Strips the three fields of this base class from the given JSON element, so that serializers of child classes won't include this
+     * redundant information.
+     *
+     * @param _element the JSON element to have fields stripped from
+     */
+    protected void stripFields( final JsonElement _element ) {
 
-
-    protected void deserialize( final JsonObject _object ) {
-        Gson gson = gson();
-        if( _object.has( "type" ))
-            type = gson.fromJson( _object.get( "type" ), BlogObjectType.class );
-        if( _object.has( "blogID" ))
-            blogID = gson.fromJson( _object.get( "blogID" ), BlogID.class );
-        if( _object.has( "accessRequirements" ))
-            accessRequirements = gson.fromJson( _object.get( "accessRequirements" ), BlogObjectAccessRequirements.class );
-    }
-
-
-    private Gson gson() {
-        GsonBuilder builder = new GsonBuilder();
-        gsonBuild( builder );
-        return builder.create();
-    }
-
-
-    protected static void gsonBuild( final GsonBuilder _builder ) {
-        _builder.registerTypeAdapter( BlogObjectAccessRequirements.class, new BlogObjectAccessRequirements.Serializer()   );
-        _builder.registerTypeAdapter( BlogObjectAccessRequirements.class, new BlogObjectAccessRequirements.Deserializer() );
-        _builder.registerTypeAdapter( BlogID.class,                       new BlogID.Serializer()                         );
-        _builder.registerTypeAdapter( BlogID.class,                       new BlogID.Deserializer()                       );
+        if( _element instanceof JsonObject ) {
+            JsonObject object = (JsonObject) _element;
+            object.remove( "blogID" );
+            object.remove( "type" );
+            object.remove( "accessRequirements" );
+        }
     }
 }

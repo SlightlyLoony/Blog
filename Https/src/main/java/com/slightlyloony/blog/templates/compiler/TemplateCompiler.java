@@ -20,6 +20,9 @@ import java.util.regex.Pattern;
  */
 public class TemplateCompiler {
 
+    private static final String BIV_LOG = "template_compiler_log";
+    private static final String BIV_LOG_NOT_EMPTY = "template_compiler_log_not_empty";
+
     private StringBuilder log;
     private Deque<Value> valueStack;
     private Deque<Segment> segmentStack;
@@ -492,6 +495,18 @@ public class TemplateCompiler {
         if( valueStack.size() != 0 )
             logIssue( _token, "Unexpected second word", lastWord );
 
+        // do we have one of our built-in variables?
+        if( BIV_LOG.equals( lastWord ) ) {
+            addElement( _token, new DatumTemplateElement( new StringDatum( log.toString() ) ) );
+            lastWord = null;
+            return;
+        }
+        else if( BIV_LOG_NOT_EMPTY.equals( lastWord ) ) {
+            addElement( _token, new DatumTemplateElement( new BooleanDatum( log.length() != 0 ) ) );
+            lastWord = null;
+            return;
+        }
+
         // validate the last word as a path...
         String errs = Path.validate( lastWord );
 
@@ -510,22 +525,38 @@ public class TemplateCompiler {
         if( lastWord == null )
             return;
 
+        // do we have one of our built-in variables?
+        if( BIV_LOG.equals( lastWord ) ) {
+            addValue( _token, new StringDatum( log.toString() ) );
+            lastWord = null;
+            return;
+        }
+        else if( BIV_LOG_NOT_EMPTY.equals( lastWord ) ) {
+            addValue( _token, new BooleanDatum( log.length() != 0 ) );
+            lastWord = null;
+            return;
+        }
+
         // validate the last word as a path...
         String errs = Path.validate( lastWord );
 
         // if it was ok, add it as a value...
-        if( errs == null ) {
-
-            // if the top of stack is a datum, we'd better have a preceding comma...
-            if( (valueStack.size() != 0) && (valueStack.peekLast().datum != null) && !lastComma )
-                logIssue( _token, "Expected preceding comma", "," );
-
-            valueStack.add( new Value( null, new PathDatum( Path.create( lastWord ) ) ) );
-        }
+        if( errs == null )
+            addValue( _token, new PathDatum( Path.create( lastWord ) ) );
         else
             logIssue( _token, "Invalid path: " + errs, lastWord );
 
         lastWord = null;
+    }
+
+
+    private void addValue( final Token _token, final Datum _datum ) {
+
+        // if the top of stack is a datum, we'd better have a preceding comma...
+        if( (valueStack.size() != 0) && (valueStack.peekLast().datum != null) && !lastComma )
+            logIssue( _token, "Expected preceding comma", "," );
+
+        valueStack.add( new Value( null, _datum ) );
     }
 
 

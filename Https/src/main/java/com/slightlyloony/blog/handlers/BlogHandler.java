@@ -42,18 +42,47 @@ public class BlogHandler extends AbstractHandler implements Handler {
 
         BlogResponse response = new BlogResponse( _httpServletResponse );
         BlogRequest request = new BlogRequest( _request, _httpServletRequest, response );
-        if( !request.initialize() ) {
+        try {
+            if( !request.initialize() ) {
 
-            // TODO: handle invalid requests mo' bettah...
-            response.setResponseCode( HttpServletResponse.SC_NOT_FOUND );
+                // TODO: handle invalid requests mo' bettah...
+                response.setResponseCode( HttpServletResponse.SC_NOT_FOUND );
+                request.handled();
+
+                t.mark();
+
+                LOG.info( LU.msg( "{0} {2}{1} from {3} completed (NOT FOUND) in {4}",
+                        _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
+                return;
+            }
+        }
+        catch( StorageException e ) {
+
+            // TODO: handle storage problem mo' bettah...
+            response.setResponseCode( HttpServletResponse.SC_INTERNAL_SERVER_ERROR );
             request.handled();
 
             t.mark();
 
-            LOG.info( LU.msg( "{0} {2}{1} from {3} completed (NOT FOUND) in {4}",
+            LOG.info( LU.msg( "{0} {2}{1} from {3} completed (but had error reading users) in {4}",
                     _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
             return;
         }
+
+        // TODO: determine whether request is authorized...
+        boolean authorized = request.getAccessRequirements().isAuthorized( request.getUser().getRights() );
+        if( !authorized ) {
+
+            // TODO: handle unauthorized without special responder mo' bettah...
+            response.setResponseCode( HttpServletResponse.SC_FORBIDDEN );
+            request.handled();
+
+            t.mark();
+
+            LOG.info( LU.msg( "{0} {2}{1} from {3} completed (but request is unauthorized) in {4}",
+                    _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
+            return;
+    }
 
         // try to read the metadata for this request...
         BlogObjectMetadata metadata;
@@ -109,26 +138,6 @@ public class BlogHandler extends AbstractHandler implements Handler {
         else {
             response.setCacheControl( "no-cache, must-revalidate");
             response.setExpires( "Sat, 26 Jul 1997 05:00:00 GMT" );
-        }
-
-        // TODO: determine whether request is authorized...
-        boolean authorized = true;
-        if( !authorized ) {
-
-            // see if we have a responder for unauthorized access...
-            responder = metadata.getUnauthorizedResponder().getResponder();
-            if( responder == null ) {
-
-                // TODO: handle unauthorized without special responder mo' bettah...
-                response.setResponseCode( HttpServletResponse.SC_FORBIDDEN );
-                request.handled();
-
-                t.mark();
-
-                LOG.info( LU.msg( "{0} {2}{1} from {3} completed (but request is unauthorized) in {4}",
-                        _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
-                return;
-            }
         }
 
         try {

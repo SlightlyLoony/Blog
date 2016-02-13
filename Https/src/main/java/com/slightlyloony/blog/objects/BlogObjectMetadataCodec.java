@@ -27,7 +27,7 @@ public class BlogObjectMetadataCodec extends StorageCodecBase implements Storage
     public BlogObject read( final File _file, final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements,
                             final ContentCompressionState _compressionState ) throws StorageException {
 
-        return BlogObjectMetadata.fromJSON( getFileAsString( _file ) );
+        return BlogObjectMetadata.fromJSON( getFileAsString( _file ), _id, _type, _accessRequirements );
     }
 
 

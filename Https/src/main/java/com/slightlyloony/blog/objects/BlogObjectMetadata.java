@@ -60,10 +60,6 @@ public class BlogObjectMetadata extends BlogObjectObject {
         unauthorizedResponder = null;
     }
 
-    public static BlogObjectMetadata create( final String _json ) {
-        return gson().fromJson( _json, BlogObjectMetadata.class );
-    }
-
 
     @Override
     public int size() {
@@ -167,7 +163,10 @@ public class BlogObjectMetadata extends BlogObjectObject {
 
     public String toJSON() throws StorageException {
         try {
-            return gson().toJson( this, getClass() );
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter( BlogObjectMetadata.class, new Serializer()   );
+            Gson gson = gsonBuilder.create();
+            return gson.toJson( this, getClass() );
         }
         catch( Exception e ) {
             throw new StorageException( "Problem serializing BlogObjectMetadata to JSON", e );
@@ -175,26 +174,55 @@ public class BlogObjectMetadata extends BlogObjectObject {
     }
 
 
-    public static BlogObjectMetadata fromJSON( final String _json ) throws StorageException {
+    public static BlogObjectMetadata fromJSON( final String _json, final BlogID _id, final BlogObjectType _type,
+                                               final BlogObjectAccessRequirements _accessRequirements ) throws StorageException {
         try {
-            return gson().fromJson( _json, BlogObjectMetadata.class );
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter( BlogObjectMetadata.class, new Deserializer( _id, _type, _accessRequirements ) );
+            Gson gson = gsonBuilder.create();
+            return gson.fromJson( _json, BlogObjectMetadata.class );
         }
         catch( JsonSyntaxException e ) {
-            throw new StorageException( "Problem deserializing BlogObjectMetadata from JSON", e );
+            throw new StorageException( "Problem deserializing BlogObjectMetadata from JSON: " + e.getMessage(), e );
         }
     }
 
 
-    private static Gson gson() {
+    private static class Deserializer implements JsonDeserializer {
 
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuild( gsonBuilder );
-        gsonBuilder.registerTypeAdapter( BlogObjectMetadata.class, new Serializer()   );
-        return gsonBuilder.create();
+        private final BlogID id;
+        private final BlogObjectType type;
+        private final BlogObjectAccessRequirements accessRequirements;
+
+
+        public Deserializer( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements ) {
+            id = _id;
+            type = _type;
+            accessRequirements = _accessRequirements;
+        }
+
+
+        @Override
+        public BlogObjectMetadata deserialize( final JsonElement _jsonElement, final Type _type,
+                                               final JsonDeserializationContext _jsonDeserializationContext ) throws JsonParseException {
+
+            // first we deserialize it...
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter( BlogID.class,             new BlogID.Deserializer()                           );
+            Gson gson = gsonBuilder.create();
+            BlogObjectMetadata result = gson.fromJson( _jsonElement, BlogObjectMetadata.class );
+
+            // then we set the fields from our file name...
+            result.type = type;
+            result.blogID = id;
+            result.accessRequirements = accessRequirements;
+
+            return result;
+        }
     }
 
 
-    public static class Serializer implements JsonSerializer<BlogObjectMetadata> {
+    private static class Serializer implements JsonSerializer<BlogObjectMetadata> {
 
 
         @Override

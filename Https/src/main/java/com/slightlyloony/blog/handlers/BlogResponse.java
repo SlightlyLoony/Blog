@@ -1,13 +1,17 @@
 package com.slightlyloony.blog.handlers;
 
+import com.google.common.io.ByteStreams;
 import com.slightlyloony.blog.handlers.cookies.ResponseCookie;
 import com.slightlyloony.blog.handlers.cookies.ResponseCookies;
 import com.slightlyloony.blog.objects.BlogObjectType;
+import com.slightlyloony.blog.util.S;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -71,5 +75,11 @@ public class BlogResponse {
 
     public OutputStream getOutputStream() throws IOException {
         return response.getOutputStream();
+    }
+
+
+    public void sendJSONResponse( final String _json ) throws IOException {
+        InputStream is = new ByteArrayInputStream( S.toUTF8( _json ) );
+        ByteStreams.copy( is, getOutputStream() );
     }
 }

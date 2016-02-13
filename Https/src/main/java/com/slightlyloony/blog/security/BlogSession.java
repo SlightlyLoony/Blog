@@ -1,19 +1,21 @@
 package com.slightlyloony.blog.security;
 
+import com.slightlyloony.blog.users.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.slightlyloony.blog.security.BlogSession.BlogSessionState.ACTIVE;
-import static com.slightlyloony.blog.security.BlogSession.BlogSessionState.DEAD;
-import static com.slightlyloony.blog.security.BlogSession.BlogSessionState.INACTIVE;
+import static com.slightlyloony.blog.security.BlogSession.BlogSessionState.*;
 import static com.slightlyloony.common.logging.LU.msg;
 
 /**
  * @author Tom Dilatush  tom@dilatush.com
  */
 public class BlogSession {
+
+    // pre-determined names for commonly used session objects (the asterisks are there to make collisions unlikely)...
+    private final static String USER = "user*********";
 
     private final static Logger LOG = LogManager.getLogger();
 
@@ -26,7 +28,7 @@ public class BlogSession {
     private BlogSessionState state;
 
     // where the actual session data is held...
-    private final ConcurrentHashMap<String,?> sessionData;
+    private final ConcurrentHashMap<String,Object> sessionData;
 
 
     public BlogSession( final String _token ) {
@@ -49,6 +51,26 @@ public class BlogSession {
 
     public String getToken() {
         return token;
+    }
+
+
+    public Object get( final String _name ) {
+        return sessionData.get( _name );
+    }
+
+
+    public void put( final String _name, final Object _info ) {
+        sessionData.put( _name, _info );
+    }
+
+
+    public User getUser() {
+        return (User) sessionData.get( USER );
+    }
+
+
+    public void putUser( final User _user ) {
+        sessionData.put( USER, _user );
     }
 
 

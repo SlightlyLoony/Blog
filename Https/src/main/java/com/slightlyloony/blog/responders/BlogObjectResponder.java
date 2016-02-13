@@ -23,6 +23,15 @@ import java.io.IOException;
  */
 public class BlogObjectResponder implements Responder {
 
+    /**
+     * Handles the response to a blog object request.
+     *
+     * @param _request the blog request object for this request
+     * @param _response the blog response object for this request
+     * @param _metadata the metadata for this request
+     * @param _isCacheable true if this request is cacheable
+     * @throws StorageException on any problem
+     */
     @Override
     public void respond( final BlogRequest _request, final BlogResponse _response, final BlogObjectMetadata _metadata,
                          final boolean _isCacheable ) throws StorageException {
