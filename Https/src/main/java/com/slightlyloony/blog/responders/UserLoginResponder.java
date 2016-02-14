@@ -1,6 +1,9 @@
 package com.slightlyloony.blog.responders;
 
 import com.google.gson.Gson;
+import com.slightlyloony.blog.events.Event;
+import com.slightlyloony.blog.events.EventType;
+import com.slightlyloony.blog.events.Events;
 import com.slightlyloony.blog.handlers.BlogRequest;
 import com.slightlyloony.blog.handlers.BlogResponse;
 import com.slightlyloony.blog.objects.BlogObjectMetadata;
@@ -12,9 +15,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
-import static com.slightlyloony.blog.security.BlogAccessRight.AUTHENTICATED;
-import static com.slightlyloony.blog.security.BlogAccessRight.PUBLIC;
-import static com.slightlyloony.blog.security.BlogAccessRight.SESSION;
+import static com.slightlyloony.blog.security.BlogAccessRight.*;
 
 /**
  * Handles the response to a user login request, which is a POST of a JSON object with two properties: "user", which must have a string username,
@@ -48,7 +49,7 @@ public class UserLoginResponder implements Responder {
             LoginRequest req = new Gson().fromJson( json, LoginRequest.class );
             LOG.info( "Got user login request for user: " + req.user );
 
-            // retrieve the user...
+            // retrieve the user and see if the password matches...
             User user = _request.getBlog().getUsers().getUserFromUsername( req.user );
             if( (user != null) && user.passwordOK( req.password ) ) {
 
@@ -60,11 +61,20 @@ public class UserLoginResponder implements Responder {
                 user.addRight( PUBLIC );
                 user.addRight( SESSION );
                 _request.getSession().putUser( user );
+
+                // fire success event...
+                Events.fire( new Event( EventType.USER_LOGIN, req.user ) );
             }
 
-            // otherwise, we have a problem and we need to tell the client...
-            else
+            // otherwise, the login attempt failed...
+            else {
+
+                // tell the client about our dismal failure, being careful not to disclose why...
                 _response.sendJSONResponse( "{\"success\":false,\"reason\":\"User name or password is incorrect.\"}" );
+
+                // fire failure event...
+                Events.fire( new Event( EventType.USER_LOGIN_FAILURE, req.user ) );
+            }
 
             _request.handled();
         }

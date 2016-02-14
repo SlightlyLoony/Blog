@@ -8,6 +8,7 @@ import com.slightlyloony.blog.objects.BlogIDs;
 import com.slightlyloony.blog.security.BlogSessionManager;
 import com.slightlyloony.blog.storage.CachedStorage;
 import com.slightlyloony.blog.storage.Storage;
+import com.slightlyloony.blog.util.Stats;
 import com.slightlyloony.common.StandardUncaughtExceptionHandler;
 import com.slightlyloony.common.ipmsgs.IPMsgAction;
 import com.slightlyloony.common.ipmsgs.IPMsgParticipant;
@@ -63,6 +64,9 @@ public class ServerInit {
 
         // initialize the storage system...
         BlogServer.STORAGE = new CachedStorage( new Storage( ServerInit.getConfig().getContentRoot() ) );
+
+        // initialize the statistics system...
+        Stats.init();
 
         // create our blog instances...
         for( String blog : CONFIG.getBlogs() ) {
