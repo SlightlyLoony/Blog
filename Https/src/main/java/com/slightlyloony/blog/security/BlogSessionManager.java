@@ -2,6 +2,8 @@ package com.slightlyloony.blog.security;
 
 import com.google.common.io.BaseEncoding;
 import com.slightlyloony.blog.ServerInit;
+import com.slightlyloony.blog.events.EventType;
+import com.slightlyloony.blog.events.Events;
 import com.slightlyloony.blog.handlers.HandlerIllegalStateException;
 import com.slightlyloony.blog.util.Timer;
 import com.slightlyloony.common.ExecutionService;
@@ -171,7 +173,9 @@ public class BlogSessionManager {
         int scavenged = 0;
         while( it.hasNext() ) {
 
-            if( BlogSession.BlogSessionState.DEAD == it.next().manageLifecycle( inactivateThreshold, removalThreshold ) ) {
+            BlogSession session = it.next();
+            if( BlogSession.BlogSessionState.DEAD == session.manageLifecycle( inactivateThreshold, removalThreshold ) ) {
+                Events.fire( EventType.SESSION_KILLED, session );
                 it.remove();
                 scavenged++;
             }

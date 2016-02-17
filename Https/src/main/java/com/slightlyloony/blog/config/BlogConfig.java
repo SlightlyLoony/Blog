@@ -24,6 +24,7 @@ public class BlogConfig {
     private String domain;
     private String certAlias;
     private String users;  // blog ID of users index file...
+    private String displayName;
 
 
     public static BlogConfig readConfig( final String _name ) {
@@ -61,6 +62,11 @@ public class BlogConfig {
 
     public String getUsers() {
         return users;
+    }
+
+
+    public String getDisplayName() {
+        return displayName;
     }
 
 

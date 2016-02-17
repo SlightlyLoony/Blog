@@ -26,6 +26,7 @@ public class HomePageRootSource extends RootSource {
         RootSource.addCommon( sources );
         sources.add( new DatumDef( "request", RequestSource.class, _source -> _request           ) );
         sources.add( new DatumDef( "user",    UserSource.class,    _source -> _request.getUser() ) );
+        sources.add( new DatumDef( "blog",    BlogSource.class,    _source -> _request.getBlog() ) );
 
         return new DatumDefs( sources );
     }

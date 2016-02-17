@@ -1,12 +1,20 @@
 package com.slightlyloony.blog.events;
 
+import com.slightlyloony.blog.security.BlogSession;
+
 /**
  * @author Tom Dilatush  tom@dilatush.com
  */
 public enum EventType {
 
-    USER_LOGIN        ( String.class ),  // username
-    USER_LOGIN_FAILURE( String.class );  // username
+    UNCACHED_READ     ( String.class, Integer.class ),  // cache name, object size
+    CACHE_HIT         ( String.class, Integer.class ),  // cache name, object size
+    CACHE_MISS        ( String.class, Integer.class ),  // cache name, object size
+
+    PAGE_HIT          ( BlogSession.class ),  // session
+    SESSION_KILLED    ( BlogSession.class ),  // session
+    USER_LOGIN        ( BlogSession.class ),  // session
+    USER_LOGIN_FAILURE( String.class );       // username
 
 
     private final Class[] types;

@@ -2,6 +2,8 @@ package com.slightlyloony.blog.storage;
 
 import com.slightlyloony.blog.ServerInit;
 import com.slightlyloony.blog.config.ServerConfig;
+import com.slightlyloony.blog.events.EventType;
+import com.slightlyloony.blog.events.Events;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 import com.slightlyloony.blog.objects.BlogID;
 import com.slightlyloony.blog.objects.BlogObject;
@@ -88,6 +90,7 @@ public class CachedStorage {
             if( cachedObj != null ) {
                 t.mark();
                 LOG.info( LU.msg( "Read {0} from cache {2} in {1}", _id.getID(), t.toString(), _type.getCache().name() ) );
+                Events.fire( EventType.CACHE_HIT, _type.getCache().name(), cachedObj.size() );
                 return cachedObj;
             }
 
@@ -96,6 +99,7 @@ public class CachedStorage {
 
             t.mark();
             LOG.info( LU.msg( "Read {0} from disk in {1}", _id.getID(), t.toString() ) );
+            Events.fire( EventType.CACHE_MISS, _type.getCache().name(), readObj.size() );
 
             // if the object's size is less than our threshold, we'll try caching it...
             if( readObj.size() < maxEntrySize ) {
@@ -112,7 +116,9 @@ public class CachedStorage {
         }
 
         // if we have no cache for this category, then we'll just have to read it from storage...
-        return storage.read( _id, _type, _accessRequirements, _compressionState );
+        BlogObject readObj = storage.read( _id, _type, _accessRequirements, _compressionState );
+        Events.fire( EventType.UNCACHED_READ, "NONE", readObj.size() );
+        return readObj;
     }
 
 

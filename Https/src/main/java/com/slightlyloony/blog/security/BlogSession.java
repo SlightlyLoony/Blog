@@ -4,6 +4,7 @@ import com.slightlyloony.blog.users.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.slightlyloony.blog.security.BlogSession.BlogSessionState.*;
@@ -15,7 +16,10 @@ import static com.slightlyloony.common.logging.LU.msg;
 public class BlogSession {
 
     // pre-determined names for commonly used session objects (the asterisks are there to make collisions unlikely)...
-    private final static String USER = "user*********";
+    private final static String USER      = "user**************";
+    private final static String CREATED   = "created***********";
+    private final static String ENTRYPAGE = "entrypage*********";
+    private final static String LASTPAGE  = "lastpage**********";
 
     private final static Logger LOG = LogManager.getLogger();
 
@@ -36,6 +40,7 @@ public class BlogSession {
         state = BlogSessionState.ACTIVE;
         lastUsed = System.currentTimeMillis();
         sessionData = new ConcurrentHashMap<>();
+        sessionData.put( CREATED, Instant.now() );
     }
 
 
@@ -66,6 +71,31 @@ public class BlogSession {
 
     public User getUser() {
         return (User) sessionData.get( USER );
+    }
+
+
+    public Instant getCreationTimestamp() {
+        return (Instant) sessionData.get( CREATED );
+    }
+
+
+    public void setEntryPage( final String _entryPage ) {
+        sessionData.put( ENTRYPAGE, _entryPage );
+    }
+
+
+    public void setLastPage( final String _lastPage ) {
+        sessionData.put( LASTPAGE, _lastPage );
+    }
+
+
+    public String getEntryPage() {
+        return (String) sessionData.get( ENTRYPAGE );
+    }
+
+
+    public String getLastPage() {
+        return (String) sessionData.get( LASTPAGE );
     }
 
 

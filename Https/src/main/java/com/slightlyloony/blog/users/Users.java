@@ -1,5 +1,6 @@
 package com.slightlyloony.blog.users;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.*;
 import com.slightlyloony.blog.BlogServer;
@@ -18,6 +19,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static com.slightlyloony.blog.security.BlogAccessRight.*;
@@ -154,6 +156,20 @@ public class Users extends BlogObjectObject {
             throw new HandlerIllegalArgumentException( "Missing cookie value" );
 
         return readUser( byCookie.get( new Bytes( toUTF8( _cookieValue ) ) ) );
+    }
+
+
+    /**
+     * Returns a list of all users in the index...
+     *
+     * @return a list of all users in the index
+     */
+    public synchronized List<User> getUsers() throws StorageException {
+
+        List<User> result = Lists.newArrayList();
+        for( Bytes userID : byUsername.values() )
+            result.add( readUser( userID ) );
+        return result;
     }
 
 

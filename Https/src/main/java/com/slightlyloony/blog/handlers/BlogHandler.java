@@ -1,6 +1,8 @@
 package com.slightlyloony.blog.handlers;
 
 import com.slightlyloony.blog.BlogServer;
+import com.slightlyloony.blog.events.EventType;
+import com.slightlyloony.blog.events.Events;
 import com.slightlyloony.blog.objects.BlogObjectMetadata;
 import com.slightlyloony.blog.objects.BlogObjectType;
 import com.slightlyloony.blog.responders.Responder;
@@ -101,6 +103,12 @@ public class BlogHandler extends AbstractHandler implements Handler {
             LOG.info( LU.msg( "{0} {2}{1} from {3} completed (but resulting object is invalid) in {4}",
                     _request.getMethod(), _s, _request.getHeader( "Host" ), _request.getRemoteHost(), t.toString() ) );
             return;
+        }
+
+        // if this is an HTML page, update the session and stats...
+        if( metadata.getContentType() == BlogObjectType.HTML ) {
+            request.getSession().setLastPage( request.getId().getID() );
+            Events.fire(EventType.PAGE_HIT, request.getSession() );
         }
 
         // get our responder, if we have one...

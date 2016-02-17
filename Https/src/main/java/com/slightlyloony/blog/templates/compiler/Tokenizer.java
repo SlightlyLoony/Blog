@@ -2,17 +2,10 @@ package com.slightlyloony.blog.templates.compiler;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.io.ByteStreams;
-import com.slightlyloony.blog.ServerInit;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 import com.slightlyloony.blog.templates.compiler.tokens.Token;
 import com.slightlyloony.blog.templates.compiler.tokens.TokenType;
-import com.slightlyloony.blog.util.S;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +17,7 @@ import static com.slightlyloony.blog.templates.compiler.tokens.TokenType.String;
  */
 public class Tokenizer {
 
-    private static Map<Character,Parser> parsers;
-
+    private Map<Character,Parser> parsers;
     private StringBuilder log;
     private StringBuilder accumulator;
     private String working;
@@ -43,8 +35,7 @@ public class Tokenizer {
 
     public Tokenizer() {
         log = new StringBuilder();
-        if( parsers == null )
-            parsers = getParsers();
+        parsers = getParsers();
     }
 
 
@@ -438,24 +429,5 @@ public class Tokenizer {
 
     private interface Parser {
         void parse();
-    }
-
-
-    // TODO: remove this testing stub...
-    public static void main( final String[] args ) throws IOException {
-
-        // configure the logging properties file...
-        System.getProperties().setProperty( "log4j.configurationFile", "log.xml" );
-
-        // initialize the blog application...
-        ServerInit.init();
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ByteStreams.copy( new FileInputStream( new File( "/Users/tom/IdeaProjects/Blog/test.txt" ) ), baos );
-        String source = S.fromUTF8( baos.toByteArray() );
-
-        Tokenizer t = new Tokenizer();
-        List<Token> result = t.tokenize( source );
-        result.hashCode();
     }
 }

@@ -1,7 +1,6 @@
 package com.slightlyloony.blog.responders;
 
 import com.google.gson.Gson;
-import com.slightlyloony.blog.events.Event;
 import com.slightlyloony.blog.events.EventType;
 import com.slightlyloony.blog.events.Events;
 import com.slightlyloony.blog.handlers.BlogRequest;
@@ -63,7 +62,7 @@ public class UserLoginResponder implements Responder {
                 _request.getSession().putUser( user );
 
                 // fire success event...
-                Events.fire( new Event( EventType.USER_LOGIN, req.user ) );
+                Events.fire( EventType.USER_LOGIN, _request.getSession() );
             }
 
             // otherwise, the login attempt failed...
@@ -73,7 +72,7 @@ public class UserLoginResponder implements Responder {
                 _response.sendJSONResponse( "{\"success\":false,\"reason\":\"User name or password is incorrect.\"}" );
 
                 // fire failure event...
-                Events.fire( new Event( EventType.USER_LOGIN_FAILURE, req.user ) );
+                Events.fire( EventType.USER_LOGIN_FAILURE, req.user );
             }
 
             _request.handled();

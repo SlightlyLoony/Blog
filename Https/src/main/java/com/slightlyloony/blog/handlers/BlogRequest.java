@@ -93,6 +93,8 @@ public class BlogRequest {
             if( session != null ) {
                 session.setName( httpServletRequest.getRemoteAddr() );  // default the name to the client's IP address...
                 response.addCookie( new ResponseCookie( Constants.SESSION_COOKIE_NAME, session.getToken(), blog.getName(), "/" ) );
+                session.setEntryPage( id.getID() );
+                session.setLastPage( id.getID() );
             }
         }
     }
@@ -145,7 +147,7 @@ public class BlogRequest {
         }
         id = BlogID.create( path.substring( 1, 11 ) );
         if( id == null) {
-            errorMessage = "Invalid blog IntegerDatum: " + path.substring( 1, 11 );
+            errorMessage = "Invalid blog ID: " + path.substring( 1, 11 );
             return false;
         }
         accessRequirements = BlogObjectAccessRequirements.get( path.charAt( 11 ) );

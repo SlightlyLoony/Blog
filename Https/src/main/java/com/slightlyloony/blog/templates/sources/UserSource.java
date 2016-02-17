@@ -32,15 +32,20 @@ public class UserSource extends SourceBase implements Source {
         List<DatumDef> result = Lists.newArrayList();
 
         // public...
-        result.add( new DatumDef( "handle",    StringDatum.class,  UserSource::getHandle    ) );
-        result.add( new DatumDef( "born",      IntegerDatum.class, UserSource::getBirthYear ) );
-        result.add( new DatumDef( "bio",       StringDatum.class,  UserSource::getBio       ) );
-        result.add( new DatumDef( "gender",    StringDatum.class,  UserSource::getGender    ) );
-        result.add( new DatumDef( "motto",     StringDatum.class,  UserSource::getMotto     ) );
-        result.add( new DatumDef( "image",     StringDatum.class,  UserSource::getImage     ) );
-        result.add( new DatumDef( "age",       IntegerDatum.class, UserSource::getAge       ) );
-        result.add( new DatumDef( "created",   DateSource.class,   UserSource::getCreated   ) );
-        result.add( new DatumDef( "blog",      StringDatum.class,  UserSource::getBlog      ) );
+        result.add( new DatumDef( "handle",          StringDatum.class,  UserSource::getHandle       ) );
+        result.add( new DatumDef( "born",            IntegerDatum.class, UserSource::getBirthYear    ) );
+        result.add( new DatumDef( "bio",             StringDatum.class,  UserSource::getBio          ) );
+        result.add( new DatumDef( "gender",          StringDatum.class,  UserSource::getGender       ) );
+        result.add( new DatumDef( "motto",           StringDatum.class,  UserSource::getMotto        ) );
+        result.add( new DatumDef( "image",           StringDatum.class,  UserSource::getImage        ) );
+        result.add( new DatumDef( "age",             IntegerDatum.class, UserSource::getAge          ) );
+        result.add( new DatumDef( "created",         DateSource.class,   UserSource::getCreated      ) );
+        result.add( new DatumDef( "blog",            StringDatum.class,  UserSource::getBlog         ) );
+        result.add( new DatumDef( "isAdmin",         BooleanDatum.class, UserSource::isAdmin         ) );
+        result.add( new DatumDef( "isManager",       BooleanDatum.class, UserSource::isManager       ) );
+        result.add( new DatumDef( "isAuthor",        BooleanDatum.class, UserSource::isAuthor        ) );
+        result.add( new DatumDef( "isReviewer",      BooleanDatum.class, UserSource::isReviewer      ) );
+        result.add( new DatumDef( "isAuthenticated", BooleanDatum.class, UserSource::isAuthenticated ) );
 
         // manager or user himself...
         result.add( new DatumDef( "first_name", StringDatum.class,  UserSource::getFirstName, UserSource::authManagerOrSelfOrNamePublic  ) );
@@ -169,6 +174,31 @@ public class UserSource extends SourceBase implements Source {
 
     private static boolean getDisabled( final Source _source ) {
         return user( _source ).isDisabled();
+    }
+
+
+    private static boolean isAdmin( final Source _source ) {
+        return user( _source ).getRights().has( BlogAccessRight.ADMIN );
+    }
+
+
+    private static boolean isManager( final Source _source ) {
+        return user( _source ).getRights().has( BlogAccessRight.MANAGER );
+    }
+
+
+    private static boolean isAuthor( final Source _source ) {
+        return user( _source ).getRights().has( BlogAccessRight.AUTHOR );
+    }
+
+
+    private static boolean isReviewer( final Source _source ) {
+        return user( _source ).getRights().has( BlogAccessRight.REVIEWER );
+    }
+
+
+    private static boolean isAuthenticated( final Source _source ) {
+        return user( _source ).getRights().has( BlogAccessRight.AUTHENTICATED );
     }
 
 

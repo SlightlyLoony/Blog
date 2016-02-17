@@ -56,6 +56,15 @@ public class Events {
     }
 
 
+    public static void fire( final EventType _type, final Object... _params ) {
+
+        if( _type == null )
+            throw new HandlerIllegalArgumentException( "Event type is missing" );
+
+        INSTANCE.fireImpl( new Event( _type, _params ) );
+    }
+
+
     private synchronized void fireImpl( final Event _event ) {
         eventQueue.add( _event );
     }

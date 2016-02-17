@@ -58,7 +58,7 @@ public class Blog {
         // see if we can read the configuration...
         BlogConfig config = BlogConfig.readConfig( _name );
         if( (config == null) || !config.isMinimallyValid() ) {
-            LOG.error( "Invalid or non-existant blog configuration: " + _name );
+            LOG.error( "Invalid or non-existent blog configuration: " + _name );
             return null;
         }
 
