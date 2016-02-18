@@ -61,6 +61,8 @@ public class UserLoginResponder implements Responder {
                 user.addRight( SESSION );
                 _request.getSession().putUser( user );
 
+                // TODO: handle rememberMe...
+
                 // fire success event...
                 Events.fire( EventType.USER_LOGIN, _request.getSession() );
             }
@@ -86,5 +88,6 @@ public class UserLoginResponder implements Responder {
     private static class LoginRequest {
         private String user;
         private String password;
+        private boolean rememberMe;
     }
 }
