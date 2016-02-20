@@ -40,7 +40,8 @@ public enum BlogObjectType {
     KML       ( "kml",   "application/vnd.google-earth.kml+xml", TEXT,   true,  new BlogContentObjectCodec()  ),
     XHTML     ( "xhtml", "application/xhtml+xml",                TEXT,   true,  new BlogContentObjectCodec()  ),
     USERDATA  ( "user",  null,                                   USER,   false, new UserCodec()               ),
-    USERINDEX ( "users", null,                                   USER,   false, new UsersCodec()              );
+    USERINDEX ( "users", null,                                   USER,   false, new UsersCodec()              ),
+    INFO      ( "info",  null,                                   TEXT,   true,  new InfoCodec()               );
 
 
     private static Map<String,BlogObjectType> EXTENSION_MAP;

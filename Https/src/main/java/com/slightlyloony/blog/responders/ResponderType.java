@@ -7,7 +7,8 @@ public enum ResponderType {
 
     BLOG_OBJECT  ( BlogObjectResponder::new ),
     STATS        ( StatsResponder::new      ),
-    USER_LOGIN   (UserLoginResponder::new   );
+    USER_LOGIN   ( UserLoginResponder::new  ),
+    INFO         ( InfoResponder::new       );
 
 
     private GetResponder getResponder;

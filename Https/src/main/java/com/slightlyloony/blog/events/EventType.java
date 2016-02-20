@@ -11,6 +11,8 @@ public enum EventType {
     CACHE_HIT         ( String.class, Integer.class ),  // cache name, object size
     CACHE_MISS        ( String.class, Integer.class ),  // cache name, object size
 
+    INFO_REQUEST      ( String.class                ),  // info key
+
     PAGE_HIT          ( BlogSession.class ),  // session
     SESSION_KILLED    ( BlogSession.class ),  // session
     USER_LOGIN        ( BlogSession.class ),  // session

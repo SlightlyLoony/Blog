@@ -34,6 +34,7 @@ public class Stats implements EventListener {
     private int uncachedHits;
     private int cacheHits;
     private int cacheMisses;
+    private int infoRequests;
     private long cacheBytesRead;
     private long diskBytesRead;
 
@@ -64,6 +65,10 @@ public class Stats implements EventListener {
                     record.exitPage = session.getLastPage();
                     record.exitTime = Instant.now();
                 }
+                break;
+
+            case INFO_REQUEST:
+                infoRequests++;
                 break;
 
             case SESSION_KILLED:
@@ -127,13 +132,15 @@ public class Stats implements EventListener {
         object.addProperty( "cacheBytesRead",    cacheBytesRead    );
         object.addProperty( "diskBytesRead",     diskBytesRead     );
         object.addProperty( "loggedInUsers",     users.size()      );
+        object.addProperty( "infoRequests",      infoRequests      );
 
         return gson.toJson( object );
     }
 
 
     public static void init() {
-        Events.registerListener( INSTANCE, USER_LOGIN, USER_LOGIN_FAILURE, PAGE_HIT, SESSION_KILLED, UNCACHED_READ, CACHE_HIT, CACHE_MISS );
+        Events.registerListener( INSTANCE, USER_LOGIN, USER_LOGIN_FAILURE, PAGE_HIT, SESSION_KILLED, UNCACHED_READ, CACHE_HIT, CACHE_MISS,
+                INFO_REQUEST );
     }
 
 
