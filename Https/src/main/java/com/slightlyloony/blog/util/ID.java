@@ -46,7 +46,7 @@ public class ID {
 
         // make sure we didn't get something crazy...
         if( (_id == null) || (_id.length() != 10) )
-            throw new HandlerIllegalArgumentException( "Invalid IntegerDatum: " + _id );
+            throw new HandlerIllegalArgumentException( "Invalid ID: " + _id );
 
         long result = 0;
 
@@ -54,7 +54,7 @@ public class ID {
             result <<= 6;
             int val = get( _id.charAt( i ) );
             if( val < 0 )
-                throw new HandlerIllegalArgumentException( "Invalid character in IntegerDatum: " + _id.charAt( i ) );
+                throw new HandlerIllegalArgumentException( "Invalid character in ID: " + _id.charAt( i ) );
             result += val;
         }
 

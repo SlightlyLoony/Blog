@@ -127,7 +127,7 @@ public class BlogRequest {
 
 
     private User makeAnonymousUser( final BlogAccessRight... _rights ) {
-        User anonUser = new User( "anonymous******", blog.getName(), "impossible hash" );
+        User anonUser = new User( id, "anonymous******", blog.getName(), "impossible hash" );
         anonUser.setFirstName( "Anonymous" );
         anonUser.setLastName( "" );
         anonUser.setHandle( "" );
@@ -260,5 +260,27 @@ public class BlogRequest {
 
     public BlogSession getSession() {
         return session;
+    }
+
+
+    public String getParameter( final String _name ) {
+        return request.getParameter( _name );
+    }
+
+
+    /**
+     * Returns the value of the given named parameter as an integer, or 0 if the input wasn't an integer...
+     *
+     * @param _name the name of the integer parameter
+     * @return the value of the given parameter as an integer
+     */
+    public int getIntParameter( final String _name ) {
+        String value = request.getParameter( _name );
+        try {
+            return Integer.parseInt( value );
+        }
+        catch( NumberFormatException e ) {
+            return 0;
+        }
     }
 }

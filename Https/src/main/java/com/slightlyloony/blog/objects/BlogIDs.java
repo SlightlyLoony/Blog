@@ -55,7 +55,7 @@ public class BlogIDs {
         }
 
         // now get the highest file name, using just the first 10 characters of each file name...
-        String[] files = dir.list( (_dir, _name) -> ID.isValid( _name.substring( 0, 10 ) ) );
+        String[] files = dir.list( (_dir, _name) -> (_name.length() >= 10) && ID.isValid( _name.substring( 0, 10 ) ) );
         Arrays.sort( files, ( _name1, _name2 ) -> -1 * ID.compare( _name1.substring( 0, 10 ), _name2.substring( 0, 10 ) ) );
 
         // get the value we found...
@@ -63,7 +63,7 @@ public class BlogIDs {
         lastUsedID = ID.decode( files[0].substring( 0, 10 ) );
 
         t.mark();
-        LOG.info( msg( "Found highest used blog object IntegerDatum ({0}) in {1}", lastUsedID, t.toString() ) );
+        LOG.info( msg( "Found highest used blog object ID ({0}) in {1}", lastUsedID, t.toString() ) );
 
         // schedule an integrity check every 30 minutes...
         ExecutionService.INSTANCE.scheduleAtFixedRate( (Runnable) BlogIDs.INSTANCE::integrityCheck, 30, 30, TimeUnit.MINUTES );
@@ -127,7 +127,7 @@ public class BlogIDs {
 
                 // make sure our file name is at least 10 characters and is comprised of valid base64url characters...
                 if( (name.length() < 10) || !ID.isValid( name.substring( 0, 10 ) ) ) {
-                    LOG.error( msg( "Entry {0} isn't named with a valid blog IntegerDatum", name ) );
+                    LOG.error( msg( "Entry {0} isn't named with a valid blog ID", name ) );
                     return false;
                 }
 
@@ -173,7 +173,7 @@ public class BlogIDs {
 
                 // make sure our file name is exactly 2 characters and is comprised of valid base64url characters...
                 if( (name.length() != 2) || !ID.isValid( name.charAt( 0 ) ) || !ID.isValid( name.charAt( 1 ) ) ) {
-                    LOG.error( msg( "Entry {0} isn't named with a valid blog IntegerDatum 2 digit part", name ) );
+                    LOG.error( msg( "Entry {0} isn't named with a valid blog ID 2 digit part", name ) );
                     return false;
                 }
 
@@ -205,7 +205,7 @@ public class BlogIDs {
 
         BlogID result =  BlogID.create( ID.encode( ++lastUsedID ) );
         if( result == null)
-            throw new HandlerIllegalStateException( "Could not create next blog object IntegerDatum" );
+            throw new HandlerIllegalStateException( "Could not create next blog object ID" );
 
         return result;
     }

@@ -65,7 +65,7 @@ public class Storage {
                             final ContentCompressionState _compressionState ) throws StorageException {
 
         if( (_id == null) || (_type == null) )
-            throw new HandlerIllegalArgumentException( "Missing IntegerDatum or type" );
+            throw new HandlerIllegalArgumentException( "Missing ID or type" );
 
         // get a lock for this blog ID...
         getLock( _id );
@@ -211,7 +211,7 @@ public class Storage {
         synchronized( locks ) {
             semaphore = locks.get( _id.getID() );
             if( semaphore == null ) {
-                LOG.error( "Trying to release a lock on a blog IntegerDatum that has no lock: " + _id );
+                LOG.error( "Trying to release a lock on a blog ID that has no lock: " + _id );
                 return;
             }
 

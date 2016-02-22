@@ -36,6 +36,12 @@ public class BlogObjectMetadata extends BlogObjectObject {
     private BlogObjectType contentType;
     private SourceType sourceType;
 
+    // image-specific metadata...
+    private int height;
+    private int width;
+    private int size;
+    private ScaledImage[] scaledImages;
+
 
     public BlogObjectMetadata( final BlogID _id, final BlogObjectType _type, final BlogObjectAccessRequirements _accessRequirements ) {
         super( _id, _type, _accessRequirements );
@@ -150,8 +156,70 @@ public class BlogObjectMetadata extends BlogObjectObject {
     }
 
 
+    /**
+     * Adds the given scaled image record in ascending order of height...
+     *
+     * @param _scaledImage the scaled image record to add...
+     */
+    public void add( final ScaledImage _scaledImage ) {
+        if( scaledImages == null )
+            scaledImages = new ScaledImage[] { _scaledImage } ;
+        else {
+            ScaledImage[] result = new ScaledImage[scaledImages.length + 1];
+            int j = 0;
+            int i = 0;
+            for( ; i < scaledImages.length;  ) {
+                if( (j == i) && (_scaledImage.height < scaledImages[i].height) )
+                    result[j++] = _scaledImage;
+                result[j++] = scaledImages[i++];
+            }
+
+            // if we still haven't stored the new one, it must be the biggest one...
+            if( j == i ) {
+                result[j] = _scaledImage;
+            }
+            scaledImages = result;
+        }
+    }
+
+
+    public void setHeight( final int _height ) {
+        height = _height;
+    }
+
+
+    public void setWidth( final int _width ) {
+        width = _width;
+    }
+
+
     public void setUnauthorizedResponder( final ResponderType _unauthorizedResponder ) {
         unauthorizedResponder = _unauthorizedResponder;
+    }
+
+
+    public int getHeight() {
+        return height;
+    }
+
+
+    public int getWidth() {
+        return width;
+    }
+
+
+    public ScaledImage[] getScaledImages() {
+        return scaledImages;
+    }
+
+
+    public int getSize() {
+        return size;
+    }
+
+
+    public void setSize( final int _size ) {
+        size = _size;
     }
 
 
@@ -161,9 +229,25 @@ public class BlogObjectMetadata extends BlogObjectObject {
     }
 
 
+    public static class ScaledImage {
+
+        public final BlogID content;
+        public final int height;
+        public final int width;
+
+
+        public ScaledImage( final BlogID _content, final int _height, final int _width ) {
+            content = _content;
+            height = _height;
+            width = _width;
+        }
+    }
+
+
     public String toJSON() throws StorageException {
         try {
             GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter( BlogID.class, new BlogID.Serializer() );
             gsonBuilder.registerTypeAdapter( BlogObjectMetadata.class, new Serializer()   );
             Gson gson = gsonBuilder.create();
             return gson.toJson( this, getClass() );
@@ -208,7 +292,7 @@ public class BlogObjectMetadata extends BlogObjectObject {
 
             // first we deserialize it...
             GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.registerTypeAdapter( BlogID.class,             new BlogID.Deserializer()                           );
+            gsonBuilder.registerTypeAdapter( BlogID.class, new BlogID.Deserializer()                           );
             Gson gson = gsonBuilder.create();
             BlogObjectMetadata result = gson.fromJson( _jsonElement, BlogObjectMetadata.class );
 
@@ -236,14 +320,20 @@ public class BlogObjectMetadata extends BlogObjectObject {
             boolean compressionStateDiff = _metadata.compressionState != UNCOMPRESSED;
             boolean unauthorizedResponderDiff = _metadata.unauthorizedResponder != null;
 
-            if( externalCacheSecondsDiff )      result.addProperty( "externalCacheSeconds", _metadata.externalCacheSeconds );
-            if( !_metadata.serverCacheable )    result.addProperty( "serverCacheable",      false );
-            if( unauthorizedResponderDiff )     result.add( "unauthorizedResponder", _context.serialize( _metadata.unauthorizedResponder ) );
-            if( compressionStateDiff )          result.add( "compressionState",      _context.serialize( _metadata.compressionState      ) );
-            if( _metadata.methods.size() > 0 )  result.add( "methods",               _context.serialize( _metadata.methods               ) );
-            if( _metadata.content != null )     result.add( "content",               _context.serialize( _metadata.content               ) );
-            if( _metadata.contentType != null ) result.add( "contentType",           _context.serialize( _metadata.contentType           ) );
-            if( _metadata.sourceType != null )  result.add( "sourceType",            _context.serialize( _metadata.sourceType            ) );
+            if( externalCacheSecondsDiff )       result.addProperty( "externalCacheSeconds", _metadata.externalCacheSeconds );
+            if( !_metadata.serverCacheable )     result.addProperty( "serverCacheable",      false );
+            if( unauthorizedResponderDiff )      result.add( "unauthorizedResponder", _context.serialize( _metadata.unauthorizedResponder ) );
+            if( compressionStateDiff )           result.add( "compressionState",      _context.serialize( _metadata.compressionState      ) );
+            if( _metadata.methods.size() > 0 )   result.add( "methods",               _context.serialize( _metadata.methods               ) );
+            if( _metadata.content != null )      result.add( "content",               _context.serialize( _metadata.content               ) );
+            if( _metadata.contentType != null )  result.add( "contentType",           _context.serialize( _metadata.contentType           ) );
+            if( _metadata.sourceType != null )   result.add( "sourceType",            _context.serialize( _metadata.sourceType            ) );
+
+            // image-specific fields...
+            if( _metadata.height != 0 )          result.add( "height",                _context.serialize( _metadata.height                ) );
+            if( _metadata.width != 0 )           result.add( "width",                 _context.serialize( _metadata.width                 ) );
+            if( _metadata.size != 0 )            result.add( "size",                  _context.serialize( _metadata.size                  ) );
+            if( _metadata.scaledImages != null ) result.add( "scaledImages",          _context.serialize( _metadata.scaledImages          ) );
 
             return result;
         }

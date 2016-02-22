@@ -103,7 +103,7 @@ public class Users extends BlogObjectObject {
     public synchronized void indexUser( final BlogID _id, final User _user ) {
 
         if( (_id == null) || (_user == null) )
-            throw new HandlerIllegalArgumentException( "Blog IntegerDatum or user missing" );
+            throw new HandlerIllegalArgumentException( "Blog ID or user missing" );
 
         Bytes blogID      = new Bytes( toUTF8( _id.getID() ) );
         Bytes username    = new Bytes( toUTF8( _user.getUsername() ) );
@@ -237,7 +237,7 @@ public class Users extends BlogObjectObject {
                 user = (User) BlogServer.STORAGE.read( info.id, BlogObjectType.USERDATA, null, ContentCompressionState.UNCOMPRESSED, true );
             }
             catch( StorageException e ) {
-                LOG.error( "Can't read user: IntegerDatum " + info.id );
+                LOG.error( "Can't read user: ID " + info.id );
                 continue;
             }
 

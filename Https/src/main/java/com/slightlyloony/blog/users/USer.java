@@ -66,6 +66,25 @@ public class User extends BlogObjectObject {
     }
 
 
+    /**
+     * Used to create anonymous users who must NEVER be saved (as the ID is really for another record).
+     *
+     * @param _blogID a fake (but already allocated) blog ID
+     * @param _username the username
+     * @param _blog the blog
+     * @param _passwordHashedAndSalted the fake password hash
+     */
+    public User(final BlogID _blogID, final String _username, final String _blog, final String _passwordHashedAndSalted ) {
+        super( _blogID, BlogObjectType.USERDATA, null );
+
+        username = _username;
+        blog = _blog;
+        passwordHashedAndSalted = _passwordHashedAndSalted;
+        rights = new BlogUserRights();
+        dirty = false;
+    }
+
+
     protected User() {
         super();
         // naught to do; for use by deserializers and immutable users only...

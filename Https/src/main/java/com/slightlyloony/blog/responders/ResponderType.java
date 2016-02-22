@@ -5,10 +5,11 @@ package com.slightlyloony.blog.responders;
  */
 public enum ResponderType {
 
-    BLOG_OBJECT  ( BlogObjectResponder::new ),
-    STATS        ( StatsResponder::new      ),
-    USER_LOGIN   ( UserLoginResponder::new  ),
-    INFO         ( InfoResponder::new       );
+    BLOG_OBJECT  ( BlogObjectResponder::new    ),
+    STATS        ( StatsResponder::new         ),
+    USER_LOGIN   ( UserLoginResponder::new     ),
+    IMAGE        ( ScalableImageResponder::new ),
+    INFO         ( InfoResponder::new          );
 
 
     private GetResponder getResponder;
