@@ -100,11 +100,16 @@ public class BlogIDs {
 
         boolean newTruth = _truth;
 
-        // get all our entries, sorted by name...
-        File[] entries = _dir.listFiles();
+        // get all our entries, sorted by encoded value...
+        File[] entries = _dir.listFiles( ( _dirr, _name ) -> {
+            if( _name.startsWith( "." ) ) return false;
+            int i = _name.indexOf( '.' );
+            String n = _name.substring( 0, (i < 0) ? _name.length() : i );
+            return n.length() >= 2 && ID.isValid( n );
+        } );
         if( entries == null )
             throw new HandlerIllegalStateException( "Given entry is not a directory: " + _dir.getName() );
-        Arrays.sort( entries, ( _file1, _file2 ) -> _file1.getName().compareTo( _file2.getName() ) );
+        Arrays.sort( entries, ( _file1, _file2 ) -> ID.compare( _file1.getName().substring( 0, 10 ), _file2.getName().substring( 0, 10 ) ) );
 
         // if we're at the lowest level, look for files...
         if( _path.length() == 8 ) {
@@ -139,9 +144,9 @@ public class BlogIDs {
 
                 // make sure the last 2 digits are what we expected...
                 String lastTwo = name.substring( 8, 10 );
-                int val = (ID.get( lastTwo.charAt( 0 ) ) << 6) + ID.get( lastTwo.charAt( 1 ) );
+                int val = (ID.get( lastTwo.charAt( 0 ) ) << 5) + ID.get( lastTwo.charAt( 1 ) );
                 if( val != expectedEntry ) {
-                    String expectedDigits = "" + ID.get( expectedEntry >>> 6 ) + ID.get( expectedEntry & 0x3f );
+                    String expectedDigits = "" + ID.get( expectedEntry >>> 5 ) + ID.get( expectedEntry & 0x1f );
                     LOG.error( msg( "Entry {0} doesn't have the expected last two digits: {1}", name, expectedDigits ) );
                     return false;
                 }

@@ -141,10 +141,10 @@ public class BlogHandler extends AbstractHandler implements Handler {
 
         // take care of cache control...
         if( metadata.getExternalCacheSeconds() > 0 ) {
-            response.setCacheControl( "public, max-age=" + metadata.getExternalCacheSeconds() );
+            response.setCacheControl( "public, no-transform, max-age=" + metadata.getExternalCacheSeconds() );
         }
         else {
-            response.setCacheControl( "no-cache, must-revalidate");
+            response.setCacheControl( "no-cache, no-transform, must-revalidate");
             response.setExpires( "Sat, 26 Jul 1997 05:00:00 GMT" );
         }
 

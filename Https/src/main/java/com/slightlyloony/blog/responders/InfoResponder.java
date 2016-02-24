@@ -63,7 +63,7 @@ public class InfoResponder implements Responder {
             _request.handled();
         }
         catch( IOException e ) {
-            throw new StorageException( "Problem responding to user login: " + e.getMessage(), e );
+            throw new StorageException( "Problem responding to info request: " + e.getMessage(), e );
         }
     }
 

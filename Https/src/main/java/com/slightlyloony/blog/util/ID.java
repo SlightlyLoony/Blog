@@ -1,6 +1,5 @@
 package com.slightlyloony.blog.util;
 
-import com.google.common.io.BaseEncoding;
 import com.slightlyloony.blog.handlers.HandlerIllegalArgumentException;
 
 import java.util.Arrays;
@@ -12,25 +11,24 @@ import java.util.Arrays;
  */
 public class ID {
 
-    private static final BaseEncoding BASE64 = BaseEncoding.base64Url();
     private static final byte[] CHAR_TO_VALUE = getCharToValue();
     private static final char[] VALUE_TO_CHAR = getValueToChar();
 
 
     /**
-     * Returns the URL Base64 encoding of the least significant 60 bits of the given value.  The returned value is always a 10 character string.
+     * Returns the URL Base32 encoding of the least significant 50 bits of the given value.  The returned value is always a 10 character string.
      *
-     * @param _idNum the 60 bit unsigned value to encode.
+     * @param _idNum the 50 bit unsigned value to encode.
      * @return the encoded equivalent of the given number.
      */
     public static String encode( final long _idNum ) {
 
         char[] chars = new char[10];
-        long id = Long.rotateLeft( _idNum, 4 );  // gets the most significant 6 bits of _idNum as the most significant 6 bits of id...
+        long id = Long.rotateLeft( _idNum, 14 );  // gets the most significant 5 bits of _idNum as the most significant 5 bits of id...
 
         for( int i = 0; i < 10; i++ ) {
-            id = Long.rotateLeft( id, 6 );
-            chars[i] = VALUE_TO_CHAR[(int)(id & 0x3f)];
+            id = Long.rotateLeft( id, 5 );
+            chars[i] = VALUE_TO_CHAR[(int)(id & 0x1f)];
         }
         return new String( chars );
     }
@@ -51,7 +49,7 @@ public class ID {
         long result = 0;
 
         for( int i = 0; i < 10; i++ ) {
-            result <<= 6;
+            result <<= 5;
             int val = get( _id.charAt( i ) );
             if( val < 0 )
                 throw new HandlerIllegalArgumentException( "Invalid character in ID: " + _id.charAt( i ) );
@@ -63,8 +61,8 @@ public class ID {
 
 
     /**
-     * Returns -1, 0, or +1 as the given base64url character _a is less than, equal to, or greater than the given base64url character _b, using the
-     * base64url collation sequence.  Throws {@link IllegalArgumentException} if either character is invalid for base64urls.
+     * Returns -1, 0, or +1 as the given base64url character _a is less than, equal to, or greater than the given base32 character _b, using the
+     * base64url collation sequence.  Throws {@link IllegalArgumentException} if either character is invalid for base32.
      *
      * @param _a the first comparand
      * @param _b the second comparand
@@ -80,9 +78,9 @@ public class ID {
 
 
     /**
-     * Returns -1, 0, or +1 as the given base64url _a is less than, equal to, or greater than the given base64url _b.  Throws
+     * Returns -1, 0, or +1 as the given base32 _a is less than, equal to, or greater than the given base32 _b.  Throws
      * {@link IllegalArgumentException} if either given string is null, if the given strings aren't of equal length, or if either string contains
-     * invalid base64url characters.
+     * invalid base32 characters.
      *
      * @param _a the first comparand
      * @param _b the second comparand
@@ -139,19 +137,14 @@ public class ID {
     private static byte[] getCharToValue() {
 
         // get our default values
-        byte[] result = new byte[128];
+        byte[] result = new byte[256];
         Arrays.fill( result, (byte) -1 );
 
         // fill in our valid values...
         for( int i = 'A'; i <= 'Z'; i++ )
             result[i] = (byte) (i - 'A');
-        for( int i = 'a'; i <= 'z'; i++ )
-            result[i] = (byte) (26 + i - 'a' );
-        for( int i = '0'; i <= '9'; i++ )
-            result[i] = (byte) (52 + i - '0' );
-        result['-'] = 62;
-        result['_'] = 63;
-
+        for( int i = '0'; i <= '5'; i++ )
+            result[i] = (byte) (26 + i - '0' );
         return result;
     }
 
@@ -159,16 +152,11 @@ public class ID {
     private static char[] getValueToChar() {
 
         // make our array of characters...
-        char[] result = new char[64];
-        for( int i = 0; i < 26; i++ ) {
+        char[] result = new char[32];
+        for( int i = 0; i < 26; i++ )
             result[i]    = (char)('A' + i);
-            result[i+26] = (char)('a' + i);
-        }
-        for( int i = 0; i < 10; i++ )
-            result[i+52] = (char)('0' + i);
-        result[62] = '-';
-        result[63] = '_';
-
+        for( int i = 0; i < 6; i++ )
+            result[i+26] = (char)('0' + i);
         return result;
     }
 

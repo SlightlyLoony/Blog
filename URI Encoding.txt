@@ -1,13 +1,13 @@
 URI Encoding and File System Layout
 
-To a casual observer, the blog's URIs are entirely in a flat, web-friendly base64url encoding, and that is very nearly true.  The blog URIs that refer
+To a casual observer, the blog's URIs are entirely in a flat, web-friendly base32 encoding, and that is very nearly true.  The blog URIs that refer
 to an object stored on the file system all are of the following pattern:
 
   /[ID][ACCESS]
 
   where:
 
-    ID       is a 60 bit number encoded (using web-friendly base 64 encoding per RFC 4648) as ten text characters
+    ID       is a 50 bit number encoded (using web-friendly base 32 encoding) as ten text characters
 
     ACCESS   is a single character access control code whose meaning is defined in the enum BlogObjectAccessRequirements
 
@@ -42,8 +42,8 @@ A few examples may help make this more understandable:
 
   URI           File system path
   ------------  --------------------------------------------
-  /AAAABBCCabY  <root>/objects/AA/AA/BB/CC/AAAABBCCabY.meta
-  /AAABCDEF-3Z  <root>/objects/AA/AB/CD/EF/AAABCDEF-3Z.png
+  /AAAABBCC12Y  <root>/objects/AA/AA/BB/CC/AAAABBCC12Y.meta
+  /AAABCDEF13Z  <root>/objects/AA/AB/CD/EF/AAABCDEF13Z.png
 
 
 File names are either 10 or 11 characters long.  The 10 character file names are comprised of the object's ID only, and all such objects are

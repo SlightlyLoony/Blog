@@ -7,16 +7,17 @@ import com.slightlyloony.blog.security.BlogSession;
  */
 public enum EventType {
 
-    UNCACHED_READ     ( String.class, Integer.class ),  // cache name, object size
-    CACHE_HIT         ( String.class, Integer.class ),  // cache name, object size
-    CACHE_MISS        ( String.class, Integer.class ),  // cache name, object size
+    UNCACHED_READ      ( String.class, Integer.class ),  // cache name, object size
+    CACHE_HIT          ( String.class, Integer.class ),  // cache name, object size
+    CACHE_MISS         ( String.class, Integer.class ),  // cache name, object size
 
-    INFO_REQUEST      ( String.class                ),  // info key
+    INFO_REQUEST       ( String.class                ),  // info key
+    IMAGE_META_REQUEST ( Integer.class               ),  // count of images
 
-    PAGE_HIT          ( BlogSession.class ),  // session
-    SESSION_KILLED    ( BlogSession.class ),  // session
-    USER_LOGIN        ( BlogSession.class ),  // session
-    USER_LOGIN_FAILURE( String.class );       // username
+    PAGE_HIT           ( BlogSession.class ),  // session
+    SESSION_KILLED     ( BlogSession.class ),  // session
+    USER_LOGIN         ( BlogSession.class ),  // session
+    USER_LOGIN_FAILURE ( String.class );       // username
 
 
     private final Class[] types;

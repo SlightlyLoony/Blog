@@ -40,6 +40,14 @@ public class BlogObjectMetadata extends BlogObjectObject {
     private int height;
     private int width;
     private int size;
+    private String source;
+    private String credit;
+    private String description;
+    private String title;
+    private String where;
+    private String when;
+    private String cameraSettings;
+    private String cameraOrientation;
     private ScaledImage[] scaledImages;
 
 
@@ -153,6 +161,86 @@ public class BlogObjectMetadata extends BlogObjectObject {
 
     public ResponderType getUnauthorizedResponder() {
         return unauthorizedResponder;
+    }
+
+
+    public String getSource() {
+        return source;
+    }
+
+
+    public void setSource( final String _source ) {
+        source = _source;
+    }
+
+
+    public String getCredit() {
+        return credit;
+    }
+
+
+    public void setCredit( final String _credit ) {
+        credit = _credit;
+    }
+
+
+    public String getDescription() {
+        return description;
+    }
+
+
+    public void setDescription( final String _description ) {
+        description = _description;
+    }
+
+
+    public String getTitle() {
+        return title;
+    }
+
+
+    public void setTitle( final String _title ) {
+        title = _title;
+    }
+
+
+    public String getWhere() {
+        return where;
+    }
+
+
+    public void setWhere( final String _where ) {
+        where = _where;
+    }
+
+
+    public String getWhen() {
+        return when;
+    }
+
+
+    public void setWhen( final String _when ) {
+        when = _when;
+    }
+
+
+    public String getCameraSettings() {
+        return cameraSettings;
+    }
+
+
+    public void setCameraSettings( final String _cameraSettings ) {
+        cameraSettings = _cameraSettings;
+    }
+
+
+    public String getCameraOrientation() {
+        return cameraOrientation;
+    }
+
+
+    public void setCameraOrientation( final String _cameraOrientation ) {
+        cameraOrientation = _cameraOrientation;
     }
 
 

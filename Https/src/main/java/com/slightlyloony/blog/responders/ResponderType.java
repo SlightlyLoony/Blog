@@ -6,6 +6,7 @@ package com.slightlyloony.blog.responders;
 public enum ResponderType {
 
     BLOG_OBJECT  ( BlogObjectResponder::new    ),
+    IMAGE_META   ( ImageMetadataResponder::new ),
     STATS        ( StatsResponder::new         ),
     USER_LOGIN   ( UserLoginResponder::new     ),
     IMAGE        ( ScalableImageResponder::new ),

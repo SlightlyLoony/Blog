@@ -7,6 +7,7 @@ import com.slightlyloony.blog.handlers.BlogResponse;
 import com.slightlyloony.blog.objects.*;
 import com.slightlyloony.blog.objects.BlogObjectMetadata.ScaledImage;
 import com.slightlyloony.blog.storage.StorageException;
+import com.slightlyloony.common.logging.LU;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -57,6 +58,7 @@ public class ScalableImageResponder implements Responder {
 
             // get a lock so two concurrent threads don't stomp on each other...
             getLock( _metadata.getBlogID() );
+            LOG.info( LU.msg( "Got lock for {0}", _metadata.getBlogID().getID() ) );
 
             try {
 
@@ -67,16 +69,16 @@ public class ScalableImageResponder implements Responder {
                 BufferedImage bi = null;
 
                 // if we don't know our base image's dimensions, then we'd better get them...
-                if( (_metadata.getHeight() == 0) || (_metadata.getWidth() == 0) ) {
-                    bi = readBaseImage( _metadata, compressionState, _isCacheable );
+                if( (metadata.getHeight() == 0) || (metadata.getWidth() == 0) ) {
+                    bi = readBaseImage( metadata, compressionState, _isCacheable );
                     dirty = true;
                 }
 
                 // what's the best image we have?
-                ScaledImage bestFit = getBestFit( _metadata, height );
+                ScaledImage bestFit = getBestFit( metadata, height );
 
-                int sendingCostDelta = calcSendingCostDelta( _metadata, bestFit, height );
-                int scalingCost = calcScalingCost( _metadata, height );
+                int sendingCostDelta = calcSendingCostDelta( metadata, bestFit, height );
+                int scalingCost = calcScalingCost( metadata, height );
 
                 // if it costs less to send what we have, do so...
                 if( sendingCostDelta < scalingCost ) {
@@ -88,14 +90,14 @@ public class ScalableImageResponder implements Responder {
 
                     // read the base image, if we haven't done so already...
                     if( bi == null )
-                        bi = readBaseImage( _metadata, compressionState, _isCacheable );
+                        bi = readBaseImage( metadata, compressionState, _isCacheable );
 
                     // scale it appropriately...
-                    bi = scale( bi, _metadata, height );
+                    bi = scale( bi, metadata, height );
 
                     // write it out to a new file...
                     ByteArrayOutputStream baos = new ByteArrayOutputStream( 1000 );
-                    ImageIO.write( bi, _metadata.getContentType().name(), baos );
+                    ImageIO.write( bi, metadata.getContentType().name(), baos );
                     byte[] bytes = baos.toByteArray();
                     BlogObjectContent boc = new BytesObjectContent( bytes, compressionState, bytes.length );
                     obj = new BlogContentObject( BlogIDs.INSTANCE.getNextBlogID(), contentType, null, boc );
@@ -103,18 +105,19 @@ public class ScalableImageResponder implements Responder {
 
                     // add this new guy to our scaled image data...
                     ScaledImage si = new ScaledImage( obj.getBlogID(), bi.getHeight(), bi.getWidth() );
-                    _metadata.add( si );
+                    metadata.add( si );
                     dirty = true;
                 }
 
                 // if our metadata has been modified, we need to write it back out...
                 if( dirty )
-                    BlogServer.STORAGE.update( _metadata );
+                    BlogServer.STORAGE.update( metadata );
             }
             catch( IOException e ) {
                 throw new StorageException( "Problem reading image data: " + e.getMessage(), e );
             }
             finally {
+                LOG.info( LU.msg( "Releasing lock for {0}", _metadata.getBlogID().getID() ) );
                 releaseLock( _metadata.getBlogID() );
             }
         }
@@ -188,9 +191,10 @@ public class ScalableImageResponder implements Responder {
 
             return new ScaledImage( _metadata.getContent(), _metadata.getHeight(), _metadata.getWidth() );
 
-        // otherwise, cycle through the scaled images until we find the first one bigger than the requested height...
+        // otherwise, cycle through the scaled images until we find the first one bigger than 90% of the requested height...
+        // the "90%" allows a teensy bit of upscaling on the client, not enough (we hope!) to cause visible artifacts...
         for( ScaledImage scaledImage : scaledImages ) {
-            if( scaledImage.height >= _requestedHeight )
+            if( scaledImage.height >= 0.9d * _requestedHeight )
                 return scaledImage;
         }
 
