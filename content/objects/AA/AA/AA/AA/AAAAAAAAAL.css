@@ -1,0 +1,354 @@
+{{.titleColor = "#BED4D1"}}
+{{.titleHoverColor = "#C6BED4"}}
+{{.dialogBackgroundColor = "#FFFAE5"}}
+{{.sidebarBackgroundColor = "#046F61"}}
+{{.lineSpacing = "1.2em"}}
+
+body {
+    background-image: url("AAAAAAAAAYA");
+    margin: 0;
+    font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+}
+
+p {
+    line-height: {{.lineSpacing}};
+    margin-top: {{.lineSpacing}};
+    margin-bottom: {{.lineSpacing}};
+}
+
+.main {
+    margin-left: 1.5%;
+    margin-right: calc(1.5% - 1px);
+    padding-top: 0.5%;
+    width: 73.5%;
+    float: left;
+    font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+    font-size: 16px;
+}
+
+.sidebar {
+    width: 21.5%;
+    padding-top: 1.5%;
+    padding-left: 1%;
+    padding-right: 1%;
+    padding-bottom: 1.5%;
+    float: left;
+    border-left: 1px solid dimgrey;
+    border-bottom: 1px solid dimgrey;
+    background-image: url("AAAAAAAAAWA");
+    background-color: {{.sidebarBackgroundColor}};
+}
+
+@media screen and (max-width: 1023px) {
+    .sidebar {
+        width: 95%;
+        margin-left: 1.5%;
+        margin-right: 1.5%;
+        border-left: 0;
+    }
+    .main {
+        width:97%;
+        margin-right: 1.5%;
+    }
+}
+
+#topbar {
+    padding: 0;
+    border-bottom: 2px solid black;
+    background-color: {{.titleColor}};
+    color: black;
+    overflow: hidden;  /* contains inner floats */
+}
+
+#unauthMenu, #moreMenu {
+    font-size: 80%;
+    float: right;
+    padding: 6px;
+}
+
+#displayName {
+    font-size: 150%;
+    font-weight: bold;
+    float: left;
+    color: black;
+    padding: 6px;
+}
+
+#settings {
+    float: right;
+    color: black;
+    padding: 6px;
+}
+
+#settings img {
+    height: inherit;
+    padding-right: 5px;
+    display: block;  /* this makes 3 extra pixels below the image disappear! */
+}
+
+#signIn, #signUp {
+    padding: 3px;
+}
+
+#topbar #signIn:hover, #topbar #signUp:hover {
+    background-color: {{.titleHoverColor}};
+}
+
+#fader
+{
+    background-color:black;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+}
+
+#modalDialog {
+    background-color: {{.dialogBackgroundColor}};
+    color: black;
+    border: 1px black solid;
+    border-radius: 5px;
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 2;
+}
+
+#modalDialogInner {
+    padding: 10px;
+}
+
+#modalDialogInner .alert img {
+    height: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    display: block;
+}
+
+#modalDialogButtons div {
+    height: 15px;
+    border-radius: 4px;
+    float: right;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    margin-left: 6px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    font-size: 70%;
+    font-weight: bold;
+    border-style: solid;
+    border-width: 2px;
+    border-color: lightgray;
+}
+
+#modalDialogButtons div.disabled {
+    background-color: white;
+    color: lightgray;
+    cursor: default;
+}
+
+#modalDialogButtons div.enabled {
+    background-color: white;
+    color: black;
+    cursor:pointer;
+}
+
+#modalDialogButtons div.default {
+    background-color: #166CFE;
+    color: white;
+    cursor: pointer;
+}
+
+table.dialogGuts th {
+    padding-bottom: 10px;
+    font-size: 120%;
+}
+
+table.dialogGuts td.label {
+    text-align: right;
+    font-size: 80%;
+}
+
+table.dialogGuts input.text {
+
+}
+
+table.dialogGuts input.checkbox {
+
+}
+
+img.info {
+    height: 20px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+#balloon {
+    z-index: 9;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+#balloonStopper {
+    z-index: 10;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    opacity: 0.35;
+    background-color: black;
+}
+
+#balloonText {
+    z-index: 11;
+    position: fixed;
+    background-color: #F5FDFF;
+    padding-left: 15px;
+    padding-right: 15px;
+    border: 2px solid black;
+    border-radius: 15px;
+    font-family: "Times New Roman", Times, serif;
+    font-style: italic;
+}
+
+#balloonText p {
+    margin-top: .4em;
+    margin-bottom: .4em;
+}
+
+.SL_IMAGE {
+    display: block;
+    margin-top: {{.lineSpacing}};
+}
+
+p + .SL_IMAGE {
+    margin-top: 0;
+}
+
+.SL_IMAGE.R {
+    margin-left: 6px;
+    float: right;
+}
+
+.SL_IMAGE.L {
+    margin-right: 6px;
+    float: left;
+}
+
+.iHolder {
+    border: 1px solid black;
+    background-color: darkgrey;
+    display: inline-block;
+    overflow: hidden;
+}
+
+.iHolder img {
+    display: block;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.lWing {
+    width: 12px;
+    height: 0;
+    display: none;
+    vertical-align: bottom;
+    cursor: w-resize;
+    opacity: 0.5;
+}
+
+.lWing:hover {
+    opacity: 1.0;
+}
+
+.rWing {
+    width: 12px;
+    height: 0;
+    display: none;
+    vertical-align: bottom;
+    cursor: e-resize;
+    opacity: 0.5;
+}
+
+.rWing:hover {
+    opacity: 1.0;
+}
+
+.imgInfo {
+    display: block;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor:pointer;
+}
+
+.imgInfo img {
+    display: block;
+    height: 0;
+}
+
+.imgPlus {
+    font-size: 10px;
+    width: .8em;
+    margin: auto;
+    color: #3990F8;
+    text-shadow: #000000 0 10px 10px;
+    cursor: pointer;
+}
+
+.imgOver {
+    opacity: 0;
+    position: absolute;
+}
+
+.imgOver:hover {
+    opacity: 0.75;
+}
+
+.iiDescription {
+    font-size: 125%;
+}
+
+.iiTitle {
+    font-size: 150%;
+    font-weight: bold;
+    margin-top: .5em;
+    margin-bottom: .5em;
+}
+
+.iiCredit {
+    margin-top: .2em;
+    font-style: normal;
+}
+
+.iiSource {
+    margin-top: .2em;
+    font-style: normal;
+}
+
+.iiLocation {
+    margin-top: .2em;
+    font-style: normal;
+}
+
+.iiWhen {
+    margin-top: .2em;
+    font-style: normal;
+}
+
+.iiSettings {
+    margin-top: .2em;
+    font-style: normal;
+}
+
+.iiOrientation {
+    margin-top: .2em;
+    font-style: normal;
+}
