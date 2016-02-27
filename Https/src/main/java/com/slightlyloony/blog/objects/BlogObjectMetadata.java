@@ -408,20 +408,28 @@ public class BlogObjectMetadata extends BlogObjectObject {
             boolean compressionStateDiff = _metadata.compressionState != UNCOMPRESSED;
             boolean unauthorizedResponderDiff = _metadata.unauthorizedResponder != null;
 
-            if( externalCacheSecondsDiff )       result.addProperty( "externalCacheSeconds", _metadata.externalCacheSeconds );
-            if( !_metadata.serverCacheable )     result.addProperty( "serverCacheable",      false );
-            if( unauthorizedResponderDiff )      result.add( "unauthorizedResponder", _context.serialize( _metadata.unauthorizedResponder ) );
-            if( compressionStateDiff )           result.add( "compressionState",      _context.serialize( _metadata.compressionState      ) );
-            if( _metadata.methods.size() > 0 )   result.add( "methods",               _context.serialize( _metadata.methods               ) );
-            if( _metadata.content != null )      result.add( "content",               _context.serialize( _metadata.content               ) );
-            if( _metadata.contentType != null )  result.add( "contentType",           _context.serialize( _metadata.contentType           ) );
-            if( _metadata.sourceType != null )   result.add( "sourceType",            _context.serialize( _metadata.sourceType            ) );
+            if( externalCacheSecondsDiff )            result.addProperty( "externalCacheSeconds", _metadata.externalCacheSeconds );
+            if( !_metadata.serverCacheable )          result.addProperty( "serverCacheable",      false );
+            if( unauthorizedResponderDiff )           result.add( "unauthorizedResponder", _context.serialize( _metadata.unauthorizedResponder ) );
+            if( compressionStateDiff )                result.add( "compressionState",      _context.serialize( _metadata.compressionState      ) );
+            if( _metadata.methods.size() > 0 )        result.add( "methods",               _context.serialize( _metadata.methods               ) );
+            if( _metadata.content != null )           result.add( "content",               _context.serialize( _metadata.content               ) );
+            if( _metadata.contentType != null )       result.add( "contentType",           _context.serialize( _metadata.contentType           ) );
+            if( _metadata.sourceType != null )        result.add( "sourceType",            _context.serialize( _metadata.sourceType            ) );
 
             // image-specific fields...
-            if( _metadata.height != 0 )          result.add( "height",                _context.serialize( _metadata.height                ) );
-            if( _metadata.width != 0 )           result.add( "width",                 _context.serialize( _metadata.width                 ) );
-            if( _metadata.size != 0 )            result.add( "size",                  _context.serialize( _metadata.size                  ) );
-            if( _metadata.scaledImages != null ) result.add( "scaledImages",          _context.serialize( _metadata.scaledImages          ) );
+            if( _metadata.height != 0 )               result.add( "height",                _context.serialize( _metadata.height                ) );
+            if( _metadata.width != 0 )                result.add( "width",                 _context.serialize( _metadata.width                 ) );
+            if( _metadata.size != 0 )                 result.add( "size",                  _context.serialize( _metadata.size                  ) );
+            if( _metadata.scaledImages != null )      result.add( "scaledImages",          _context.serialize( _metadata.scaledImages          ) );
+            if( _metadata.source != null )            result.add( "source",                _context.serialize( _metadata.source                ) );
+            if( _metadata.credit != null )            result.add( "credit",                _context.serialize( _metadata.credit                ) );
+            if( _metadata.description != null )       result.add( "description",           _context.serialize( _metadata.description           ) );
+            if( _metadata.title != null )             result.add( "title",                 _context.serialize( _metadata.title                 ) );
+            if( _metadata.where != null )             result.add( "where",                 _context.serialize( _metadata.where                 ) );
+            if( _metadata.when != null )              result.add( "when",                  _context.serialize( _metadata.when                  ) );
+            if( _metadata.cameraSettings != null )    result.add( "cameraSettings",        _context.serialize( _metadata.cameraSettings        ) );
+            if( _metadata.cameraOrientation != null ) result.add( "cameraOrientation",     _context.serialize( _metadata.cameraOrientation     ) );
 
             return result;
         }

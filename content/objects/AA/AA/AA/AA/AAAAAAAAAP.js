@@ -178,8 +178,8 @@ $SL.initImages = function() {
                 var ig = iif.find( "img" );
                 ig.height( ih.height() * .3 );
 
-                iif.on( "click", onInfo );
-                ip.on( "click", onPlus );
+                iif.off("click").on( "click", onInfo );
+                ip.off("click").on( "click", onPlus );
 
                 function onInfo( event ) {
                     var balloon = new $SL.Balloon();
@@ -203,7 +203,7 @@ $SL.initImages = function() {
                     });
 
                     // finally we're ready to put up the viewer...
-                    var viewer = new $SL.PhotoViewer( vids );
+                    var viewer = new $SL.PhotoViewer( imgsInfo[indx].iid, vids );
                     viewer.show();
 
                     event.preventDefault();
@@ -306,20 +306,115 @@ $SL.setupInfo = function( base ) {
 
 
 // photo viewr class...
-$SL.PhotoViewer = function( ids ) {
+$SL.PhotoViewer = function( iid, ids ) {
 
-    this.ids = ids;
-    this.html = '<div class="viewer"></div>';
+    this.current = iid;
+    this.html = '<div class="viewer"><table class="viewerTable">' +
+        '<tr class="topRow"><td class="photo"><div class="picHolder"></div></td><td class="info"><div class="infoHolder"></div></td></tr>' +
+        '<tr class="thumbRow"><td class="thumbs" colspan="2"></td></tr>' +
+        '</table><div class="closer">&#x2612;</div></div>';
     this.fader = new $SL.Fader(1.0);
 
     this.show = function() {
 
         this.fader.show();
+        var body = $('body');
+        body.append(this.html);
+        body.on("keydown", this, onKeydown);
 
+        $('div.closer' ).on("click", this, this.hide);
+
+        // make the viewer occupy the entire screen...
+        var table = $('table.viewerTable');
+        table.height( $(window).height() );
+        table.width( $(window).width() );
+
+        // figure out the height of our full-size photos...
+        this.h = $('td.photo').height() - 20;  // the 20 pixels is to make room for the scroll bar...
+
+        // build our info array and thumbs html...
+        pics = [];
+        index = 0;
+        var thumbs = $('td.thumbs');
+        for( var i = 0; i < ids.length; i++ ) {
+
+            var info = {};
+            info.iid = ids[i];
+            var img = new Image();
+            img.src = '/' + info.iid + '?h=' + this.h;
+            info.img = img;
+            var jImg = $(img);
+            jImg.on("load", this, setHeight );
+            pics.push( info );
+
+            var thumb = new Image();
+            thumb.src = '/' + info.iid + '?h=50';
+            thumb.id = 'thumb'+i;
+            var jThumb = $(thumb);
+            jThumb.on("click", i, onClick);
+            thumbs.append( jThumb );
+
+            if( this.current == ids[i])
+                index = i;
+        }
+
+        choose( index );
+
+        function choose( newIndex ) {
+            $('#thumb' + index).removeClass('selected');
+            index = newIndex;
+            $('#thumb' + index).addClass('selected');
+            $('div.picHolder img' ).remove();
+            $('div.picHolder' ).append(pics[index].img);
+
+            $('div.infoHolder').html($SL.getImageInfo(pics[index].iid));
+        }
+
+        function onClick( event ) {
+            choose( event.data );
+        }
+
+        function setHeight( event ) {
+            this.height = Math.min( event.data.h, this.height * 2 );
+        }
+
+        function onKeydown( event ) {
+            var that = event.data;
+
+            switch( event.which ) {
+
+                case 9: // tab key (which could be shifted for backtab)...
+                    if( event.shiftKey )
+                        choose( (pics.length + index - 1) % pics.length );
+                    else
+                        choose( (index + 1) % pics.length );
+                    choose(index);
+                    break;
+
+                case 27:  // escape key...
+                    that.hide(event);
+                    break;
+
+                case 37: // left arrow key...
+                    choose( (pics.length + index - 1) % pics.length );
+                    break;
+
+                case 39: // right arrow key...
+                    choose( (index + 1) % pics.length );
+                    break;
+
+                default:
+                    return true;
+            }
+            return false;
+        }
     };
 
-    this.hide = function() {
-        this.fader.hide();
+    this.hide = function( event ) {
+        var that = event.data;
+        that.fader.hide();
+        $('div.viewer').remove();
+        $('body').off("keydown");
     };
 };
 
