@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 import java.lang.reflect.Type;
 import java.util.Set;
 
+import static com.slightlyloony.blog.security.BlogAccessRight.*;
+
 /**
  * @author Tom Dilatush  tom@dilatush.com
  */
@@ -75,7 +77,7 @@ public class BlogUserRights {
                 // make sure our string is actually a valid right...
                 BlogAccessRight right;
                 try {
-                    right = BlogAccessRight.valueOf( rightName );
+                    right = valueOf( rightName );
                 }
                 catch( IllegalArgumentException e ) {
                     throw new JsonParseException( "Invalid access right name: " + rightName, e );
@@ -110,7 +112,10 @@ public class BlogUserRights {
 
             // iterate over all the entries...
             for( BlogAccessRight right : _users.rights ) {
-                result.add( right.toString() );
+
+                // we skip PUBLIC, SESSION, and AUTHENTICATED...
+                if( !((right == PUBLIC) || (right == SESSION) || (right == AUTHENTICATED)))
+                    result.add( right.toString() );
             }
 
             return result;

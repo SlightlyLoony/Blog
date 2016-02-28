@@ -183,18 +183,21 @@ public class ScalableImageResponder implements Responder {
 
     private ScaledImage getBestFit( final BlogObjectMetadata _metadata, final int _requestedHeight ) {
 
+        // our target height is actually 75% of the requested height, to allow for a small amount of upscaling on the client - hopefully not
+        // so much as to cause visible artifacts...
+        int targetHeight = ((_requestedHeight << 1) + _requestedHeight) >>> 2; // this is a fast way to compute _requestedHeight * 0.75...
+
         // if we don't have any scaled images, the biggest scaled image is too small,
         // or if the requested height is larger than the base image's, return the base image...
         ScaledImage[] scaledImages = _metadata.getScaledImages();
-        if( (scaledImages == null) || (scaledImages.length == 0) || (scaledImages[scaledImages.length - 1].height < _requestedHeight)
-                || (_metadata.getHeight() < _requestedHeight) )
+        if( (scaledImages == null) || (scaledImages.length == 0) || (scaledImages[scaledImages.length - 1].height < targetHeight)
+                || (_metadata.getHeight() < targetHeight) )
 
             return new ScaledImage( _metadata.getContent(), _metadata.getHeight(), _metadata.getWidth() );
 
-        // otherwise, cycle through the scaled images until we find the first one bigger than 90% of the requested height...
-        // the "90%" allows a teensy bit of upscaling on the client, not enough (we hope!) to cause visible artifacts...
+        // otherwise, cycle through the scaled images until we find the first one bigger than the target height...
         for( ScaledImage scaledImage : scaledImages ) {
-            if( scaledImage.height >= 0.9d * _requestedHeight )
+            if( scaledImage.height >= targetHeight )
                 return scaledImage;
         }
 

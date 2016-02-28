@@ -1,6 +1,7 @@
 package com.slightlyloony.blog.handlers.cookies;
 
-import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
@@ -11,7 +12,7 @@ public class ResponseCookie {
 
     private String name;
     private String value;
-    private Instant expires;
+    private ZonedDateTime expires;
     private Long maxAge;
     private String domain;
     private String path;
@@ -50,7 +51,7 @@ public class ResponseCookie {
     public void setLifetimeSeconds( final long _lifetime ) {
 
         maxAge = _lifetime;
-        expires = Instant.now().plus( maxAge, ChronoUnit.SECONDS );
+        expires = ZonedDateTime.now( ZoneId.of("UTC") ).plus( maxAge, ChronoUnit.SECONDS );
     }
 
 
@@ -102,7 +103,7 @@ public class ResponseCookie {
     }
 
 
-    public Instant getExpires() {
+    public ZonedDateTime getExpires() {
         return expires;
     }
 

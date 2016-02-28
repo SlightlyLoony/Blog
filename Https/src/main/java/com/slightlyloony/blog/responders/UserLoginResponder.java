@@ -1,11 +1,16 @@
 package com.slightlyloony.blog.responders;
 
 import com.google.gson.Gson;
+import com.slightlyloony.blog.Blog;
+import com.slightlyloony.blog.BlogServer;
 import com.slightlyloony.blog.events.EventType;
 import com.slightlyloony.blog.events.Events;
 import com.slightlyloony.blog.handlers.BlogRequest;
 import com.slightlyloony.blog.handlers.BlogResponse;
+import com.slightlyloony.blog.handlers.Constants;
+import com.slightlyloony.blog.handlers.cookies.ResponseCookie;
 import com.slightlyloony.blog.objects.BlogObjectMetadata;
+import com.slightlyloony.blog.security.BlogSessionManager;
 import com.slightlyloony.blog.storage.StorageException;
 import com.slightlyloony.blog.users.User;
 import com.slightlyloony.blog.util.S;
@@ -61,7 +66,24 @@ public class UserLoginResponder implements Responder {
                 user.addRight( SESSION );
                 _request.getSession().putUser( user );
 
-                // TODO: handle rememberMe...
+                // if "remember me" was checked, set a user cookie...
+                if( req.rememberMe ) {
+
+                    // get us a shiny new random token for our cookie...
+                    String token = BlogSessionManager.INSTANCE.generateToken();
+                    user.setCookie( token );
+
+                    // update the user and the users index...
+                    user.updateIfDirty();
+                    Blog blog = _request.getBlog();
+                    blog.getUsers().indexUser( user.getBlogID(), user );
+                    BlogServer.STORAGE.update( blog.getUsers() );
+
+                    // set the cookie...
+                    ResponseCookie cookie = new ResponseCookie( Constants.USER_COOKIE_NAME, token, blog.getName(), "/" );
+                    cookie.setLifetimeSeconds( 30 * 24 * 3600 );  // 30 days in seconds...
+                    _response.addCookie( cookie );
+                }
 
                 // fire success event...
                 Events.fire( EventType.USER_LOGIN, _request.getSession() );

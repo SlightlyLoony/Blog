@@ -99,8 +99,13 @@ public class Users extends BlogObjectObject {
     }
 
 
-    // TODO: lazy write of index file...
-    public synchronized void indexUser( final BlogID _id, final User _user ) {
+    /**
+     * Updates the index values in memory; does NOT write the results out...
+     *
+     * @param _id the BlogID of the user
+     * @param _user the user
+     */
+    public synchronized void indexUser( final BlogID _id, final User _user ) throws StorageException {
 
         if( (_id == null) || (_user == null) )
             throw new HandlerIllegalArgumentException( "Blog ID or user missing" );
@@ -124,7 +129,7 @@ public class Users extends BlogObjectObject {
         }
 
         // if both keys are unchanged, we've got nothing to do here...
-        if( username.equals( keys.username )  || keys.cookieValue.equals( cookieValue ) )
+        if( username.equals( keys.username ) && keys.cookieValue.equals( cookieValue ) )
             return;
 
         // if the username has changed, update it...

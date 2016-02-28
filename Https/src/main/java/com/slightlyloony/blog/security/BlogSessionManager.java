@@ -190,9 +190,14 @@ public class BlogSessionManager {
     }
 
 
-    private String generateToken() {
+    /**
+     * Returns a 32 character long URL-friendly random token.
+     *
+     * @return the newly-generated token
+     */
+    public String generateToken() {
 
-        // use our random generator to make up a new token - 15 bytes will get us 20 base64 characters...
+        // use our random generator to make up a new token - 24 bytes will get us 32 base64 characters...
         byte[] bytes = new byte[24];
         random.nextBytes( bytes );
         BaseEncoding encoder = BaseEncoding.base64Url();
