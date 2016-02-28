@@ -15,19 +15,27 @@ $SL.PAGE = {
 $SL.init = function() {
 
     // fix up appearance of top bar items...
-    var dn = $("#displayName" );
+    var dn = $("#displayName");
     var si = $("#settingsImg");
-    var um = $("#unauthMenu" );
+    var um = $("#unauthMenu");
+    var am = $("#authMenu");
     si.height( dn.height() *.6 );
     si.css( "padding-top", (dn.height() - si.height()) / 2 );
     um.css( "padding-top", 6 + (dn.height() - um.height()) / 2);
+    am.css( "padding-top", 6 + (dn.height() - am.height()) / 2);
 
     {{if(not(user.isAuthenticated))}}
-
         // set up the sign in dialog...
         $("#signIn").on( "click", function() {
             var signIn = new $SL.SignIn();
             signIn.show();
+        });
+    {{end}}
+    {{if(user.isAuthenticated)}}
+        // set up the sign out dialog...
+        $("#signOut").on( "click", function() {
+            var signOut = new $SL.SignOut();
+            signOut.show();
         });
     {{end}}
 
@@ -808,10 +816,84 @@ $SL.SignIn = function() {
             function( data ) {
                 if( data.success ) {
                     window.location.href = "/";
+                    window.location.reload();
                 }
                 else {
                     setTimeout( function() {var msg = new $SL.Message( data.reason, true ); msg.show();}, 500);
                 }
+            },
+
+            "json");
+    };
+};
+
+
+// sign-out dialog class...
+$SL.SignOut = function() {
+
+    this.html =
+        'Sign out as a user on this blog?';
+
+
+    this.show = function() {
+        this.dialog = new $SL.Dialog( this, this.html, this.onCancel, this.onOK );
+        this.dialog.show();
+        this.dialog.enableCancel();
+        this.dialog.enableOK();
+        $('body').on("keydown", this, this.onKeydown );
+    };
+
+
+    this.onKeydown = function( event ) {
+        var that = event.data;
+        var e;
+
+        switch( event.which ) {
+
+            case 13:  // enter/return key...
+                if( that.dialog.getOK().hasClass("default") ) {
+
+                    // simulate a click on the ok button...
+                    e = jQuery.Event( "click" );
+                    e.data = that.dialog;
+                    that.dialog.getOK().triggerHandler( e );
+                }
+                else
+                    return true;
+                break;
+
+            case 27:  // escape key...
+
+                // simulate a click on the cancel button...
+                e = jQuery.Event( "click" );
+                e.data = that.dialog;
+                that.dialog.getCancel().triggerHandler( e );
+                break;
+
+            default:
+                return true;
+        }
+        return false;
+    };
+
+
+    this.onCancel = function( context ) {
+        $('body').off("keydown");
+    };
+
+
+    this.onOK = function( context ) {
+        var that = context;
+        $('body').off("keydown");
+        var req ={};
+        req.signOut = true;
+        $.post( "AAAAAAAABUB",
+
+            JSON.stringify( req ),
+
+            function( data ) {
+                window.location.href = "/";
+                window.location.reload();
             },
 
             "json");

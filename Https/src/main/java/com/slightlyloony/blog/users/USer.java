@@ -522,9 +522,14 @@ public class User extends BlogObjectObject {
         @Override
         public JsonElement serialize( final User _user, final Type _type, final JsonSerializationContext _jsonSerializationContext ) {
 
-            JsonElement element = _jsonSerializationContext.serialize( _user, User.class );
-            _user.stripFields( element );
-            return element;
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter( BlogUserRights.class, new BlogUserRights.Serializer()                   );
+            Gson gson = gsonBuilder.create();
+            JsonObject obj = (JsonObject) gson.toJsonTree( _user );
+
+            _user.stripFields( obj );
+            obj.remove( "dirty" );
+            return obj;
         }
     }
 }

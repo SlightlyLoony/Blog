@@ -60,7 +60,7 @@ p {
     overflow: hidden;  /* contains inner floats */
 }
 
-#unauthMenu, #moreMenu {
+#unauthMenu, #authMenu {
     font-size: 80%;
     float: right;
     padding: 6px;
@@ -86,11 +86,11 @@ p {
     display: block;  /* this makes 3 extra pixels below the image disappear! */
 }
 
-#signIn, #signUp {
+#signIn, #signUp, #signOut {
     padding: 3px;
 }
 
-#topbar #signIn:hover, #topbar #signUp:hover {
+#topbar #signIn:hover, #topbar #signOut:hover, #topbar #signUp:hover {
     background-color: {{.titleHoverColor}};
 }
 

@@ -14,6 +14,9 @@
         {{if(not(user.isAuthenticated))}}
             <div id="unauthMenu"><span id="signIn"><b>Sign in</b></span>/<span id="signUp"><b>Sign up</b></span></div>
         {{end}}
+        {{if(user.isAuthenticated)}}
+            <div id="authMenu"><span id="greeting"><b>Hi, {{if(has(user.first_name))}}{{user.first_name}}{{else}}{{if(has(user.handle))}}{{user.handle}}{{else}}{{user.username}}{{end}}{{end}}!</b>&nbsp;&nbsp;</span><span id="signOut"><b>Sign out</b></span></div>
+        {{end}}
     </div>
     <div class="main"><div class="SL_IMAGE" iids="AAAAAAAAACB" ih="5" ipos="R"></div><p><b>Paradise ponders...</b>  We had a nice, slow day yesterday.  That's just what both Debbie and I needed, as we're both on the tail ends of a nasty sort of cold.  We're down to residual sniffles, the occasional hacking cough, and a bit of puniness; otherwise we're doing just fine.  It will feel great when this is gone!
         </p><div class="SL_IMAGE" iids="AAAAAAAAA5B,AAAAAAAABAB,AAAAAAAABBB" ih="10" ipos="L"></div><p>

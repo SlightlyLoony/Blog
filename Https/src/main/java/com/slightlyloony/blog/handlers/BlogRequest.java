@@ -117,8 +117,18 @@ public class BlogRequest {
         RequestCookie cookie = cookies.get( Constants.USER_COOKIE_NAME );
         if( cookie != null ) {
             user = blog.getUsers().getUserFromCookie( cookie.getValue() );
-            if( user != null )
+            if( user != null ) {
+
+                // give this user authenticated, public, and session rights...
+                user.addRight( BlogAccessRight.AUTHENTICATED );
+                user.addRight( BlogAccessRight.PUBLIC );
+                user.addRight( BlogAccessRight.SESSION );
+
+                // add the user to the session...
+                session.putUser( user );
+
                 return;
+            }
         }
 
         // we get here if we don't have a user, so we need an anonymous one...
@@ -183,6 +193,11 @@ public class BlogRequest {
     public boolean acceptsGZIP() {
         return false;
 //        return acceptEncodings.accept( "gzip" ) != null;
+    }
+
+
+    public void logoutUser() {
+        session.removeUser();
     }
 
 

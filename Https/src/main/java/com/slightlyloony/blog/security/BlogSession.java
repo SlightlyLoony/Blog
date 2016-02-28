@@ -103,6 +103,10 @@ public class BlogSession {
         sessionData.put( USER, _user );
     }
 
+    public void removeUser() {
+        sessionData.remove( USER );
+    }
+
 
     /**
      * Handles the details of managing the lifecycle of a blog session.  There are two critical times, both based on how long it's been since

@@ -1,0 +1,5 @@
+{
+  "methods" : {"POST":"USER_LOGIN"},
+  "contentType" : "JSON",
+  "externalCacheSeconds" : 0
+}

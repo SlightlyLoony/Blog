@@ -9,6 +9,7 @@ public enum ResponderType {
     IMAGE_META   ( ImageMetadataResponder::new ),
     STATS        ( StatsResponder::new         ),
     USER_LOGIN   ( UserLoginResponder::new     ),
+    USER_LOGOUT  ( UserLogoutResponder::new    ),
     IMAGE        ( ScalableImageResponder::new ),
     INFO         ( InfoResponder::new          );
 

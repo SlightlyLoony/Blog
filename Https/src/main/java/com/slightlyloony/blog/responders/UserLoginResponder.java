@@ -69,15 +69,19 @@ public class UserLoginResponder implements Responder {
                 // if "remember me" was checked, set a user cookie...
                 if( req.rememberMe ) {
 
-                    // get us a shiny new random token for our cookie...
-                    String token = BlogSessionManager.INSTANCE.generateToken();
-                    user.setCookie( token );
-
-                    // update the user and the users index...
-                    user.updateIfDirty();
+                    // if we don't already have one, then get us a shiny new random token for our cookie...
                     Blog blog = _request.getBlog();
-                    blog.getUsers().indexUser( user.getBlogID(), user );
-                    BlogServer.STORAGE.update( blog.getUsers() );
+                    String token = user.getCookie();
+                    if( token == null ) {
+
+                        token = BlogSessionManager.INSTANCE.generateToken();
+                        user.setCookie( token );
+
+                        // update the user and the users index...
+                        user.updateIfDirty();
+                        blog.getUsers().indexUser( user.getBlogID(), user );
+                        BlogServer.STORAGE.update( blog.getUsers() );
+                    }
 
                     // set the cookie...
                     ResponseCookie cookie = new ResponseCookie( Constants.USER_COOKIE_NAME, token, blog.getName(), "/" );

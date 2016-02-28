@@ -1,0 +1,5 @@
+{
+  "methods" : {"POST":"USER_LOGOUT"},
+  "contentType" : "JSON",
+  "externalCacheSeconds" : 0
+}
