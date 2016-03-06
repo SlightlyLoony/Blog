@@ -25,10 +25,14 @@ $SL.init = function() {
     am.css( "padding-top", 6 + (dn.height() - am.height()) / 2);
 
     {{if(not(user.isAuthenticated))}}
-        // set up the sign in dialog...
+        // set up the sign in and sign up dialogs...
         $("#signIn").on( "click", function() {
             var signIn = new $SL.SignIn();
             signIn.show();
+        });
+        $("#signUp").on( "click", function() {
+            var signUp = new $SL.SignUp();
+            signUp.show();
         });
     {{end}}
     {{if(user.isAuthenticated)}}
@@ -581,10 +585,93 @@ $SL.Dialog = function( context, _inner, onCancel, onOK ) {
     this.prefix = '<div id="modalDialog"><div id="modalDialogInner">';
     this.suffix = '<div id="modalDialogButtons"></div></div></div>';
     this.fader = new $SL.Fader();
+    this.inputs = [];
+    this.currentFocus = 0;
+    this.onInput = null;
+    this.onFocus = null;
 
     $("#modalDialog" ).remove();
 
-    this.show = function() {
+    // given a list of jQuery objects that are inputs, registers keyboard events and handles tabbing (in given order)...
+    // if no inputs are present, still handles the buttons...
+    this.setInputs = function( inputs ) {
+
+        // save our inputs and bind event handlers...
+        for( var i = 0; i < arguments.length; i++ ) {
+            var input = arguments[i];
+            this.inputs.push(input);
+            input.on( "keydown", this, this.onKeydown );
+            input.on( "input", this, this.onInternalInput );
+            input.on( "focus", this, this.onInternalFocus );
+        }
+
+        // bind keydown to the body, in case we have a dialog with only buttons...
+        $('body').on( "keydown", this, this.onKeydown );
+
+        this.setFocus(0);
+    };
+
+    this.setFocus = function( newFocus ) {
+        if( this.inputs.length == 0 ) return;
+        this.currentFocus = newFocus;
+        this.inputs[this.currentFocus].focus();
+    };
+
+    this.onKeydown = function( event ) {
+        var that = event.data;
+        var e;
+
+        switch( event.which ) {
+
+            case 9: // tab key (which could be shifted for backtab)...
+                if( event.shiftKey )
+                    that.setFocus.call(that, (that.currentFocus == 0) ? that.inputs.length - 1 : that.currentFocus - 1 );
+                else
+                    that.setFocus.call(that, (that.currentFocus >= that.inputs.length - 1) ? 0 : that.currentFocus + 1 );
+                break;
+
+            case 13:  // enter/return key...
+                if( that.getOK().hasClass("default") ) {
+
+                    // simulate a click on the ok button...
+                    e = jQuery.Event( "click" );
+                    e.data = that;
+                    that.getOK().triggerHandler( e );
+                }
+                else
+                    return true;
+                break;
+
+            case 27:  // escape key...
+
+                // simulate a click on the cancel button...
+                e = jQuery.Event( "click" );
+                e.data = that;
+                that.getCancel().triggerHandler( e );
+                break;
+
+            default:
+                return true;
+        }
+        return false;
+    };
+
+    this.onInternalInput = function( event ) {
+        var that = event.data;
+        if( that.onInput )
+            that.onInput.call(that.context, event);
+        return false;
+    };
+
+    this.onInternalFocus = function( event ) {
+        var that = event.data;
+        if( that.onFocus )
+            that.onFocus.call(that.context, event);
+        return false;
+    };
+
+    // the width function (optional) returns the desired width of the pop-up's interior
+    this.show = function( widthFunction ) {
         var html = this.prefix + this.inner + this.suffix;
         $("body").append(html);
         if( this.onOK ) {
@@ -597,11 +684,15 @@ $SL.Dialog = function( context, _inner, onCancel, onOK ) {
         }
         this.fader.show();
         var d = $("#modalDialog");
+        d.css( "display", "block" );
+        if( widthFunction )
+            d.width( widthFunction() + 20 );
         var h = d.height();
         var w = d.width();
         d.css( "margin-top", -h/2 );
         d.css( "margin-left", -w/2 );
-        d.css( "display", "block" );
+        d.height( h );
+        d.width( w );
     };
 
 
@@ -613,9 +704,10 @@ $SL.Dialog = function( context, _inner, onCancel, onOK ) {
     this.internalOnCancel = function( event ) {
         var that = event.data;
         if( $("#modalDialogCancel" ).hasClass("disabled") ) return true;
-        if(that.onCancel ) that.onCancel(that.context);
+        if(that.onCancel ) that.onCancel.call(that.context);
         $("#modalDialog" ).css("display", "none");
         that.fader.hide();
+        $("body").off("keydown");
         return false;
     };
 
@@ -623,9 +715,10 @@ $SL.Dialog = function( context, _inner, onCancel, onOK ) {
     this.internalOnOK = function( event ) {
         var that = event.data;
         if( $("#modalDialogOK" ).hasClass("disabled") ) return true;
-        if( that.onOK ) that.onOK(that.context);
+        if( that.onOK ) that.onOK.call(that.context);
         $("#modalDialog" ).css("display", "none");
         that.fader.hide();
+        $("body").off("keydown");
         return false;
     };
 
@@ -665,33 +758,14 @@ $SL.Dialog = function( context, _inner, onCancel, onOK ) {
 $SL.Message = function( msg, isAlert ) {
 
     this.html = (isAlert ? '<div class="alert"><img src="AAAAAAAAASA"></div><br/>' : '') + '<div class="message">' + msg + '</div>';
-    this.dialog = new $SL.Dialog( this, this.html, this.onCancel, this.onOK );
 
     this.show = function() {
         this.dialog = new $SL.Dialog( this, this.html, null, this.onOK );
         this.dialog.show();
         this.dialog.defaultOK();
-        $("body").on("keydown", this, this.onKeydown);
     };
 
-    this.onKeydown = function( event ) {
-
-        var that = event.data;
-        if( event.which == 13 ) {
-            if( that.dialog.getOK().hasClass("default") ) {
-
-                // simulate a click on the ok button...
-                var e = jQuery.Event( "click" );
-                e.data = that.dialog;
-                that.dialog.getOK().triggerHandler( e );
-            }
-        }
-        return false;
-    };
-
-    this.onOK = function( context ) {
-        $("body").off();
-    };
+    this.onOK = function() {};
 };
 
 
@@ -700,115 +774,57 @@ $SL.SignIn = function() {
 
     this.html =
         '<table id="signIn" class="dialogGuts">' +
-          '<tr><th colspan="3">Sign In to <i>{{blog.displayName}}</i></th></tr>' +
+          '<tr><td colspan="3"><b>Sign In</b> to the <i>{{blog.displayName}}</i> blog.</td></tr>' +
           '<tr id="usernameRow">' +
             '<td class="label">Username:</td>' +
             '<td><input id="username" class="text" type="text" size="30"></td>' +
-            '<td><img id="usernameInfo" class="info" key="username" area="usernameRow" src="AAAAAAAAARA"></td>' +
+            '<td><img id="usernameInfo" class="info" key="username" area="username" src="AAAAAAAAARA"></td>' +
           '</tr>' +
           '<tr id="passwordRow">' +
             '<td class="label">Password:</td>' +
             '<td><input id="password" class="text" type="password" size="30"></td>' +
-            '<td><img id="passwordInfo" class="info" key="password" area="passwordRow" src="AAAAAAAAARA"></td>' +
+            '<td><img id="passwordInfo" class="info" key="password" area="password" src="AAAAAAAAARA"></td>' +
           '</tr>' +
           '<tr id="rememberMeRow">' +
             '<td class="label">Remember Me:</td>' +
             '<td><input id="rememberMe" class="checkbox" type="checkbox"></td>' +
-            '<td><img id="rememberMeInfo" class="info" key="rememberMe" area="rememberMeRow" src="AAAAAAAAARA"></td>' +
+            '<td><img id="rememberMeInfo" class="info" key="rememberMe" area="rememberMe" src="AAAAAAAAARA"></td>' +
           '</tr>' +
         '</table>';
 
 
     this.show = function() {
         this.dialog = new $SL.Dialog( this, this.html, this.onCancel, this.onOK );
-        this.dialog.show();
-        $SL.setupInfo( $("table#signIn"));
-        this.dialog.enableCancel();
+        this.dialog.show( function() {
+            return $("table#signIn").width();
+        });
         this.username = $("#username");
         this.password = $("#password");
         this.rememberMe = $("#rememberMe");
-        this.username.on("input", this, this.onInput);
-        this.password.on("input", this, this.onInput);
-        this.username.on("keydown", this, this.onKeydown );
-        this.password.on("keydown", this, this.onKeydown );
-        this.rememberMe.on("keydown", this, this.onKeydown );
-        this.username.focus();
+        this.dialog.setInputs( this.username, this.password, this.rememberMe );
+        this.dialog.onInput = this.onInput;
+        $SL.setupInfo( $("table#signIn"));
+        this.dialog.enableCancel();
     };
 
 
-    this.onKeydown = function( event ) {
-        var that = event.data;
-
-        switch( event.which ) {
-
-            case 9: // tab key (which could be shifted for backtab)...
-                if( event.shiftKey ) {
-                    switch( event.target.id ) {
-                        case "username": $("#rememberMe").focus(); break;
-                        case "password": $("#username").focus(); break;
-                        case "rememberMe": $("#password").focus(); break;
-                        default: break;
-                    }
-                }
-                else {
-                    switch( event.target.id ) {
-                        case "username": $("#password").focus(); break;
-                        case "password": $("#rememberMe").focus(); break;
-                        case "rememberMe": $("#username").focus(); break;
-                        default: break;
-                    }
-                }
-                break;
-
-            case 13:  // enter/return key...
-                if( that.dialog.getOK().hasClass("default") ) {
-
-                    // simulate a click on the ok button...
-                    var e = jQuery.Event( "click" );
-                    e.data = that.dialog;
-                    that.dialog.getOK().triggerHandler( e );
-                }
-                else
-                    return true;
-                break;
-
-            case 27:  // escape key...
-
-                // simulate a click on the cancel button...
-                var e = jQuery.Event( "click" );
-                e.data = that.dialog;
-                that.dialog.getCancel().triggerHandler( e );
-                break;
-
-            default:
-                return true;
-        }
+    this.onInput = function() {
+        var ok = this.dialog.getOK();
+        if( this.username.val() && this.password.val() && !ok.hasClass("default") )
+            this.dialog.defaultOK();
+        if( !(this.username.val() && this.password.val()) && !ok.hasClass("disabled") )
+            this.dialog.disableOK();
         return false;
     };
 
-
-    this.onInput = function( event ) {
-        var that = event.data;
-        var ok = that.dialog.getOK();
-        if( that.username.val() && that.password.val() && !ok.hasClass("default") )
-            that.dialog.defaultOK();
-        if( !(that.username.val() && that.password.val()) && !ok.hasClass("disabled") )
-            that.dialog.disableOK();
-        return false;
+    this.onCancel = function() {
     };
 
-
-    this.onCancel = function( context ) {
-        var that = context;
-    };
-
-
-    this.onOK = function( context ) {
-        var that = context;
+    this.onOK = function() {
         var req ={};
-        req.user = that.username.val();
-        req.password = that.password.val();
-        req.rememberMe = that.rememberMe.is(':checked');
+        req.user = this.username.val();
+        req.password = this.password.val();
+        req.rememberMe = this.rememberMe.is(':checked');
         $.post( "AAAAAAAAAGB",
 
             JSON.stringify( req ),
@@ -828,6 +844,132 @@ $SL.SignIn = function() {
 };
 
 
+// sign-up dialog class...
+        $SL.SignUp = function() {
+
+            this.html =
+                '<b>Sign Up</b> as a member of the <i>{{blog.displayName}}</i> blog community.<br/><br/>By signing up, you\'ll be able to ' +
+                'comment on blog posts, and personalize your experience on the blog.  Click the information icons below for details.' +
+                '<table id="signUpTable" class="dialogGuts">' +
+                '<tr id="emailRow">' +
+                '<td class="label">Your personal email address:</td>' +
+                '<td><input id="email" class="text" type="text" size="30"></td>' +
+                '<td><img id="emailInfo" class="info" key="emailSignUp" area="email" src="AAAAAAAAARA"></td>' +
+                '</tr>' +
+                '<tr id="emailPublicRow">' +
+                '<td class="label">Make your email visible?</td>' +
+                '<td><input id="emailPublic" class="checkbox" type="checkbox"></td>' +
+                '<td><img id="emailPublicInfo" class="info" key="emailPublicSignUp" area="emailPublic" src="AAAAAAAAARA"></td>' +
+                '</tr>' +
+                '<tr id="usernameRow">' +
+                '<td class="label">Username:</td>' +
+                '<td><input id="username" class="text" type="text" size="30"></td>' +
+                '<td><img id="usernameInfo" class="info" key="usernameSignUp" area="username" src="AAAAAAAAARA"></td>' +
+                '</tr>' +
+                '<tr id="password1Row">' +
+                '<td class="label">Password:</td>' +
+                '<td><input id="password1" class="text" type="password" size="30"></td>' +
+                '<td id="password1TD"><img id="passwordInfo" class="info" key="passwordSignUp" area="password1" src="AAAAAAAAARA">' +
+                '<div id="passwordStrength"><canvas id="passwordMeter"></canvas></div></td>' +
+                '</tr>' +
+                '<tr id="password2Row">' +
+                '<td class="label">Enter&nbsp;password&nbsp;again:</td>' +
+                '<td><input id="password2" class="text" type="password" size="30"></td>' +
+                '<td><div id="passwordMatch"></div></td>' +
+                '</tr>' +
+                '<tr id="handleRow">' +
+                '<td class="label">Handle:</td>' +
+                '<td><input id="handle" class="text" type="text" size="30"></td>' +
+                '<td><img id="handleInfo" class="info" key="handleSignUp" area="handle" src="AAAAAAAAARA"></td>' +
+                '</tr>' +
+                '<tr id="firstNameRow">' +
+                '<td class="label">First name:</td>' +
+                '<td><input id="firstName" class="text" type="text" size="30"></td>' +
+                '<td><img id="firstNameInfo" class="info" key="firstNameSignUp" area="firstName" src="AAAAAAAAARA"></td>' +
+                '</tr>' +
+                '<tr id="lastNameRow">' +
+                '<td class="label">Last name:</td>' +
+                '<td><input id="lastName" class="text" type="password" size="30"></td>' +
+                '<td><img id="lastNameInfo" class="info" key="lastNameSignUp" area="lastName" src="AAAAAAAAARA"></td>' +
+                '</tr>' +
+                '<tr id="namePublicRow">' +
+                '<td class="label">Make your real name visible?</td>' +
+                '<td><input id="namePublic" class="checkbox" type="checkbox"></td>' +
+                '<td><img id="namePublicInfo" class="info" key="namePublicSignUp" area="namePublic" src="AAAAAAAAARA"></td>' +
+                '</tr>' +
+                '</table>';
+
+
+            this.show = function() {
+                this.dialog = new $SL.Dialog( this, this.html, this.onCancel, this.onOK );
+                this.dialog.show( function() {
+                    return $("#signUpTable").width();
+                } );
+                this.email       = $("#email"       );
+                this.emailPublic = $("#emailPublic" );
+                this.username    = $("#username"    );
+                this.password1   = $("#password1"   );
+                this.password2   = $("#password2"   );
+                this.handle      = $("#handle"      );
+                this.firstName   = $("#firstName"   );
+                this.lastName    = $("#lastName"    );
+                this.namePublic  = $("#namePublic"  );
+                this.dialog.setInputs( this.email, this.emailPublic, this.username, this.password1, this.password2, this.handle, this.firstName,
+                    this.lastName, this.namePublic );
+                this.dialog.onInput = this.onInput;
+                this.dialog.onFocus = this.onFocus;
+                $SL.setupInfo( $("table#signUpTable"));
+                this.dialog.enableCancel();
+
+                $SL.passwordMeter( $("#passwordMeter"), 0 );
+            };
+
+
+            this.onInput = function( event ) {
+
+                // if we've just modified the password, update its strength...
+                if( event.currentTarget.id == "password1" ) {
+                    var strength = $SL.passwordStrength( this.password1.val() );
+                    $SL.passwordMeter( $("#passwordMeter"), strength );
+                }
+
+                return false;
+            };
+
+            this.onFocus = function( event ) {
+
+                // if we have an email address, but no username, default the email address to the username...
+                if( this.email.val() && !this.username.val() )
+                    this.username.val( this.email.val() );
+
+                return false;
+            };
+
+            this.onCancel = function() {};
+
+            this.onOK = function() {
+                var req ={};
+                req.user = this.username.val();
+                req.password = this.password.val();
+                req.rememberMe = this.rememberMe.is(':checked');
+                $.post( "AAAAAAAAAGB",
+
+                    JSON.stringify( req ),
+
+                    function( data ) {
+                        if( data.success ) {
+                            window.location.href = "/";
+                            window.location.reload();
+                        }
+                        else {
+                            setTimeout( function() {var msg = new $SL.Message( data.reason, true ); msg.show();}, 500);
+                        }
+                    },
+
+                    "json");
+            };
+        };
+
 // sign-out dialog class...
 $SL.SignOut = function() {
 
@@ -840,51 +982,13 @@ $SL.SignOut = function() {
         this.dialog.show();
         this.dialog.enableCancel();
         this.dialog.enableOK();
-        $('body').on("keydown", this, this.onKeydown );
+        this.dialog.defaultOK();
     };
 
-
-    this.onKeydown = function( event ) {
-        var that = event.data;
-        var e;
-
-        switch( event.which ) {
-
-            case 13:  // enter/return key...
-                if( that.dialog.getOK().hasClass("default") ) {
-
-                    // simulate a click on the ok button...
-                    e = jQuery.Event( "click" );
-                    e.data = that.dialog;
-                    that.dialog.getOK().triggerHandler( e );
-                }
-                else
-                    return true;
-                break;
-
-            case 27:  // escape key...
-
-                // simulate a click on the cancel button...
-                e = jQuery.Event( "click" );
-                e.data = that.dialog;
-                that.dialog.getCancel().triggerHandler( e );
-                break;
-
-            default:
-                return true;
-        }
-        return false;
+    this.onCancel = function() {
     };
 
-
-    this.onCancel = function( context ) {
-        $('body').off("keydown");
-    };
-
-
-    this.onOK = function( context ) {
-        var that = context;
-        $('body').off("keydown");
+    this.onOK = function() {
         var req ={};
         req.signOut = true;
         $.post( "AAAAAAAABUB",
@@ -898,4 +1002,84 @@ $SL.SignOut = function() {
 
             "json");
     };
+};
+
+
+// displays a password meter, 50w x 15h, on the given canvas...
+$SL.passwordMeter = function( canvas, score ) {
+
+    var okThresh = 0.4;
+    var goodThresh = 0.7;
+
+    canvas[0].width = 50;
+    canvas[0].height = 15;
+
+    // put an outline around it...
+    canvas.css("outline", "1px solid black");
+
+    var ctx = canvas[0].getContext("2d");
+
+    // first we paint a white background...
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect( 0, 0, 50, 15 );
+
+    // and then a colored (red, orange, or green) bar...
+    var len = Math.max( 3, Math.floor( 1 + score * 49.999));
+    ctx.fillStyle = (score < okThresh ) ? "#FF0000" : (score < goodThresh) ? "#FF8000" : "#00FF00";
+    ctx.fillRect( 0, 0, len, 15);
+
+    // finally, we put in some helpful text...
+    ctx.fillStyle = "#000000";
+    var text = (score < okThresh) ? "BAD" : (score < goodThresh) ? "OK" : "GOOD!";
+    var hpos = (score < okThresh) ? 25 : (score < goodThresh) ? 30 : 2;
+    ctx.font = "12px Arial";
+    ctx.fillText( text, hpos, 12 );
+};
+
+
+// password strength calculator (0 = worst; 1.0 = best possible)...
+$SL.passwordStrength = function( password ) {
+
+    var ctrl = 0;
+    var numb = 1;
+    var alup = 2;
+    var allw = 3;
+    var punc = 4;
+    var othr = 5;
+    var counts = [0,0,0,0,0,0];
+
+    // see what kind of characters we have...
+    for(var i = 0; i < password.length; i++ ) {
+        var c = password.charCodeAt(i);
+        if( c < 32 )
+            counts[ctrl]++;
+        else if( c < 48 )
+            counts[punc]++;
+        else if( c < 48 )
+            counts[numb]++;
+        else if( c < 65 )
+            counts[punc]++;
+        else if( c < 91 )
+            counts[alup]++;
+        else if( c < 97 )
+            counts[punc]++;
+        else if( c < 123 )
+            counts[allw]++;
+        else if( c < 127 )
+            counts[punc]++;
+        else if( c < 128 )
+            counts[ctrl]++;
+        else
+            counts[othr]++;
+    }
+
+    // how many kinds do we have represented, and how distributed?
+    var cats = 0;
+    for( i = 0; i < 6; i++ ) if( counts[i] > 0 ) cats++;
+    var avg = 1 / cats;
+    var chi2 = 0;
+    for( i = 0; i < 6; i++ ) if( counts[i] > 0 ) chi2 += Math.pow((counts[i]/password.length - avg), 2);
+
+    // now we score based on distribution, categories, and overall length...
+    return Math.min( 1.0, (1 - chi2) * (password.length / 12) * (cats/4) );
 };
